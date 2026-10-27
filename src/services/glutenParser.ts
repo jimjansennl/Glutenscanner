@@ -301,14 +301,19 @@ function menuTips(warnings: GlutenMatch[]): string[] {
 
 interface Evidence {
   hasData: boolean
-  /** Waar een glutenvrij-claim is gevonden (productnaam, merk, keurmerk, ingrediënten). */
+  /**
+   * Waar een sterke glutenvrij-claim is gevonden: productnaam, merk of keurmerk-tag.
+   * Alleen deze claims mogen database-tekst overrulen.
+   */
   claimSources: string[]
+  /** "glutenvrij" staat alleen in de ingrediënten-/etikettekst: telt nooit als override. */
+  textClaim: boolean
   gfWheatStarch: boolean
 }
 
 function conclude(
   { matches, warnings }: Pick<GlutenAnalysis, 'matches' | 'warnings'>,
-  { hasData, claimSources, gfWheatStarch }: Evidence,
+  { hasData, claimSources, textClaim, gfWheatStarch }: Evidence,
   context: AnalysisContext,
 ): GlutenAnalysis {
   const tips = context === 'menu' ? menuTips(warnings) : []
@@ -334,11 +339,21 @@ function conclude(
 
   if (matches.length > 0) {
     const sources = [...new Set(matches.map(describeMatch))]
+    // "glutenvrij" in de tekst naast een harde glutenbron: het risico wint altijd.
+    const contradiction = textClaim
+      ? [
+          `Tegenstrijdige ingrediëntenlijst: er staat "glutenvrij", maar ook ${sources.join(', ')}. Bij twijfel niet eten en de verpakking controleren.`,
+        ]
+      : []
     return {
       status: 'danger',
       matches,
       warnings,
-      reasons: [`Bevat glutenbevattende granen: ${sources.join(", ")}. Niet geschikt bij coeliakie of glutenintolerantie.`],
+      reasons: [
+        ...contradiction,
+        `Bevat glutenbevattende granen: ${sources.join(', ')}. Niet geschikt bij coeliakie of glutenintolerantie.`,
+      ],
+      contradictory: textClaim,
       tips,
     }
   }
@@ -367,7 +382,11 @@ function conclude(
   }
 
   const reason =
-    context === 'menu' ? 'Geen glutenbronnen herkend in deze tekst.' : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
+    context === 'menu'
+      ? 'Geen glutenbronnen herkend in deze tekst.'
+      : textClaim
+        ? 'Tekst vermeldt glutenvrij en er zijn geen glutenbronnen gevonden.'
+        : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
   return { status: 'safe', matches, warnings, reasons: [reason, ...starchNote], tips }
 }
 
@@ -414,7 +433,6 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
     hasGlutenFreeClaim(p.labels) || (p.labels_tags ?? []).some((t) => hasGlutenFreeClaim(t.replace(/^\w{2}:/, '')))
       ? 'keurmerk'
       : '',
-    ingredientTexts.some(hasGlutenFreeClaim) ? 'ingrediënten' : '',
   ].filter(Boolean)
 
   return conclude(
@@ -422,6 +440,7 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
     {
       hasData: ingredientTexts.length > 0 || (p.allergens_tags?.length ?? 0) > 0,
       claimSources,
+      textClaim: ingredientTexts.some(hasGlutenFreeClaim),
       gfWheatStarch: mentionsGfWheatStarch(ingredientTexts),
     },
     'label',
@@ -435,8 +454,9 @@ export function analyzeText(text: string, context: AnalysisContext = 'label'): G
     result,
     {
       hasData: text.trim().length > 0,
-      // Op een menukaart zegt "glutenvrije pasta" niets over de rest van de kaart.
-      claimSources: context === 'label' && hasGlutenFreeClaim(text) ? ['etiket'] : [],
+      // Vrije tekst (foto, QR) kan productnaam en ingrediënten niet scheiden: nooit een override.
+      claimSources: [],
+      textClaim: context === 'label' && hasGlutenFreeClaim(text),
       gfWheatStarch: mentionsGfWheatStarch([text]),
     },
     context,

@@ -141,6 +141,16 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
 
       <MatchList title="Glutenbevattende granen" matches={analysis.matches} chip={STATUS.danger.chip} />
       <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
+      {analysis.contradictory && (
+        <section className="flex flex-col items-center gap-1.5 rounded-2xl bg-warning/10 px-4 py-3 text-center ring-1 ring-warning/40">
+          <AlertTriangle size={18} className="text-warning" aria-hidden />
+          <p className="text-[15px] font-semibold text-warning">Tegenstrijdige ingrediëntenlijst</p>
+          <p className="text-[13px] leading-snug text-white/80">
+            Er staat &quot;glutenvrij&quot;, maar de lijst noemt ook een glutenbron. Het risico gaat voor: bij twijfel
+            niet eten en de verpakking controleren.
+          </p>
+        </section>
+      )}
       {analysis.certified && (analysis.conflicts?.length ?? 0) > 0 && (
         <section className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-raised px-4 py-3 text-center">
           <Database size={18} className="text-muted" aria-hidden />
