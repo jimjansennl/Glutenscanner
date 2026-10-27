@@ -5,6 +5,7 @@ import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
 import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
+import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { HomePage } from './pages/HomePage'
 import { ResultPage } from './pages/ResultPage'
@@ -24,6 +25,7 @@ type View =
   | { name: 'result'; result: ScanResult; back: 'home' | 'history' }
   | { name: 'travel' }
   | { name: 'history' }
+  | { name: 'guide' }
   | { name: 'settings' }
 
 /** Voelbare feedback: kort tikje = veilig, dubbel = twijfel, lang dubbel = gluten. */
@@ -150,9 +152,15 @@ function App() {
           />
         </WithNav>
       )
+    case 'guide':
+      return (
+        <WithNav active="guide" onNavigate={navigate}>
+          <GuidePage />
+        </WithNav>
+      )
     case 'settings':
       return (
-        <WithNav active="settings" onNavigate={navigate}>
+        <WithNav onNavigate={navigate}>
           <SettingsPage
             profile={profile}
             onProfileChange={(next) => {

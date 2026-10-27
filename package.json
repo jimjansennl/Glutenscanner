@@ -14,7 +14,8 @@
     "@zxing/library": "^0.21.3",
     "lucide-react": "^1.62.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

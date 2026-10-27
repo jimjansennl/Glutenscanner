@@ -1,13 +1,13 @@
-import { Camera, History, House, ScanBarcode, Settings, type LucideIcon } from 'lucide-react'
+import { BookOpen, Camera, History, House, ScanBarcode, type LucideIcon } from 'lucide-react'
 
-export type NavTab = 'home' | 'barcode' | 'photo' | 'history' | 'settings'
+export type NavTab = 'home' | 'barcode' | 'photo' | 'guide' | 'history'
 
 const TABS: { id: NavTab; label: string; icon: LucideIcon }[] = [
   { id: 'home', label: 'Start', icon: House },
   { id: 'barcode', label: 'Barcode', icon: ScanBarcode },
   { id: 'photo', label: 'Foto / Menu', icon: Camera },
+  { id: 'guide', label: 'Gids', icon: BookOpen },
   { id: 'history', label: 'Historie', icon: History },
-  { id: 'settings', label: 'Instellingen', icon: Settings },
 ]
 
 interface Props {

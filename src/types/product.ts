@@ -27,7 +27,8 @@ export interface GlutenAnalysis {
   /** Product draagt een glutenvrij-claim; die gaat boven database-tekst. */
   certified?: boolean
   /** Termen uit de database die de claim tegenspreken (waarschijnlijk vervuilde data). */
-  conflicts?: string[]  /** Ingrediëntenlijst noemt "glutenvrij" én een harde glutenbron. */
+  conflicts?: string[]
+  /** Ingrediëntenlijst noemt "glutenvrij" én een harde glutenbron. */
   contradictory?: boolean
 }
 

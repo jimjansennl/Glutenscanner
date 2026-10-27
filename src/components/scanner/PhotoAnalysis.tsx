@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { CheckCircle2, Circle, Loader2, ScanText, Sparkles, X } from 'lucide-react'
 import type { AnalysisContext } from '../../types/product'
 import { decodeImage, type DecodedCode } from '../../hooks/useBarcodeScanner'
-import { isOcrAvailable, recognizeText } from '../../services/ocr'
+import { isOcrAvailable, recognizeText, type OcrProgress } from '../../services/ocr'
 
 type StepState = 'pending' | 'active' | 'done' | 'skipped'
+
+/** Onder deze Tesseract-zekerheid (0–100) laten we de gebruiker de tekst eerst controleren. */
+const MIN_CONFIDENCE = 45
 
 interface Props {
   imageUrl: string
@@ -29,15 +32,23 @@ function Step({ state, label }: { state: StepState; label: string }) {
   )
 }
 
+/** Voortgang over beide OCR-fasen samen: laden telt voor 30%, lezen voor 70%. */
+function overallProgress(p: OcrProgress | null): number {
+  if (!p) return 0
+  return p.stage === 'loading' ? p.progress * 0.3 : 0.3 + p.progress * 0.7
+}
+
 /**
  * Scanningscherm na een foto: zoekt eerst naar een barcode/QR in de afbeelding,
- * daarna tekstherkenning (OCR). Zolang er geen OCR-engine is geregistreerd kan de
- * gebruiker de tekst zelf invoeren, zodat de rest van de flow al werkt.
+ * daarna leest OCR de tekst en gaat die direct naar de gluten-parser. Is de tekst
+ * slecht leesbaar of faalt OCR, dan kan de gebruiker de tekst controleren of typen.
  */
 export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Props) {
   const [codeStep, setCodeStep] = useState<StepState>('active')
-  const [ocrStep, setOcrStep] = useState<StepState>('pending')
-  const [manual, setManual] = useState(false)
+  const [loadStep, setLoadStep] = useState<StepState>('pending')
+  const [readStep, setReadStep] = useState<StepState>('pending')
+  const [progress, setProgress] = useState<OcrProgress | null>(null)
+  const [manual, setManual] = useState<null | 'unclear' | 'failed'>(null)
   const [text, setText] = useState('')
   const [context, setContext] = useState<AnalysisContext>('menu')
   const callbacks = useRef({ onCode, onText, context })
@@ -46,7 +57,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
   }, [onCode, onText, context])
 
   useEffect(() => {
-    const { onCode, onText } = callbacks.current
+    const { onCode } = callbacks.current
     let cancelled = false
     ;(async () => {
       const code = await decodeImage(imageUrl)
@@ -59,28 +70,49 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
       setCodeStep('skipped')
 
       if (!isOcrAvailable()) {
-        setOcrStep('skipped')
-        setManual(true)
+        setManual('failed')
         return
       }
-      setOcrStep('active')
+      setLoadStep('active')
       try {
-        const { text } = await recognizeText(image)
+        const result = await recognizeText(image, (p) => {
+          if (cancelled) return
+          setProgress(p)
+          if (p.stage === 'recognizing') {
+            setLoadStep('done')
+            setReadStep('active')
+          }
+        })
         if (cancelled) return
-        setOcrStep('done')
-        if (text.trim()) onText(text, callbacks.current.context)
-        else setManual(true)
-      } catch {
-        if (!cancelled) {
-          setOcrStep('skipped')
-          setManual(true)
+        setLoadStep('done')
+        setReadStep('done')
+        if (result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE) {
+          // Context van dít moment: de gebruiker kan tijdens het lezen nog wisselen.
+          callbacks.current.onText(result.text, callbacks.current.context)
+        } else {
+          setText(result.text)
+          setManual('unclear')
         }
+      } catch {
+        if (cancelled) return
+        setLoadStep('skipped')
+        setReadStep('skipped')
+        setManual('failed')
       }
     })()
     return () => {
       cancelled = true
     }
   }, [image, imageUrl])
+
+  const busy = manual === null
+  const percent = Math.round(overallProgress(progress) * 100)
+  const statusLabel =
+    codeStep === 'active'
+      ? 'Zoeken naar barcode…'
+      : progress?.stage === 'recognizing'
+        ? `Tekst lezen… ${percent}%`
+        : `Tekstherkenning laden… ${percent}%`
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
@@ -100,10 +132,16 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
 
       <div className="relative mx-4 min-h-0 flex-1 overflow-hidden rounded-[28px] bg-surface">
         <img src={imageUrl} alt="Vastgelegde foto" className="h-full w-full object-contain" />
-        {!manual && (
+        {busy && (
           <>
-            <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 via-transparent to-brand-500/10" />
-            <span className="absolute inset-x-0 h-1 animate-scanline bg-brand-500 shadow-[0_0_24px_6px] shadow-brand-500/70" />
+            <div className="absolute inset-0 bg-gradient-to-b from-safe/15 via-transparent to-safe/15" />
+            <span className="absolute inset-x-0 h-1 animate-scanline bg-safe shadow-[0_0_24px_6px] shadow-safe/70" />
+            <span
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 px-4 py-2 text-[15px] font-semibold tabular-nums backdrop-blur-xl"
+              aria-live="polite"
+            >
+              {statusLabel}
+            </span>
           </>
         )}
       </div>
@@ -131,12 +169,24 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
         </div>
 
         {/* Blok gecentreerd, regels onderling uitgelijnd zodat de vinkjes in één lijn staan. */}
-        <div className="flex justify-center rounded-[22px] bg-surface p-4">
+        <div className="flex flex-col items-center gap-3 rounded-[22px] bg-surface p-4">
           <ul className="flex flex-col gap-2">
             <Step state="done" label="Foto vastgelegd" />
             <Step state={codeStep} label="Zoeken naar barcode of QR-code" />
-            <Step state={ocrStep} label={context === 'menu' ? 'Menukaart lezen' : 'Ingrediënten lezen'} />
+            <Step state={loadStep} label="Tekstherkenning laden" />
+            <Step state={readStep} label={context === 'menu' ? 'Menukaart lezen' : 'Ingrediënten lezen'} />
           </ul>
+          {busy && codeStep !== 'active' && (
+            <div
+              className="h-1.5 w-full overflow-hidden rounded-full bg-surface-raised"
+              role="progressbar"
+              aria-valuenow={percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="h-full rounded-full bg-safe transition-[width] duration-300" style={{ width: `${percent}%` }} />
+            </div>
+          )}
         </div>
 
         {manual && (
@@ -149,21 +199,23 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
           >
             <p className="flex flex-col items-center gap-1 text-center text-sm text-white/70">
               <Sparkles size={16} className="text-warning" />
-              {context === 'menu'
-                ? 'Typ of plak het gerecht van de menukaart. We letten ook op sauzen, frituur en kruisbesmetting.'
-                : 'Typ of plak de ingrediënten van het etiket.'}
-              <span className="text-xs text-muted">Automatische tekstherkenning komt binnenkort.</span>
+              {manual === 'unclear'
+                ? 'De tekst was niet goed leesbaar. Controleer en vul aan wat we gelezen hebben.'
+                : 'Tekstherkenning kon niet starten (eerste keer is internet nodig). Typ of plak de tekst zelf.'}
+              {context === 'menu' && (
+                <span className="text-xs text-muted">We letten ook op sauzen, frituur en kruisbesmetting.</span>
+              )}
             </p>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              rows={3}
+              rows={4}
               placeholder={
                 context === 'menu'
                   ? 'Bijv. Caesar salade met croutons en dressing'
                   : 'Bijv. tarwebloem, suiker, kan sporen van gerst bevatten'
               }
-              className="w-full resize-none rounded-[22px] bg-surface p-3 text-center text-[17px] placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full resize-none rounded-[22px] bg-surface p-3 text-center text-[17px] placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-safe"
             />
             <button
               type="submit"

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Camera, ChevronRight, Infinity as InfinityIcon, Languages, ScanBarcode, ShieldCheck } from 'lucide-react'
+import { Camera, ChevronRight, Infinity as InfinityIcon, Languages, ScanBarcode, Settings, ShieldCheck } from 'lucide-react'
 import { PROFILES, type SafetyProfile } from '../services/profile'
 
 interface Props {
@@ -25,7 +25,14 @@ function SecondaryCard({ icon, title, subtitle, onClick }: { icon: ReactNode; ti
 export function HomePage({ profile, onScan, onTravelCard, onSettings }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-4 py-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
-      <header className="flex flex-col items-center gap-1 pb-2 text-center">
+      <header className="relative flex flex-col items-center gap-1 pb-2 text-center">
+        <button
+          onClick={onSettings}
+          className="absolute -top-2 right-0 rounded-full bg-surface p-2.5 text-muted active:bg-surface-raised"
+          aria-label="Instellingen"
+        >
+          <Settings size={20} />
+        </button>
         <h1 className="text-[34px] font-bold leading-tight tracking-tight">Glutenscanner</h1>
         <p className="flex items-center gap-1.5 text-[15px] text-muted">
           <InfinityIcon size={16} className="text-safe" />
