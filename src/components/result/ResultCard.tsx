@@ -1,4 +1,5 @@
-import { AlertTriangle, CheckCircle2, XCircle, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, MessageCircleQuestion, XCircle, type LucideIcon } from 'lucide-react'
+import { describeMatch } from '../../services/glutenParser'
 import type { GlutenAnalysis, GlutenMatch, GlutenStatus, MatchSource } from '../../types/product'
 
 interface StatusStyle {
@@ -42,29 +43,56 @@ const SOURCE_LABEL: Record<MatchSource, string> = {
   text: 'Tekst',
 }
 
-/** Groepeert matches per gluten-bron: "Tarwe" → ["tarwebloem", "tarwezetmeel"]. */
+/** Groepeert matches per gluten-bron: "Tarwe" → ["tarwebloem", "trigo"]. */
 function groupByLabel(matches: GlutenMatch[]) {
-  const groups = new Map<string, { terms: Set<string>; sources: Set<MatchSource> }>()
+  const groups = new Map<string, { matches: GlutenMatch[]; sources: Set<MatchSource> }>()
   for (const m of matches) {
-    const g = groups.get(m.label) ?? { terms: new Set(), sources: new Set() }
-    g.terms.add(m.term)
+    const g = groups.get(m.label) ?? { matches: [], sources: new Set() }
+    if (!g.matches.some((x) => x.term === m.term)) g.matches.push(m)
     g.sources.add(m.source)
     groups.set(m.label, g)
   }
   return [...groups.entries()]
 }
 
+/** "trigo → tarwe": buitenlandse termen direct met Nederlandse vertaling. */
+function termText(m: GlutenMatch): string {
+  const label = m.label.toLowerCase()
+  return m.term.includes(label) || m.label.includes('/') ? m.term : `${m.term} → ${label}`
+}
+
+function SectionTitle({ children }: { children: string }) {
+  return <h3 className="mb-2 text-center text-[13px] font-medium uppercase tracking-wide text-muted">{children}</h3>
+}
+
 function MatchList({ title, matches, chip }: { title: string; matches: GlutenMatch[]; chip: string }) {
   if (matches.length === 0) return null
   return (
     <section>
-      <h3 className="mb-2 px-1 text-[13px] font-medium uppercase tracking-wide text-muted">{title}</h3>
+      <SectionTitle>{title}</SectionTitle>
       <ul className="divide-y divide-surface-line overflow-hidden rounded-2xl bg-surface-raised">
-        {groupByLabel(matches).map(([label, { terms, sources }]) => (
-          <li key={label} className="flex items-center gap-3 px-4 py-3">
-            <span className={`rounded-lg px-2 py-1 text-[13px] font-semibold ${chip}`}>{label}</span>
-            <span className="min-w-0 flex-1 truncate text-[15px] text-white/90">{[...terms].join(', ')}</span>
-            <span className="shrink-0 text-xs text-muted">{[...sources].map((s) => SOURCE_LABEL[s]).join(' · ')}</span>
+        {groupByLabel(matches).map(([label, { matches, sources }]) => (
+          <li key={label} className="flex flex-col items-center gap-1 px-4 py-3 text-center">
+            <span className={`rounded-full px-3 py-1 text-[13px] font-semibold ${chip}`}>{label}</span>
+            <span className="text-[15px] text-white/90">{matches.map(termText).join(', ')}</span>
+            <span className="text-xs text-muted">{[...sources].map((s) => SOURCE_LABEL[s]).join(' · ')}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function Tips({ tips }: { tips: string[] }) {
+  if (tips.length === 0) return null
+  return (
+    <section>
+      <SectionTitle>Vraag in het restaurant</SectionTitle>
+      <ul className="flex flex-col gap-2">
+        {tips.map((tip) => (
+          <li key={tip} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-raised px-4 py-3 text-center">
+            <MessageCircleQuestion size={18} className="text-safe" aria-hidden />
+            <span className="text-[15px] leading-snug text-white/90">{tip}</span>
           </li>
         ))}
       </ul>
@@ -75,8 +103,8 @@ function MatchList({ title, matches, chip }: { title: string; matches: GlutenMat
 export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
   const style = STATUS[analysis.status]
   const Icon = style.icon
-  // Bij gevaar het schadelijke ingrediënt direct onder de titel noemen.
-  const culprits = [...new Set(analysis.matches.map((m) => m.term))].slice(0, 3)
+  // Bij een gluten-match de bron feitelijk benoemen, met vertaling van buitenlandse termen.
+  const sources = [...new Set(analysis.matches.map(describeMatch))].slice(0, 4)
 
   return (
     <article className="animate-slide-up flex flex-col gap-6 rounded-[28px] bg-surface p-6" aria-live="polite">
@@ -84,26 +112,28 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
         <div className={`animate-pop-in flex h-40 w-40 items-center justify-center rounded-full ring-4 ${style.circle}`}>
           <Icon className={style.text} size={96} strokeWidth={2} aria-hidden />
         </div>
-        <div>
+        <div className="flex flex-col items-center gap-1">
           <h2 className={`text-[34px] font-bold leading-tight tracking-tight ${style.text}`}>{style.title}</h2>
-          {analysis.status === 'danger' && culprits.length > 0 && (
-            <p className="mt-1 text-[17px] text-white">
-              Schadelijk ingrediënt: <span className="font-semibold">{culprits.join(', ')}</span>
+          {analysis.status === 'danger' && sources.length > 0 && (
+            <p className="text-[17px] text-white">
+              Getraceerde glutenbron: <span className="font-semibold">{sources.join(', ')}</span>
             </p>
           )}
         </div>
       </header>
 
-      <ul className="flex flex-col gap-1 text-center">
-        {analysis.reasons.map((r) => (
+      <ul className="flex flex-col items-center gap-1 text-center">
+        {/* Bij gluten staat de bron al onder de titel; dan alleen de duiding tonen. */}
+        {(analysis.status === 'danger' ? ['Niet geschikt bij coeliakie of glutenintolerantie.'] : analysis.reasons).map((r) => (
           <li key={r} className="text-[15px] leading-snug text-muted">
             {r}
           </li>
         ))}
       </ul>
 
-      <MatchList title="Gevonden gluten-bronnen" matches={analysis.matches} chip={STATUS.danger.chip} />
+      <MatchList title="Glutenbevattende granen" matches={analysis.matches} chip={STATUS.danger.chip} />
       <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
+      <Tips tips={analysis.tips ?? []} />
     </article>
   )
 }

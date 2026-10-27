@@ -3,12 +3,15 @@ import { Loader2 } from 'lucide-react'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
 import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
+import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
 import { HomePage } from './pages/HomePage'
 import { ResultPage } from './pages/ResultPage'
+import { TravelCardPage } from './pages/TravelCardPage'
 import { analyzeText } from './services/glutenParser'
+import { addToHistory, clearHistory, loadHistory, type HistoryItem } from './services/history'
 import { analyzeBarcode, analyzeCode } from './services/scanService'
-import type { ScanResult } from './types/product'
+import type { GlutenStatus, ScanResult } from './types/product'
 
 type View =
   | { name: 'home' }
@@ -16,6 +19,14 @@ type View =
   | { name: 'photo'; image: Blob; imageUrl: string }
   | { name: 'loading'; label: string }
   | { name: 'result'; result: ScanResult }
+  | { name: 'travel' }
+
+/** Voelbare feedback: kort tikje = veilig, dubbel = twijfel, lang dubbel = gluten. */
+const HAPTICS: Record<GlutenStatus, number[]> = {
+  safe: [40],
+  warning: [60, 80, 60],
+  danger: [200, 100, 200],
+}
 
 /** Schermen met de tabbalk onderin; de camera-schermen tekenen hun eigen balk. */
 function WithNav({ children, onNavigate }: { children: ReactNode; onNavigate: (tab: NavTab) => void }) {
@@ -23,6 +34,7 @@ function WithNav({ children, onNavigate }: { children: ReactNode; onNavigate: (t
     <div className="flex min-h-full flex-col">
       {children}
       <BottomNav active="home" onSelect={onNavigate} />
+      <DisclaimerModal />
     </div>
   )
 }
@@ -31,6 +43,7 @@ function App() {
   const [view, setView] = useState<View>({ name: 'home' })
   const abortRef = useRef<AbortController | null>(null)
   const imageUrlRef = useRef<string | null>(null)
+  const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
 
   const releaseImage = useCallback(() => {
     if (imageUrlRef.current) URL.revokeObjectURL(imageUrlRef.current)
@@ -48,6 +61,13 @@ function App() {
 
   useEffect(() => releaseImage, [releaseImage])
 
+  /** Toont een vers resultaat: trillen, bewaren in de geschiedenis en tonen. */
+  const showResult = useCallback((result: ScanResult) => {
+    navigator.vibrate?.(HAPTICS[result.analysis.status])
+    setHistory(addToHistory(result))
+    setView({ name: 'result', result })
+  }, [])
+
   const navigate = useCallback(
     (tab: NavTab) => go(tab === 'home' ? { name: 'home' } : { name: 'scanner', mode: tab }),
     [go],
@@ -60,12 +80,12 @@ function App() {
       abortRef.current = controller
       try {
         const result = await task(controller.signal)
-        if (!controller.signal.aborted) setView({ name: 'result', result })
+        if (!controller.signal.aborted) showResult(result)
       } catch {
         // Afgebroken door navigatie: niets te doen.
       }
     },
-    [go],
+    [go, showResult],
   )
 
   const handleCode = useCallback(
@@ -88,7 +108,14 @@ function App() {
       return (
         <WithNav onNavigate={navigate}>
           <HomePage
+            history={history}
             onScan={(mode) => navigate(mode)}
+            onTravelCard={() => go({ name: 'travel' })}
+            onOpenHistory={(item) => setView({ name: 'result', result: item.result })}
+            onClearHistory={() => {
+              clearHistory()
+              setHistory([])
+            }}
             onBarcode={(barcode) =>
               run('Product opzoeken…', async (signal) => ({ ...(await analyzeBarcode(barcode, signal)), source: 'manual' }))
             }
@@ -103,10 +130,13 @@ function App() {
           image={view.image}
           imageUrl={view.imageUrl}
           onCode={handleCode}
-          onText={(text) =>
-            setView({
-              name: 'result',
-              result: { source: 'photo', rawValue: text, imageUrl: view.imageUrl, analysis: analyzeText(text) },
+          onText={(text, context) =>
+            showResult({
+              source: 'photo',
+              context,
+              rawValue: text,
+              imageUrl: view.imageUrl,
+              analysis: analyzeText(text, context),
             })
           }
           onCancel={() => go({ name: 'scanner', mode: 'photo' })}
@@ -127,7 +157,17 @@ function App() {
     case 'result':
       return (
         <WithNav onNavigate={navigate}>
-          <ResultPage result={view.result} onHome={() => go({ name: 'home' })} />
+          <ResultPage
+            result={view.result}
+            onHome={() => go({ name: 'home' })}
+            onPhotoScan={() => go({ name: 'scanner', mode: 'photo' })}
+          />
+        </WithNav>
+      )
+    case 'travel':
+      return (
+        <WithNav onNavigate={navigate}>
+          <TravelCardPage onBack={() => go({ name: 'home' })} />
         </WithNav>
       )
   }

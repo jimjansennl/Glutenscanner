@@ -11,6 +11,9 @@ export interface GlutenMatch {
   source: MatchSource
 }
 
+/** Etiket (verpakt product) of menukaart (restaurant): bepaalt welke risico's we zoeken. */
+export type AnalysisContext = 'label' | 'menu'
+
 export interface GlutenAnalysis {
   status: GlutenStatus
   /** Harde gluten-bronnen (leiden tot 'danger'). */
@@ -19,6 +22,8 @@ export interface GlutenAnalysis {
   warnings: GlutenMatch[]
   /** Korte, mensleesbare uitleg waarom deze status gekozen is. */
   reasons: string[]
+  /** Concrete vragen/adviezen, vooral voor restaurants. */
+  tips: string[]
 }
 
 export interface Product {
@@ -38,4 +43,6 @@ export interface ScanResult {
   /** Ruwe inhoud: barcode, QR-tekst of (OCR-)tekst. */
   rawValue?: string
   imageUrl?: string
+  /** Alleen bij foto/tekst: etiket of menukaart. */
+  context?: AnalysisContext
 }

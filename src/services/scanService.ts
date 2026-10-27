@@ -23,7 +23,7 @@ export async function analyzeBarcode(barcode: string, signal?: AbortSignal): Pro
     return {
       source: 'barcode',
       rawValue: code,
-      analysis: { status: 'warning', matches: [], warnings: [], reasons: [reason] },
+      analysis: { status: 'warning', matches: [], warnings: [], reasons: [reason], tips: [] },
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
-import { Barcode, ChevronLeft, FileText, QrCode } from 'lucide-react'
+import { Barcode, Camera, ChevronLeft, ExternalLink, FileText, Info, QrCode } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
+import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import type { GlutenMatch, ScanResult } from '../types/product'
 
 const SOURCE_META = {
@@ -46,38 +47,46 @@ function Highlighted({ text, danger, warning }: { text: string; danger: GlutenMa
 interface Props {
   result: ScanResult
   onHome: () => void
+  onPhotoScan: () => void
 }
 
-export function ResultPage({ result, onHome }: Props) {
+export function ResultPage({ result, onHome, onPhotoScan }: Props) {
   const { product, analysis } = result
   const meta = SOURCE_META[result.source]
-  const details = product?.ingredientsText ?? (result.source === 'photo' || result.source === 'qr' ? result.rawValue : undefined)
+  const isCodeScan = result.source !== 'photo'
+  const details = product?.ingredientsText ?? (isCodeScan && result.source !== 'qr' ? undefined : result.rawValue)
+  const headerLabel =
+    result.source === 'photo' ? (result.context === 'menu' ? 'Menukaart' : 'Etiket') : meta.label
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      <header className="flex items-center gap-1">
-        <button onClick={onHome} className="-ml-2 flex items-center rounded-full p-2 text-safe active:opacity-60" aria-label="Terug naar start">
+      <header className="relative flex h-11 items-center justify-center">
+        <button
+          onClick={onHome}
+          className="absolute left-0 -ml-2 rounded-full p-2 text-safe active:opacity-60"
+          aria-label="Terug naar start"
+        >
           <ChevronLeft size={28} />
         </button>
-        <span className="flex items-center gap-1.5 text-[15px] text-muted">
+        <span className="flex items-center gap-1.5 text-[15px] font-medium text-muted">
           <meta.icon size={16} />
-          {meta.label}
-          {result.rawValue && result.source !== 'photo' && result.source !== 'qr' && ` · ${result.rawValue}`}
+          {headerLabel}
+          {result.rawValue && isCodeScan && result.source !== 'qr' && ` · ${result.rawValue}`}
         </span>
       </header>
 
       {product && (
-        <section className="flex items-center gap-3 px-1">
+        <section className="flex flex-col items-center gap-2 text-center">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt="" className="h-14 w-14 rounded-2xl bg-white object-contain" />
+            <img src={product.imageUrl} alt="" className="h-20 w-20 rounded-2xl bg-white object-contain" />
           ) : (
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-muted">
-              <Barcode size={26} />
+            <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-muted">
+              <Barcode size={32} />
             </span>
           )}
-          <div className="min-w-0">
-            <h1 className="truncate text-[20px] font-semibold">{product.name}</h1>
-            {product.brand && <p className="truncate text-[15px] text-muted">{product.brand}</p>}
+          <div>
+            <h1 className="text-[22px] font-semibold leading-tight">{product.name}</h1>
+            {product.brand && <p className="text-[15px] text-muted">{product.brand}</p>}
           </div>
         </section>
       )}
@@ -88,8 +97,19 @@ export function ResultPage({ result, onHome }: Props) {
 
       <ResultCard analysis={analysis} />
 
+      {!product && isCodeScan && (
+        <button
+          onClick={onPhotoScan}
+          className="flex flex-col items-center gap-1 rounded-[22px] bg-surface p-4 text-center active:bg-surface-raised"
+        >
+          <Camera size={22} className="text-warning" />
+          <span className="text-[17px] font-semibold">Fotografeer de ingrediënten</span>
+          <span className="text-[13px] text-muted">Dan analyseren we het etiket zelf</span>
+        </button>
+      )}
+
       {details && (
-        <section className="rounded-[22px] bg-surface p-4">
+        <section className="rounded-[22px] bg-surface p-4 text-center">
           <h3 className="mb-2 text-[13px] font-medium uppercase tracking-wide text-muted">
             {product ? 'Ingrediënten' : 'Geanalyseerde tekst'}
           </h3>
@@ -99,8 +119,21 @@ export function ResultPage({ result, onHome }: Props) {
         </section>
       )}
 
-      <p className="px-4 text-center text-xs text-muted/70">
-        Gebaseerd op Open Food Facts en automatische tekstanalyse. Controleer bij twijfel altijd de verpakking.
+      {product && (
+        <a
+          href={`https://world.openfoodfacts.org/product/${encodeURIComponent(product.barcode)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center gap-1.5 text-[15px] text-safe active:opacity-60"
+        >
+          Bekijk of verbeter op Open Food Facts
+          <ExternalLink size={14} />
+        </a>
+      )}
+
+      <p className="flex flex-col items-center gap-1 px-4 text-center text-xs leading-relaxed text-muted/80">
+        <Info size={14} aria-hidden />
+        {DISCLAIMER_SHORT}
       </p>
     </main>
   )

@@ -1,60 +1,165 @@
-import type { GlutenAnalysis, GlutenMatch, MatchSource } from '../types/product'
+import type { AnalysisContext, GlutenAnalysis, GlutenMatch, MatchSource } from '../types/product'
 
 interface Trigger {
+  /** Nederlandse naam die we aan de gebruiker tonen, ook bij buitenlandse termen. */
   label: string
   pattern: RegExp
+  /** Advies dat bij een menukaart-match wordt getoond. */
+  tip?: string
 }
 
 /**
- * Harde gluten-bronnen (NL / EN / DE / FR). Nederlandse termen matchen ook
- * midden in samenstellingen (volkorentarwemeel, gerstemout); korte Engelse
- * woorden gebruiken woordgrenzen om "goat" ≠ "oat" en "dryer" ≠ "rye" te houden.
+ * Harde gluten-bronnen in NL / EN / DE / FR / ES / IT / PT / PL. De tekst is vooraf
+ * genormaliseerd (kleine letters, geen accenten), dus "sémola" wordt "semola".
+ * Nederlandse termen matchen ook midden in samenstellingen (volkorentarwemeel,
+ * gerstemout); korte woorden gebruiken woordgrenzen ("goat" ≠ "oat", "orzo" ≠ "orzon").
  */
 const GLUTEN_TRIGGERS: Trigger[] = [
-  { label: 'Tarwe', pattern: /tarwe|wheat|weizen|froment|\bble\b|\bdurum/g },
-  { label: 'Gerst', pattern: /gerst|barley|\borge\b/g },
-  { label: 'Rogge', pattern: /rogge|\brye\b|roggen|seigle/g },
-  { label: 'Spelt', pattern: /spelt|dinkel|epeautre/g },
-  { label: 'Haver', pattern: /haver|\boat(?:s|meal)?\b|hafer|avoine/g },
+  {
+    label: 'Tarwe',
+    pattern: /tarwe|wheat|weizen|froment|\bble\b|\bdurum|trigo|frumento|grano (?:tenero|duro)|pszen/g,
+  },
+  { label: 'Gerst', pattern: /gerst|barley|\borge\b|cebada|\borzo\b|cevada|jeczmien/g },
+  { label: 'Rogge', pattern: /rogge|\brye\b|roggen|seigle|centeno|segale|centeio|\bzyto\b/g },
+  { label: 'Spelt', pattern: /spelt|dinkel|epeautre|espelta|\bfarro\b/g },
+  { label: 'Haver', pattern: /haver|\boat(?:s|meal)?\b|hafer|avoine|\bavena\b|aveia|owies/g },
   { label: 'Kamut', pattern: /kamut|khorasan/g },
-  { label: 'Bulgur', pattern: /bulgur|boulgour/g },
-  { label: 'Couscous', pattern: /couscous/g },
-  { label: 'Mout', pattern: /mout(?!on)|\bmalt(?:ed|s)?\b|malz/g },
-  { label: 'Griesmeel', pattern: /griesmeel|semolina|semoule|griess/g },
+  { label: 'Bulgur', pattern: /bulgur|boulgour|burghul/g },
+  { label: 'Couscous', pattern: /couscous|cuscus/g },
+  { label: 'Mout', pattern: /mout(?!on)|\bmalt(?:ed|s|a|e|o)?\b|malz/g },
+  { label: 'Griesmeel', pattern: /griesmeel|semolina|semoule|griess|\bsemola\b/g },
   { label: 'Deegwaren', pattern: /deegwar/g },
   { label: 'Seitan', pattern: /seitan/g },
-  { label: 'Oergraan', pattern: /triticale|\bemmer\b|einkorn|eenkoorn|\bfarro\b|freekeh/g },
-  { label: 'Gluten', pattern: /gluten/g },
+  { label: 'Oergraan', pattern: /triticale|\bemmer\b|einkorn|eenkoorn|freekeh/g },
+  { label: 'Gluten', pattern: /gluten|glutine/g },
 ]
 
 /** Glutenvrije meelsoorten die als los woord vóór "flour"/"bloem" staan. */
-const GF_FLOUR_BASES =
+const GF_FLOUR_BEFORE =
   'rice|brown rice|corn|maize|potato|tapioca|almond|coconut|chickpea|gram|soy|soya|pea|bean|teff|sorghum|millet|quinoa|amaranth|cassava|chestnut|lupin|banana|rijst|mais|aardappel|amandel|kokos'
+
+/** Glutenvrije meelsoorten ná "harina de" / "farina di" / "farine de". */
+const GF_FLOUR_AFTER =
+  'arroz|riso|riz|maiz|mais|milho|garbanzos?|ceci|grao|almendras?|mandorle|amandes?|patata|pomme de terre|castanas?|castagne|chataigne|tapioca|yuca|mandioca|quinoa|sorgo|sarrasin|coco'
+
+/** "harina de trigo": het graan zelf is al een harde match, de bloem hoeft niet ook als twijfel. */
+const GLUTEN_GRAINS_AFTER = 'trigo|frumento|grano|centeno|cebada|espelta|segale|orzo|avena|farro|centeio|cevada|aveia|ble|seigle|orge|epeautre|kamut'
 
 /** Termen die vaak (maar niet altijd) gluten bevatten: twijfelgevallen. */
 const SUSPICIOUS_TRIGGERS: Trigger[] = [
-  { label: 'Croutons', pattern: /crouton/g },
-  { label: 'Paneermeel', pattern: /paneermeel|gepaneerd|breadcrumb|panko|paniermehl|chapelure/g },
-  { label: 'Pasta / noedels', pattern: /\bpasta\b|noedel|noodle|vermicelli/g },
-  { label: 'Sojasaus', pattern: /sojasaus|soy ?sauce|shoyu/g },
-  { label: 'Bier', pattern: /\bbier\b|\bbeer\b/g },
-  { label: 'Brood', pattern: /brood|\bbread\b|beschuit/g },
-  // Kale "bloem"/"flour" is meestal tarwe; "rice flour", "corn flour" e.d. niet.
-  { label: 'Bloem', pattern: new RegExp(`(?<!(?:${GF_FLOUR_BASES}) )\\b(?:bloem|flour)\\b`, 'g') },
+  {
+    label: 'Croutons',
+    pattern: /crouton|picatoste|crostini/g,
+    tip: 'Vraag de salade zonder croutons, en of ze er niet eerst op hebben gelegen.',
+  },
+  {
+    label: 'Paneermeel',
+    pattern: /paneermeel|gepaneerd|breadcrumb|breaded|panko|paniermehl|paniert|chapelure|pan rallado|pangrattato|empanad|impanat/g,
+    tip: 'Een paneerlaag bevat vrijwel altijd tarwe: vraag naar een ongepaneerde variant.',
+  },
+  {
+    label: 'Pasta / noedels',
+    pattern: /\bpasta\b|noedel|noodle|vermicelli|fideo|spaghett|tagliatell|lasagn|ravioli|gnocchi|tortellini/g,
+    tip: 'Vraag naar glutenvrije pasta, en of die in apart water wordt gekookt.',
+  },
+  {
+    label: 'Sojasaus',
+    pattern: /sojasaus|soy ?sauce|shoyu|salsa de soja|salsa di soia|molho de soja|sauce soja|teriyaki|hoisin/g,
+    tip: 'Gewone sojasaus wordt gebrouwen met tarwe: vraag of de keuken tamari (glutenvrij) gebruikt.',
+  },
+  { label: 'Bier', pattern: /\bbier\b|\bbeer\b|cerveza|\bbirra\b|cerveja|\bbiere\b/g },
+  {
+    label: 'Brood',
+    pattern: /brood|\bbread\b|beschuit|\bpane\b|\bpain\b|bocadillo|focaccia|bruschetta/g,
+    tip: 'Vraag het gerecht zonder brood, en of brood apart wordt geserveerd.',
+  },
+  {
+    // Kale "bloem"/"flour"/"harina" is meestal tarwe; "rice flour", "harina de arroz" e.d. niet.
+    label: 'Bloem',
+    pattern: new RegExp(
+      `(?<!(?:${GF_FLOUR_BEFORE}) )\\b(?:bloem|flour|mehl)\\b|\\b(?:harina|farina|farine|farinha)\\b(?! (?:de |di |d'|da )?(?:${GF_FLOUR_AFTER}|${GLUTEN_GRAINS_AFTER}))`,
+      'g',
+    ),
+  },
 ]
 
-/** Wegstrepen vóór het matchen: bevatten "tarwe"/"wheat" maar zijn glutenvrij. */
-const EXCLUSIONS = /(?:boekweit|buckwheat|buchweizen|ble noir|sarrasin)\p{L}*(?: (?:flour|meel|bloem|mehl))?/gu
+/**
+ * Restaurantrisico's: verborgen bloem, gedeelde frituur en andere kruisbesmetting.
+ * Alleen bij menukaart-analyse, op etiketten zou "saus" of "gefrituurd" ruis zijn.
+ */
+const RESTAURANT_RISKS: Trigger[] = [
+  {
+    label: 'Gebonden saus',
+    pattern: /\broux\b|bechamel|besciamella|veloute|\bjus\b|gravy|demi[- ]?glace|roomsaus|bruine saus|gebonden|(?<!soja)saus\b|(?<!soy )sauce\b|\bsalsa\b/g,
+    tip: 'Vraag of de saus gebonden is met tarwebloem (roux) of met maïzena.',
+  },
+  {
+    label: 'Dressing',
+    pattern: /dressing|vinaigrette|\balino\b|condimento/g,
+    tip: 'Vraag naar de dressing: die bevat soms moutazijn, sojasaus of bloem.',
+  },
+  {
+    label: 'Gedeelde frituur',
+    pattern: /frituur|gefrituurd|\bfriet|patat|\bfries\b|fried|\bfrit[oa]s?\b|fritt[oi]|fritura|frittura|\bfrites\b/g,
+    tip: 'Vraag of er een aparte frituur is: gedeelde olie met gepaneerde producten geeft kruisbesmetting.',
+  },
+  {
+    label: 'Beslag / tempura',
+    pattern: /beslag|batter|tempura|rebozad|pastella|beignet|in pastella/g,
+    tip: 'Beslag en tempura worden bijna altijd met tarwebloem gemaakt.',
+  },
+  {
+    label: 'Korst / deeg',
+    pattern: /gegratineerd|gratin|korst|crust|crumble|quiche|\btaart|\btarte?\b|\bpie\b|bladerdeeg|hojaldre|sfoglia|pizza|\bwrap\b|empanada|strudel/g,
+    tip: 'Korsten, bladerdeeg en gratinlagen bevatten meestal tarwebloem.',
+  },
+  {
+    label: 'Gebonden soep',
+    pattern: /\bsoep\b|\bsoup\b|\bsopa\b|\bzuppa\b|bisque|chowder|veloute/g,
+    tip: 'Soepen worden vaak gebonden met bloem: vraag hoe deze soep gebonden is.',
+  },
+  {
+    label: 'Gedeelde grill / wok',
+    pattern: /\bwok\b|plancha|\bgrill|barbecue|\bbbq\b/g,
+    tip: 'Vraag of de grill of wok ook voor gerechten met gluten wordt gebruikt.',
+  },
+]
+
+const GENERAL_MENU_TIP = 'Meld je glutenintolerantie altijd expliciet aan de bediening en vraag naar kruisbesmetting in de keuken.'
+
+/** Wegstrepen vóór het matchen: bevatten "tarwe"/"wheat"/"trigo" maar zijn glutenvrij (boekweit). */
+const EXCLUSIONS =
+  /(?:(?:harina|farina|farine|farinha) (?:de |di |d'|da )?)?(?:boekweit|buckwheat|buchweizen|ble noir|sarrasin|trigo sarraceno|grano saraceno|trigo mourisco|sarraceno|saraceno)\p{L}*(?: (?:flour|meel|bloem|mehl))?/gu
 
 /** "glutenvrij" e.d. mag niet als "gluten" matchen. */
-const NEGATIONS = /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|sin gluten|sem gluten/g
+const NEGATIONS =
+  /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu/g
 
 /** Glutenvrije haver: geen harde trigger, wel twijfel (avenine / certificering). */
 const GLUTEN_FREE_OATS = /(?:glutenvrije|gluten[- ]?free|glutenfreier?) ?(?:haver\w*|oat\w*|hafer\w*)/g
 
 /** "Kan sporen bevatten van …" en varianten: alles tot het einde van de zin. */
-const TRACE_PHRASES =
-  /(?:kan sporen(?: bevatten)?(?: van)?|sporen van|bevat mogelijk|may contain|traces? of|peut contenir(?: des traces de)?|kann spuren(?: von)?|kann .{0,30}?enthalten|in een (?:omgeving|bedrijf) waar)([^.;\n]*)/g
+const TRACE_PHRASES = new RegExp(
+  '(?:' +
+    [
+      'kan sporen(?: bevatten)?(?: van)?',
+      'sporen van',
+      'bevat mogelijk',
+      'may contain',
+      'traces? of',
+      'peut contenir(?: des traces de)?',
+      'kann spuren(?: von)?',
+      'kann .{0,30}?enthalten',
+      'puede contener(?: trazas de)?',
+      'trazas de',
+      'puo contenere(?: tracce di)?',
+      'tracce di',
+      'pode conter(?: vestigios de)?',
+      'in een (?:omgeving|bedrijf) waar',
+    ].join('|') +
+    ')([^.;\\n]*)',
+  'g',
+)
 
 export function normalize(text: string): string {
   return text
@@ -112,9 +217,10 @@ interface ScanInput {
   isTraces?: boolean
 }
 
-function scan(inputs: ScanInput[]): Pick<GlutenAnalysis, 'matches' | 'warnings'> {
+function scan(inputs: ScanInput[], context: AnalysisContext): Pick<GlutenAnalysis, 'matches' | 'warnings'> {
   const matches: GlutenMatch[] = []
   const warnings: GlutenMatch[] = []
+  const suspicious = context === 'menu' ? [...SUSPICIOUS_TRIGGERS, ...RESTAURANT_RISKS] : SUSPICIOUS_TRIGGERS
 
   for (const input of inputs) {
     const normalized = normalize(input.text)
@@ -134,7 +240,7 @@ function scan(inputs: ScanInput[]): Pick<GlutenAnalysis, 'matches' | 'warnings'>
     clean = clean.replace(GLUTEN_FREE_OATS, ' ').replace(NEGATIONS, ' ')
 
     matches.push(...findMatches(clean, GLUTEN_TRIGGERS, input.source))
-    warnings.push(...findMatches(clean, SUSPICIOUS_TRIGGERS, input.source))
+    warnings.push(...findMatches(clean, suspicious, input.source))
   }
 
   return { matches: dedupe(matches), warnings: dedupe(warnings) }
@@ -144,26 +250,53 @@ function hasNegation(text: string): boolean {
   return new RegExp(NEGATIONS.source).test(normalize(text))
 }
 
+/** "tarwe (trigo)": de Nederlandse naam, met de buitenlandse term erbij als die afwijkt. */
+export function describeMatch(m: GlutenMatch): string {
+  const label = m.label.toLowerCase()
+  return m.term.includes(label) ? label : `${label} (${m.term})`
+}
+
+function menuTips(warnings: GlutenMatch[]): string[] {
+  const triggers = [...SUSPICIOUS_TRIGGERS, ...RESTAURANT_RISKS]
+  const tips = new Set<string>()
+  for (const w of warnings) {
+    const tip = triggers.find((t) => t.label === w.label)?.tip
+    if (tip) tips.add(tip)
+  }
+  tips.add(GENERAL_MENU_TIP)
+  return [...tips]
+}
+
 function conclude(
   { matches, warnings }: Pick<GlutenAnalysis, 'matches' | 'warnings'>,
   hasData: boolean,
   labeledGlutenFree: boolean,
+  context: AnalysisContext,
 ): GlutenAnalysis {
+  const tips = context === 'menu' ? menuTips(warnings) : []
+
   if (matches.length > 0) {
-    const labels = [...new Set(matches.map((m) => m.label.toLowerCase()))]
+    const sources = [...new Set(matches.map(describeMatch))]
     return {
       status: 'danger',
       matches,
       warnings,
-      reasons: [`Bevat ${labels.join(', ')}.`],
+      reasons: [`Bevat glutenbevattende granen: ${sources.join(", ")}. Niet geschikt bij coeliakie of glutenintolerantie.`],
+      tips,
     }
   }
 
   if (warnings.length > 0) {
     const reasons: string[] = []
     if (warnings.some((w) => w.source === 'traces')) reasons.push('Kan sporen van gluten bevatten.')
-    if (warnings.some((w) => w.source !== 'traces')) reasons.push('Bevat ingrediënten die vaak gluten bevatten.')
-    return { status: 'warning', matches, warnings, reasons }
+    if (warnings.some((w) => w.source !== 'traces')) {
+      reasons.push(
+        context === 'menu'
+          ? 'Op de kaart staan gerechten of bereidingen met een verhoogd glutenrisico.'
+          : 'Bevat ingrediënten die vaak gluten bevatten.',
+      )
+    }
+    return { status: 'warning', matches, warnings, reasons, tips }
   }
 
   if (!hasData) {
@@ -172,19 +305,17 @@ function conclude(
       matches,
       warnings,
       reasons: ['Productdata ontbreekt: ingrediënten konden niet gecontroleerd worden.'],
+      tips,
     }
   }
 
-  return {
-    status: 'safe',
-    matches,
-    warnings,
-    reasons: [
-      labeledGlutenFree
-        ? 'Product is gelabeld als glutenvrij en bevat geen gluten-bronnen.'
-        : 'Geen gluten-bronnen gevonden in ingrediënten en allergenen.',
-    ],
-  }
+  const reason =
+    context === 'menu'
+      ? 'Geen glutenbronnen herkend in deze tekst.'
+      : labeledGlutenFree
+        ? 'Product is gelabeld als glutenvrij en bevat geen glutenbronnen.'
+        : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
+  return { status: 'safe', matches, warnings, reasons: [reason], tips }
 }
 
 /** Subset van een Open Food Facts product die we gebruiken. */
@@ -211,19 +342,22 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
   const allergensText = [p.allergens ?? '', tagsToText(p.allergens_tags)].join(', ')
   const tracesText = [p.traces ?? '', tagsToText(p.traces_tags)].join(', ')
 
-  const result = scan([
-    ...ingredientTexts.map((text) => ({ text, source: 'ingredients' as const })),
-    { text: allergensText, source: 'allergens' },
-    { text: tracesText, source: 'traces', isTraces: true },
-  ])
+  const result = scan(
+    [
+      ...ingredientTexts.map((text) => ({ text, source: 'ingredients' as const })),
+      { text: allergensText, source: 'allergens' },
+      { text: tracesText, source: 'traces', isTraces: true },
+    ],
+    'label',
+  )
 
   const hasData = ingredientTexts.length > 0 || (p.allergens_tags?.length ?? 0) > 0
   const labeledGlutenFree = (p.labels_tags ?? []).some((t) => /no-gluten|gluten-free|sans-gluten/.test(t))
-  return conclude(result, hasData, labeledGlutenFree)
+  return conclude(result, hasData, labeledGlutenFree, 'label')
 }
 
-/** Vrije tekst analyseren: OCR van een etiket, menukaart of QR-inhoud. */
-export function analyzeText(text: string): GlutenAnalysis {
-  const result = scan([{ text, source: 'text' }])
-  return conclude(result, text.trim().length > 0, hasNegation(text))
+/** Vrije tekst analyseren: OCR van een etiket of menukaart, of QR-inhoud. */
+export function analyzeText(text: string, context: AnalysisContext = 'label'): GlutenAnalysis {
+  const result = scan([{ text, source: 'text' }], context)
+  return conclude(result, text.trim().length > 0, hasNegation(text), context)
 }
