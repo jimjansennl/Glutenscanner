@@ -17,11 +17,11 @@ npm run dev
 ```
 src/
 ├── components/
-│   ├── scanner/   # barcode-scanner componenten (ZXing)
-│   └── ui/        # herbruikbare UI-componenten
+│   ├── result/    # resultaatkaarten (veilig / gluten / twijfel)
+│   ├── scanner/   # camera, barcode/QR-scanner (ZXing) en foto-analyse
 ├── pages/         # schermen/pagina's
 ├── hooks/         # custom React hooks
 ├── lib/           # clients en helpers (o.a. supabase.ts)
-├── services/      # data-ophaal logica (producten, API's)
+├── services/      # Open Food Facts, gluten-parser, OCR-koppelpunt
 └── types/         # gedeelde TypeScript types
 ```
