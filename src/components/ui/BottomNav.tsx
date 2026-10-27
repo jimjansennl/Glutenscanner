@@ -1,11 +1,13 @@
-import { Camera, House, ScanBarcode, type LucideIcon } from 'lucide-react'
+import { Camera, History, House, ScanBarcode, Settings, type LucideIcon } from 'lucide-react'
 
-export type NavTab = 'home' | 'barcode' | 'photo'
+export type NavTab = 'home' | 'barcode' | 'photo' | 'history' | 'settings'
 
 const TABS: { id: NavTab; label: string; icon: LucideIcon }[] = [
   { id: 'home', label: 'Start', icon: House },
   { id: 'barcode', label: 'Barcode', icon: ScanBarcode },
   { id: 'photo', label: 'Foto / Menu', icon: Camera },
+  { id: 'history', label: 'Historie', icon: History },
+  { id: 'settings', label: 'Instellingen', icon: Settings },
 ]
 
 interface Props {
@@ -17,7 +19,7 @@ interface Props {
 export function BottomNav({ active, onSelect }: Props) {
   return (
     <nav className="sticky bottom-0 z-30 border-t border-white/10 bg-black/75 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150">
-      <ul className="mx-auto grid max-w-md grid-cols-3">
+      <ul className="mx-auto grid max-w-md grid-cols-5">
         {TABS.map(({ id, label, icon: Icon }) => {
           const selected = id === active
           return (
@@ -25,7 +27,7 @@ export function BottomNav({ active, onSelect }: Props) {
               <button
                 onClick={() => onSelect(id)}
                 aria-current={selected ? 'page' : undefined}
-                className={`flex w-full flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors ${
+                className={`flex w-full flex-col items-center gap-1 pb-2 pt-2.5 text-[10px] font-medium transition-colors ${
                   selected ? 'text-safe' : 'text-muted active:text-white'
                 }`}
               >

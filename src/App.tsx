@@ -5,12 +5,15 @@ import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
 import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
+import { HistoryPage } from './pages/HistoryPage'
 import { HomePage } from './pages/HomePage'
 import { ResultPage } from './pages/ResultPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { TravelCardPage } from './pages/TravelCardPage'
 import { analyzeText } from './services/glutenParser'
 import { addToHistory, clearHistory, loadHistory, type HistoryItem } from './services/history'
-import { analyzeBarcode, analyzeCode } from './services/scanService'
+import { applyProfile, loadProfile, saveProfile, type SafetyProfile } from './services/profile'
+import { analyzeCode } from './services/scanService'
 import type { GlutenStatus, ScanResult } from './types/product'
 
 type View =
@@ -18,8 +21,10 @@ type View =
   | { name: 'scanner'; mode: ScanMode }
   | { name: 'photo'; image: Blob; imageUrl: string }
   | { name: 'loading'; label: string }
-  | { name: 'result'; result: ScanResult }
+  | { name: 'result'; result: ScanResult; back: 'home' | 'history' }
   | { name: 'travel' }
+  | { name: 'history' }
+  | { name: 'settings' }
 
 /** Voelbare feedback: kort tikje = veilig, dubbel = twijfel, lang dubbel = gluten. */
 const HAPTICS: Record<GlutenStatus, number[]> = {
@@ -29,11 +34,19 @@ const HAPTICS: Record<GlutenStatus, number[]> = {
 }
 
 /** Schermen met de tabbalk onderin; de camera-schermen tekenen hun eigen balk. */
-function WithNav({ children, onNavigate }: { children: ReactNode; onNavigate: (tab: NavTab) => void }) {
+function WithNav({
+  children,
+  active = 'home',
+  onNavigate,
+}: {
+  children: ReactNode
+  active?: NavTab
+  onNavigate: (tab: NavTab) => void
+}) {
   return (
     <div className="flex min-h-full flex-col">
       {children}
-      <BottomNav active="home" onSelect={onNavigate} />
+      <BottomNav active={active} onSelect={onNavigate} />
       <DisclaimerModal />
     </div>
   )
@@ -44,6 +57,9 @@ function App() {
   const abortRef = useRef<AbortController | null>(null)
   const imageUrlRef = useRef<string | null>(null)
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
+  const [profile, setProfile] = useState<SafetyProfile>(loadProfile)
+  /** Analyses worden profiel-neutraal bewaard; het profiel wordt pas bij tonen toegepast. */
+  const profiled = useCallback((result: ScanResult) => applyProfile(result.analysis, profile), [profile])
 
   const releaseImage = useCallback(() => {
     if (imageUrlRef.current) URL.revokeObjectURL(imageUrlRef.current)
@@ -53,7 +69,8 @@ function App() {
   const go = useCallback(
     (next: View) => {
       abortRef.current?.abort()
-      if (next.name === 'home' || next.name === 'scanner') releaseImage()
+      // Alleen resultaat- en fotoschermen gebruiken de vastgelegde foto nog.
+      if (next.name !== 'result' && next.name !== 'photo' && next.name !== 'loading') releaseImage()
       setView(next)
     },
     [releaseImage],
@@ -62,14 +79,18 @@ function App() {
   useEffect(() => releaseImage, [releaseImage])
 
   /** Toont een vers resultaat: trillen, bewaren in de geschiedenis en tonen. */
-  const showResult = useCallback((result: ScanResult) => {
-    navigator.vibrate?.(HAPTICS[result.analysis.status])
-    setHistory(addToHistory(result))
-    setView({ name: 'result', result })
-  }, [])
+  const showResult = useCallback(
+    (result: ScanResult) => {
+      navigator.vibrate?.(HAPTICS[profiled(result).status])
+      setHistory(addToHistory(result))
+      setView({ name: 'result', result, back: 'home' })
+    },
+    [profiled],
+  )
 
   const navigate = useCallback(
-    (tab: NavTab) => go(tab === 'home' ? { name: 'home' } : { name: 'scanner', mode: tab }),
+    (tab: NavTab) =>
+      go(tab === 'barcode' || tab === 'photo' ? { name: 'scanner', mode: tab } : { name: tab }),
     [go],
   )
 
@@ -108,17 +129,36 @@ function App() {
       return (
         <WithNav onNavigate={navigate}>
           <HomePage
-            history={history}
+            profile={profile}
             onScan={(mode) => navigate(mode)}
             onTravelCard={() => go({ name: 'travel' })}
-            onOpenHistory={(item) => setView({ name: 'result', result: item.result })}
-            onClearHistory={() => {
+            onSettings={() => go({ name: 'settings' })}
+          />
+        </WithNav>
+      )
+    case 'history':
+      return (
+        <WithNav active="history" onNavigate={navigate}>
+          <HistoryPage
+            items={history}
+            statusOf={(item) => profiled(item.result).status}
+            onOpen={(item) => setView({ name: 'result', result: item.result, back: 'history' })}
+            onClear={() => {
               clearHistory()
               setHistory([])
             }}
-            onBarcode={(barcode) =>
-              run('Product opzoeken…', async (signal) => ({ ...(await analyzeBarcode(barcode, signal)), source: 'manual' }))
-            }
+          />
+        </WithNav>
+      )
+    case 'settings':
+      return (
+        <WithNav active="settings" onNavigate={navigate}>
+          <SettingsPage
+            profile={profile}
+            onProfileChange={(next) => {
+              saveProfile(next)
+              setProfile(next)
+            }}
           />
         </WithNav>
       )
@@ -156,10 +196,10 @@ function App() {
       )
     case 'result':
       return (
-        <WithNav onNavigate={navigate}>
+        <WithNav active={view.back} onNavigate={navigate}>
           <ResultPage
-            result={view.result}
-            onHome={() => go({ name: 'home' })}
+            result={{ ...view.result, analysis: profiled(view.result) }}
+            onHome={() => go({ name: view.back })}
             onPhotoScan={() => go({ name: 'scanner', mode: 'photo' })}
           />
         </WithNav>

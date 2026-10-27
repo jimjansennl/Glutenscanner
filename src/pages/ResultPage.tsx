@@ -64,7 +64,7 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
         <button
           onClick={onHome}
           className="absolute left-0 -ml-2 rounded-full p-2 text-safe active:opacity-60"
-          aria-label="Terug naar start"
+          aria-label="Terug"
         >
           <ChevronLeft size={28} />
         </button>

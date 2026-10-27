@@ -9,7 +9,8 @@ Mobiele webapp om barcodes van producten te scannen en te controleren of ze glut
 - **Meertalige analyse**: herkent glutenbronnen in NL, EN, DE, FR, ES, IT, PT en PL en meldt ze in het Nederlands (bijv. *trigo → tarwe*)
 - **Menukaart-analyse**: let op gebonden sauzen, dressings, sojasaus, paneermeel, croutons, beslag, gedeelde frituur en kruisbesmetting, met concrete vragen voor de bediening
 - **Reiskaart** in 7 talen om aan de bediening te laten zien
-- **Scangeschiedenis** en voelbare feedback per status
+- **Veiligheidsprofiel**: *Strikte coeliakie* (sporen = rood) of *Glutenintolerant / gevoelig* (sporen = oranje); geldt ook direct voor de historie
+- **Historie** met filters (Alles / Glutenvrij / Bevat gluten / Twijfel) en voelbare feedback per status
 - Gratis, onbeperkt, geen account; eenmalige medische disclaimer
 
 > Deze app is een hulpmiddel voor dubbele controle en geen medisch advies. Controleer altijd de fysieke verpakking.

@@ -104,7 +104,9 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
   const style = STATUS[analysis.status]
   const Icon = style.icon
   // Bij een gluten-match de bron feitelijk benoemen, met vertaling van buitenlandse termen.
-  const sources = [...new Set(analysis.matches.map(describeMatch))].slice(0, 4)
+  const sources = [
+    ...new Set(analysis.matches.map((m) => (m.source === 'traces' ? `sporen van ${describeMatch(m)}` : describeMatch(m)))),
+  ].slice(0, 4)
 
   return (
     <article className="animate-slide-up flex flex-col gap-6 rounded-[28px] bg-surface p-6" aria-live="polite">
