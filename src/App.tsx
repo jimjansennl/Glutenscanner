@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
-import { ScannerView } from './components/scanner/ScannerView'
+import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
+import { BottomNav, type NavTab } from './components/ui/BottomNav'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
 import { HomePage } from './pages/HomePage'
 import { ResultPage } from './pages/ResultPage'
@@ -11,10 +12,20 @@ import type { ScanResult } from './types/product'
 
 type View =
   | { name: 'home' }
-  | { name: 'scanner' }
+  | { name: 'scanner'; mode: ScanMode }
   | { name: 'photo'; image: Blob; imageUrl: string }
   | { name: 'loading'; label: string }
   | { name: 'result'; result: ScanResult }
+
+/** Schermen met de tabbalk onderin; de camera-schermen tekenen hun eigen balk. */
+function WithNav({ children, onNavigate }: { children: ReactNode; onNavigate: (tab: NavTab) => void }) {
+  return (
+    <div className="flex min-h-full flex-col">
+      {children}
+      <BottomNav active="home" onSelect={onNavigate} />
+    </div>
+  )
+}
 
 function App() {
   const [view, setView] = useState<View>({ name: 'home' })
@@ -36,6 +47,11 @@ function App() {
   )
 
   useEffect(() => releaseImage, [releaseImage])
+
+  const navigate = useCallback(
+    (tab: NavTab) => go(tab === 'home' ? { name: 'home' } : { name: 'scanner', mode: tab }),
+    [go],
+  )
 
   const run = useCallback(
     async (label: string, task: (signal: AbortSignal) => Promise<ScanResult>) => {
@@ -70,16 +86,17 @@ function App() {
   switch (view.name) {
     case 'home':
       return (
-        <HomePage
-          onScan={() => go({ name: 'scanner' })}
-          onPhoto={handlePhoto}
-          onBarcode={(barcode) =>
-            run('Product opzoeken…', async (signal) => ({ ...(await analyzeBarcode(barcode, signal)), source: 'manual' }))
-          }
-        />
+        <WithNav onNavigate={navigate}>
+          <HomePage
+            onScan={(mode) => navigate(mode)}
+            onBarcode={(barcode) =>
+              run('Product opzoeken…', async (signal) => ({ ...(await analyzeBarcode(barcode, signal)), source: 'manual' }))
+            }
+          />
+        </WithNav>
       )
     case 'scanner':
-      return <ScannerView onCode={handleCode} onPhoto={handlePhoto} onClose={() => go({ name: 'home' })} />
+      return <ScannerView mode={view.mode} onNavigate={navigate} onCode={handleCode} onPhoto={handlePhoto} />
     case 'photo':
       return (
         <PhotoAnalysis
@@ -92,22 +109,26 @@ function App() {
               result: { source: 'photo', rawValue: text, imageUrl: view.imageUrl, analysis: analyzeText(text) },
             })
           }
-          onCancel={() => go({ name: 'scanner' })}
+          onCancel={() => go({ name: 'scanner', mode: 'photo' })}
         />
       )
     case 'loading':
       return (
-        <main className="flex h-full flex-col items-center justify-center gap-4 text-gray-600">
-          <Loader2 size={40} className="animate-spin text-brand-600" />
-          <p className="font-medium">{view.label}</p>
-          <button onClick={() => go({ name: 'home' })} className="text-sm text-gray-400 underline">
-            Annuleren
-          </button>
-        </main>
+        <WithNav onNavigate={navigate}>
+          <main className="flex flex-1 flex-col items-center justify-center gap-4 text-muted">
+            <Loader2 size={40} className="animate-spin text-safe" />
+            <p className="text-[17px]">{view.label}</p>
+            <button onClick={() => go({ name: 'home' })} className="text-[15px] text-safe">
+              Annuleren
+            </button>
+          </main>
+        </WithNav>
       )
     case 'result':
       return (
-        <ResultPage result={view.result} onScanAgain={() => go({ name: 'scanner' })} onHome={() => go({ name: 'home' })} />
+        <WithNav onNavigate={navigate}>
+          <ResultPage result={view.result} onHome={() => go({ name: 'home' })} />
+        </WithNav>
       )
   }
 }

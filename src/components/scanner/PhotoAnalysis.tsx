@@ -81,7 +81,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
   }, [image, imageUrl])
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-gray-950 text-white">
+    <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
       <header className="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <h1 className="flex items-center gap-2 font-semibold">
           <ScanText size={20} className="text-brand-500" />
@@ -92,7 +92,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
         </button>
       </header>
 
-      <div className="relative mx-4 min-h-0 flex-1 overflow-hidden rounded-3xl bg-black">
+      <div className="relative mx-4 min-h-0 flex-1 overflow-hidden rounded-[28px] bg-surface">
         <img src={imageUrl} alt="Vastgelegde foto" className="h-full w-full object-contain" />
         {!manual && (
           <>
@@ -103,7 +103,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
       </div>
 
       <div className="flex flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <ul className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4">
+        <ul className="flex flex-col gap-2 rounded-[22px] bg-surface p-4">
           <Step state="done" label="Foto vastgelegd" />
           <Step state={codeStep} label="Zoeken naar barcode of QR-code" />
           <Step state={ocrStep} label="Tekst herkennen (ingrediënten / menukaart)" />
@@ -118,7 +118,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
             }}
           >
             <p className="flex items-start gap-2 text-sm text-white/70">
-              <Sparkles size={16} className="mt-0.5 shrink-0 text-amber-400" />
+              <Sparkles size={16} className="mt-0.5 shrink-0 text-warning" />
               Automatische tekstherkenning komt binnenkort. Typ of plak de ingrediënten of het gerecht van de menukaart.
             </p>
             <textarea
@@ -126,12 +126,12 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
               onChange={(e) => setText(e.target.value)}
               rows={3}
               placeholder="Bijv. tarwebloem, suiker, kan sporen van gerst bevatten"
-              className="w-full resize-none rounded-2xl bg-white/10 p-3 text-[15px] placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full resize-none rounded-[22px] bg-surface p-3 text-[17px] placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <button
               type="submit"
               disabled={!text.trim()}
-              className="rounded-2xl bg-brand-600 py-3.5 font-semibold active:bg-brand-700 disabled:opacity-40"
+              className="rounded-full bg-safe py-3.5 text-[17px] font-semibold text-black active:opacity-80 disabled:opacity-40"
             >
               Analyseer tekst
             </button>

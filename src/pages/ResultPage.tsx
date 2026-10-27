@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { ArrowLeft, Barcode, FileText, QrCode, ScanBarcode } from 'lucide-react'
+import { Barcode, ChevronLeft, FileText, QrCode } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import type { GlutenMatch, ScanResult } from '../types/product'
 
@@ -33,7 +33,7 @@ function Highlighted({ text, danger, warning }: { text: string; danger: GlutenMa
         return (
           <mark
             key={i}
-            className={`rounded px-0.5 font-semibold ${kind === 'danger' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-900'}`}
+            className={`rounded px-0.5 font-semibold ${kind === 'danger' ? 'bg-danger/20 text-danger' : 'bg-warning/20 text-warning'}`}
           >
             {part}
           </mark>
@@ -45,22 +45,21 @@ function Highlighted({ text, danger, warning }: { text: string; danger: GlutenMa
 
 interface Props {
   result: ScanResult
-  onScanAgain: () => void
   onHome: () => void
 }
 
-export function ResultPage({ result, onScanAgain, onHome }: Props) {
+export function ResultPage({ result, onHome }: Props) {
   const { product, analysis } = result
   const meta = SOURCE_META[result.source]
   const details = product?.ingredientsText ?? (result.source === 'photo' || result.source === 'qr' ? result.rawValue : undefined)
 
   return (
-    <main className="mx-auto flex min-h-full max-w-md flex-col gap-4 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-      <header className="flex items-center gap-2">
-        <button onClick={onHome} className="-ml-1 rounded-full p-2 active:bg-gray-200" aria-label="Terug naar start">
-          <ArrowLeft size={22} />
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <header className="flex items-center gap-1">
+        <button onClick={onHome} className="-ml-2 flex items-center rounded-full p-2 text-safe active:opacity-60" aria-label="Terug naar start">
+          <ChevronLeft size={28} />
         </button>
-        <span className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+        <span className="flex items-center gap-1.5 text-[15px] text-muted">
           <meta.icon size={16} />
           {meta.label}
           {result.rawValue && result.source !== 'photo' && result.source !== 'qr' && ` · ${result.rawValue}`}
@@ -70,47 +69,39 @@ export function ResultPage({ result, onScanAgain, onHome }: Props) {
       {product && (
         <section className="flex items-center gap-3 px-1">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt="" className="h-16 w-16 rounded-2xl bg-white object-contain ring-1 ring-gray-200" />
+            <img src={product.imageUrl} alt="" className="h-14 w-14 rounded-2xl bg-white object-contain" />
           ) : (
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
-              <Barcode size={28} />
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-muted">
+              <Barcode size={26} />
             </span>
           )}
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold">{product.name}</h1>
-            {product.brand && <p className="truncate text-sm text-gray-500">{product.brand}</p>}
+            <h1 className="truncate text-[20px] font-semibold">{product.name}</h1>
+            {product.brand && <p className="truncate text-[15px] text-muted">{product.brand}</p>}
           </div>
         </section>
       )}
 
       {result.imageUrl && !product && (
-        <img src={result.imageUrl} alt="Gescande foto" className="max-h-40 w-full rounded-2xl object-cover" />
+        <img src={result.imageUrl} alt="Gescande foto" className="max-h-40 w-full rounded-[22px] object-cover" />
       )}
 
       <ResultCard analysis={analysis} />
 
       {details && (
-        <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <section className="rounded-[22px] bg-surface p-4">
+          <h3 className="mb-2 text-[13px] font-medium uppercase tracking-wide text-muted">
             {product ? 'Ingrediënten' : 'Geanalyseerde tekst'}
           </h3>
-          <p className="text-sm leading-relaxed text-gray-700">
+          <p className="text-[15px] leading-relaxed text-white/85">
             <Highlighted text={details} danger={analysis.matches} warning={analysis.warnings} />
           </p>
         </section>
       )}
 
-      <p className="px-2 text-center text-xs text-gray-400">
+      <p className="px-4 text-center text-xs text-muted/70">
         Gebaseerd op Open Food Facts en automatische tekstanalyse. Controleer bij twijfel altijd de verpakking.
       </p>
-
-      <button
-        onClick={onScanAgain}
-        className="sticky bottom-4 mt-auto flex items-center justify-center gap-2 rounded-2xl bg-gray-900 py-4 text-lg font-bold text-white shadow-xl active:scale-[0.98]"
-      >
-        <ScanBarcode size={22} />
-        Nog een scan
-      </button>
     </main>
   )
 }

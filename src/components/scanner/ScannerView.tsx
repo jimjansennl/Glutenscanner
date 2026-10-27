@@ -1,39 +1,35 @@
-import { useRef, useState, type ChangeEvent } from 'react'
-import { Barcode, Camera, FileText, ImageUp, QrCode, X, type LucideIcon } from 'lucide-react'
+import { useRef, type ChangeEvent } from 'react'
+import { Camera, ImageUp } from 'lucide-react'
 import { useBarcodeScanner, type DecodedCode } from '../../hooks/useBarcodeScanner'
+import { BottomNav, type NavTab } from '../ui/BottomNav'
 
-type Mode = 'barcode' | 'qr' | 'text'
+export type ScanMode = 'barcode' | 'photo'
 
-const MODES: { id: Mode; label: string; icon: LucideIcon; hint: string; frame: string }[] = [
-  {
-    id: 'barcode',
-    label: 'Barcode',
-    icon: Barcode,
-    hint: 'Richt op de streepjescode (EAN/UPC)',
-    frame: 'aspect-[16/9] w-[82%]',
-  },
-  { id: 'qr', label: 'QR-code', icon: QrCode, hint: 'Houd de QR-code binnen het kader', frame: 'aspect-square w-[64%]' },
-  {
-    id: 'text',
-    label: 'Tekst',
-    icon: FileText,
-    hint: 'Ingrediënten of menukaart in beeld en druk op de knop',
-    frame: 'aspect-[3/4] w-[84%]',
-  },
+const MODES: Record<ScanMode, { hint: string; frame: string }> = {
+  barcode: { hint: 'Richt op de barcode of QR-code', frame: 'aspect-[16/10] w-[82%]' },
+  photo: { hint: 'Ingrediënten of menukaart in beeld, dan de sluiterknop', frame: 'aspect-[3/4] w-[80%]' },
+}
+
+const CORNERS = [
+  'left-0 top-0 border-l-[3px] border-t-[3px] rounded-tl-[28px]',
+  'right-0 top-0 border-r-[3px] border-t-[3px] rounded-tr-[28px]',
+  'bottom-0 left-0 border-b-[3px] border-l-[3px] rounded-bl-[28px]',
+  'bottom-0 right-0 border-b-[3px] border-r-[3px] rounded-br-[28px]',
 ]
 
 interface Props {
+  mode: ScanMode
+  onNavigate: (tab: NavTab) => void
   onCode: (code: DecodedCode) => void
   onPhoto: (image: Blob) => void
-  onClose: () => void
 }
 
-export function ScannerView({ onCode, onPhoto, onClose }: Props) {
+export function ScannerView({ mode, onNavigate, onCode, onPhoto }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [mode, setMode] = useState<Mode>('barcode')
+  // Ook in fotomodus blijft barcode/QR-herkenning actief: een code in beeld wint altijd.
   const { error, ready } = useBarcodeScanner(videoRef, onCode)
-  const active = MODES.find((m) => m.id === mode)!
+  const active = MODES[mode]
 
   function snapshot() {
     const video = videoRef.current
@@ -57,78 +53,58 @@ export function ScannerView({ onCode, onPhoto, onClose }: Props) {
       <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover" playsInline muted />
 
       {/* Kader met donkere omgeving: de enorme box-shadow dimt alles buiten het kader. */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-24">
-        <div
-          className={`relative rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.55)] transition-all duration-300 ${active.frame}`}
-        >
-          {(['left-0 top-0 border-l-4 border-t-4 rounded-tl-3xl', 'right-0 top-0 border-r-4 border-t-4 rounded-tr-3xl',
-            'bottom-0 left-0 border-b-4 border-l-4 rounded-bl-3xl', 'bottom-0 right-0 border-b-4 border-r-4 rounded-br-3xl',
-          ] as const).map((pos) => (
-            <span key={pos} className={`absolute h-10 w-10 border-white ${pos}`} />
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-40">
+        <div className={`relative rounded-[28px] shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] transition-all duration-300 ${active.frame}`}>
+          {CORNERS.map((pos) => (
+            <span key={pos} className={`absolute h-12 w-12 ${mode === 'barcode' ? 'border-safe' : 'border-warning'} ${pos}`} />
           ))}
-          {ready && mode !== 'text' && (
-            <span className="absolute inset-x-4 h-0.5 animate-scanline rounded-full bg-brand-500 shadow-[0_0_12px_2px] shadow-brand-500" />
+          {ready && mode === 'barcode' && (
+            <span className="absolute inset-x-5 h-0.5 animate-scanline rounded-full bg-safe shadow-[0_0_14px_3px] shadow-safe" />
           )}
         </div>
       </div>
 
-      <header className="relative flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-        <span className="rounded-full bg-black/40 px-3 py-1.5 text-sm font-semibold backdrop-blur">Glutenscanner</span>
-        <button
-          onClick={onClose}
-          className="rounded-full bg-black/40 p-2.5 backdrop-blur active:bg-black/60"
-          aria-label="Scanner sluiten"
-        >
-          <X size={22} />
-        </button>
+      <header className="relative flex justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+        <span className="rounded-full bg-black/50 px-4 py-1.5 text-[15px] font-semibold backdrop-blur-xl">
+          {mode === 'barcode' ? 'Barcode scan' : 'Foto / Menu scan'}
+        </span>
       </header>
 
-      <div className="relative mt-auto flex flex-col items-center gap-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-10">
+      <div className="relative mt-auto flex flex-col items-center gap-5 px-4 pb-4 pt-10">
         {error ? (
-          <p className="max-w-xs rounded-2xl bg-red-600/90 px-4 py-3 text-center text-sm font-medium">{error}</p>
+          <p className="max-w-xs rounded-2xl bg-danger/90 px-4 py-3 text-center text-sm font-medium">{error}</p>
         ) : (
-          <p className="text-center text-sm font-medium text-white/90">{ready ? active.hint : 'Camera starten…'}</p>
+          <p className="rounded-full bg-black/50 px-4 py-2 text-center text-[15px] backdrop-blur-xl">
+            {ready ? active.hint : 'Camera starten…'}
+          </p>
         )}
 
-        <div className="flex rounded-full bg-white/10 p-1 backdrop-blur" role="tablist">
-          {MODES.map(({ id, label, icon: Icon }) => (
+        {mode === 'photo' && (
+          <div className="grid w-full max-w-xs grid-cols-3 items-center">
             <button
-              key={id}
-              role="tab"
-              aria-selected={mode === id}
-              onClick={() => setMode(id)}
-              className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                mode === id ? 'bg-white text-gray-900' : 'text-white/80'
-              }`}
+              onClick={() => fileRef.current?.click()}
+              className="justify-self-start rounded-full bg-white/15 p-3.5 backdrop-blur-xl active:bg-white/25"
+              aria-label="Foto uit galerij kiezen"
             >
-              <Icon size={16} />
-              {label}
+              <ImageUp size={24} />
             </button>
-          ))}
-        </div>
-
-        <div className="grid w-full max-w-xs grid-cols-3 items-center">
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="justify-self-start rounded-full bg-white/10 p-3.5 backdrop-blur active:bg-white/20"
-            aria-label="Foto uit galerij kiezen"
-          >
-            <ImageUp size={24} />
-          </button>
-          <button
-            onClick={snapshot}
-            disabled={!ready}
-            className="justify-self-center rounded-full border-4 border-white p-1 disabled:opacity-40"
-            aria-label="Foto maken voor tekstanalyse"
-          >
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-gray-900 active:scale-95 active:bg-gray-200">
-              <Camera size={28} />
-            </span>
-          </button>
-          <span />
-        </div>
+            <button
+              onClick={snapshot}
+              disabled={!ready}
+              className="justify-self-center rounded-full border-4 border-white p-1 disabled:opacity-40"
+              aria-label="Foto maken voor tekstanalyse"
+            >
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black transition-transform active:scale-90">
+                <Camera size={28} />
+              </span>
+            </button>
+            <span />
+          </div>
+        )}
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
       </div>
+
+      <BottomNav active={mode} onSelect={onNavigate} />
     </div>
   )
 }

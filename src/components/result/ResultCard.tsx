@@ -4,36 +4,34 @@ import type { GlutenAnalysis, GlutenMatch, GlutenStatus, MatchSource } from '../
 interface StatusStyle {
   icon: LucideIcon
   title: string
-  hero: string
-  ring: string
+  /** Tekstkleur van icoon en titel. */
+  text: string
+  /** Gekleurde cirkel: getinte vulling, felle rand en gloed. */
+  circle: string
   chip: string
-  accent: string
 }
 
 const STATUS: Record<GlutenStatus, StatusStyle> = {
   safe: {
     icon: CheckCircle2,
-    title: 'Glutenvrij / Veilig',
-    hero: 'from-emerald-500 to-green-600',
-    ring: 'ring-emerald-200',
-    chip: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-    accent: 'text-emerald-700',
+    title: 'Glutenvrij',
+    text: 'text-safe',
+    circle: 'bg-safe/15 ring-safe shadow-[0_0_60px_-4px] shadow-safe/60',
+    chip: 'bg-safe/10 text-safe',
   },
   danger: {
     icon: XCircle,
     title: 'Bevat Gluten!',
-    hero: 'from-red-500 to-rose-600',
-    ring: 'ring-red-200',
-    chip: 'bg-red-50 text-red-800 ring-red-200',
-    accent: 'text-red-700',
+    text: 'text-danger',
+    circle: 'bg-danger/15 ring-danger shadow-[0_0_60px_-4px] shadow-danger/60',
+    chip: 'bg-danger/10 text-danger',
   },
   warning: {
     icon: AlertTriangle,
-    title: 'Let op: twijfelgeval',
-    hero: 'from-amber-400 to-orange-500',
-    ring: 'ring-amber-200',
-    chip: 'bg-amber-50 text-amber-900 ring-amber-200',
-    accent: 'text-amber-700',
+    title: 'Twijfelgeval',
+    text: 'text-warning',
+    circle: 'bg-warning/15 ring-warning shadow-[0_0_60px_-4px] shadow-warning/60',
+    chip: 'bg-warning/10 text-warning',
   },
 }
 
@@ -60,17 +58,13 @@ function MatchList({ title, matches, chip }: { title: string; matches: GlutenMat
   if (matches.length === 0) return null
   return (
     <section>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">{title}</h3>
-      <ul className="flex flex-col gap-2">
+      <h3 className="mb-2 px-1 text-[13px] font-medium uppercase tracking-wide text-muted">{title}</h3>
+      <ul className="divide-y divide-surface-line overflow-hidden rounded-2xl bg-surface-raised">
         {groupByLabel(matches).map(([label, { terms, sources }]) => (
-          <li key={label} className={`rounded-xl px-3 py-2.5 ring-1 ${chip}`}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-semibold">{label}</span>
-              <span className="text-[11px] font-medium opacity-70">
-                {[...sources].map((s) => SOURCE_LABEL[s]).join(' · ')}
-              </span>
-            </div>
-            <p className="mt-0.5 text-sm opacity-80">{[...terms].join(', ')}</p>
+          <li key={label} className="flex items-center gap-3 px-4 py-3">
+            <span className={`rounded-lg px-2 py-1 text-[13px] font-semibold ${chip}`}>{label}</span>
+            <span className="min-w-0 flex-1 truncate text-[15px] text-white/90">{[...terms].join(', ')}</span>
+            <span className="shrink-0 text-xs text-muted">{[...sources].map((s) => SOURCE_LABEL[s]).join(' · ')}</span>
           </li>
         ))}
       </ul>
@@ -81,31 +75,35 @@ function MatchList({ title, matches, chip }: { title: string; matches: GlutenMat
 export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
   const style = STATUS[analysis.status]
   const Icon = style.icon
+  // Bij gevaar het schadelijke ingrediënt direct onder de titel noemen.
+  const culprits = [...new Set(analysis.matches.map((m) => m.term))].slice(0, 3)
 
   return (
-    <article
-      className={`animate-slide-up overflow-hidden rounded-3xl bg-white shadow-xl shadow-gray-900/10 ring-1 ${style.ring}`}
-      aria-live="polite"
-    >
-      <header className={`flex flex-col items-center gap-3 bg-gradient-to-br px-6 pb-7 pt-8 text-white ${style.hero}`}>
-        <div className="animate-pop-in rounded-full bg-white p-2 shadow-lg">
-          <Icon className={style.accent} size={84} strokeWidth={2.25} aria-hidden />
+    <article className="animate-slide-up flex flex-col gap-6 rounded-[28px] bg-surface p-6" aria-live="polite">
+      <header className="flex flex-col items-center gap-5 pt-4 text-center">
+        <div className={`animate-pop-in flex h-40 w-40 items-center justify-center rounded-full ring-4 ${style.circle}`}>
+          <Icon className={style.text} size={96} strokeWidth={2} aria-hidden />
         </div>
-        <h2 className="text-center text-3xl font-extrabold tracking-tight drop-shadow-sm">{style.title}</h2>
+        <div>
+          <h2 className={`text-[34px] font-bold leading-tight tracking-tight ${style.text}`}>{style.title}</h2>
+          {analysis.status === 'danger' && culprits.length > 0 && (
+            <p className="mt-1 text-[17px] text-white">
+              Schadelijk ingrediënt: <span className="font-semibold">{culprits.join(', ')}</span>
+            </p>
+          )}
+        </div>
       </header>
 
-      <div className="flex flex-col gap-5 p-5">
-        <ul className="flex flex-col gap-1">
-          {analysis.reasons.map((r) => (
-            <li key={r} className="text-[15px] leading-snug text-gray-700">
-              {r}
-            </li>
-          ))}
-        </ul>
+      <ul className="flex flex-col gap-1 text-center">
+        {analysis.reasons.map((r) => (
+          <li key={r} className="text-[15px] leading-snug text-muted">
+            {r}
+          </li>
+        ))}
+      </ul>
 
-        <MatchList title="Gevonden gluten-bronnen" matches={analysis.matches} chip={STATUS.danger.chip} />
-        <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
-      </div>
+      <MatchList title="Gevonden gluten-bronnen" matches={analysis.matches} chip={STATUS.danger.chip} />
+      <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
     </article>
   )
 }

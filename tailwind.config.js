@@ -4,16 +4,23 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Apple system colors (dark appearance)
         brand: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
+          50: '#0d2414',
+          100: '#123a1e',
+          500: '#30D158',
+          600: '#28B84C',
+          700: '#1F9A3E',
         },
-        safe: '#16a34a',
-        warning: '#f59e0b',
-        danger: '#dc2626',
+        safe: '#30D158',
+        danger: '#FF453A',
+        warning: '#FF9F0A',
+        surface: {
+          DEFAULT: '#1C1C1E',
+          raised: '#2C2C2E',
+          line: '#38383A',
+        },
+        muted: '#8E8E93',
       },
       keyframes: {
         scanline: {
@@ -36,7 +43,7 @@ export default {
         'slide-up': 'slide-up 0.35s ease-out both',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
