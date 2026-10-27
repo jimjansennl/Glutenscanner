@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, MessageCircleQuestion, XCircle, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, BadgeCheck, CheckCircle2, Database, MessageCircleQuestion, XCircle, type LucideIcon } from 'lucide-react'
 import { describeMatch } from '../../services/glutenParser'
 import type { GlutenAnalysis, GlutenMatch, GlutenStatus, MatchSource } from '../../types/product'
 
@@ -116,6 +116,12 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
         </div>
         <div className="flex flex-col items-center gap-1">
           <h2 className={`text-[34px] font-bold leading-tight tracking-tight ${style.text}`}>{style.title}</h2>
+          {analysis.certified && (
+            <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-safe/15 px-3 py-1 text-[13px] font-semibold text-safe">
+              <BadgeCheck size={16} />
+              Gecertificeerd glutenvrij
+            </span>
+          )}
           {analysis.status === 'danger' && sources.length > 0 && (
             <p className="text-[17px] text-white">
               Getraceerde glutenbron: <span className="font-semibold">{sources.join(', ')}</span>
@@ -135,6 +141,18 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
 
       <MatchList title="Glutenbevattende granen" matches={analysis.matches} chip={STATUS.danger.chip} />
       <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
+      {analysis.certified && (analysis.conflicts?.length ?? 0) > 0 && (
+        <section className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-raised px-4 py-3 text-center">
+          <Database size={18} className="text-muted" aria-hidden />
+          <p className="text-[15px] leading-snug text-white/90">
+            De database noemt ook: <span className="font-semibold">{analysis.conflicts!.join(', ')}</span>
+          </p>
+          <p className="text-[13px] leading-snug text-muted">
+            Waarschijnlijk vervuilde data. De glutenvrij-claim op het product gaat voor; controleer bij twijfel het
+            logo op de verpakking.
+          </p>
+        </section>
+      )}
       <Tips tips={analysis.tips ?? []} />
     </article>
   )

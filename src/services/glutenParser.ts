@@ -138,6 +138,32 @@ const NEGATIONS =
 /** Glutenvrije haver: geen harde trigger, wel twijfel (avenine / certificering). */
 const GLUTEN_FREE_OATS = /(?:glutenvrije|gluten[- ]?free|glutenfreier?) ?(?:haver\w*|oat\w*|hafer\w*)/g
 
+/**
+ * Glutenvrij (Codex-)tarwezetmeel: wettelijk glutenvrij (max. 20 ppm), dus geen tarwe-match.
+ * Moet vóór NEGATIONS weg, anders blijft "tarwezetmeel" over en matcht die als tarwe.
+ */
+const GF_WHEAT_STARCH = new RegExp(
+  [
+    'glutenvrij\\w* tarwe ?zetmeel',
+    'tarwe ?zetmeel \\(?glutenvrij\\)?',
+    'gluten[- ]?free wheat ?starch',
+    'wheat ?starch \\(?gluten[- ]?free\\)?',
+    'amidon de ble sans gluten',
+    'glutenfreie?s? weizenstarke',
+    'weizenstarke \\(?glutenfrei\\)?',
+    'amido di frumento senza glutine',
+    'almidon de trigo sin gluten',
+  ].join('|'),
+  'g',
+)
+
+/**
+ * Glutenvrij-claim op het product zelf (EU: max. 20 ppm). "niet glutenvrij" telt niet.
+ * Werkt op genormaliseerde tekst én op OFF-labeltags ("en:gluten-free", "en:no-gluten").
+ */
+const GLUTEN_FREE_CLAIM =
+  /(?<!(?:niet|not|nicht|non|no|ne) )(?:glutenvrij\w*|gluten[- ]?free|no[- ]gluten|sans[- ]gluten|glutenfrei\w*|senza[- ]glutine|privo di glutine|sin[- ]gluten|libre de gluten|sem[- ]gluten|isento de gluten|bez glutenu|crossed[- ]grain)/
+
 /** "Kan sporen bevatten van …" en varianten: alles tot het einde van de zin. */
 const TRACE_PHRASES = new RegExp(
   '(?:' +
@@ -233,7 +259,7 @@ function scan(inputs: ScanInput[], context: AnalysisContext): Pick<GlutenAnalysi
       warnings.push(...findMatches(clean, [...GLUTEN_TRIGGERS, ...SUSPICIOUS_TRIGGERS], 'traces'))
     }
 
-    let clean = body.replace(EXCLUSIONS, ' ')
+    let clean = body.replace(GF_WHEAT_STARCH, ' ').replace(EXCLUSIONS, ' ')
     for (const m of clean.matchAll(GLUTEN_FREE_OATS)) {
       warnings.push({ label: 'Glutenvrije haver', term: m[0], source: input.source })
     }
@@ -246,9 +272,15 @@ function scan(inputs: ScanInput[], context: AnalysisContext): Pick<GlutenAnalysi
   return { matches: dedupe(matches), warnings: dedupe(warnings) }
 }
 
-function hasNegation(text: string): boolean {
-  return new RegExp(NEGATIONS.source).test(normalize(text))
+function hasGlutenFreeClaim(text: string | undefined): boolean {
+  return !!text && GLUTEN_FREE_CLAIM.test(normalize(text))
 }
+
+function mentionsGfWheatStarch(texts: string[]): boolean {
+  return texts.some((t) => new RegExp(GF_WHEAT_STARCH.source).test(normalize(t)))
+}
+
+const GF_STARCH_NOTE = 'Bevat glutenvrij tarwezetmeel: dit is wettelijk glutenvrij en telt niet als tarwe.'
 
 /** "tarwe (trigo)": de Nederlandse naam, met de buitenlandse term erbij als die afwijkt. */
 export function describeMatch(m: GlutenMatch): string {
@@ -267,13 +299,38 @@ function menuTips(warnings: GlutenMatch[]): string[] {
   return [...tips]
 }
 
+interface Evidence {
+  hasData: boolean
+  /** Waar een glutenvrij-claim is gevonden (productnaam, merk, keurmerk, ingrediënten). */
+  claimSources: string[]
+  gfWheatStarch: boolean
+}
+
 function conclude(
   { matches, warnings }: Pick<GlutenAnalysis, 'matches' | 'warnings'>,
-  hasData: boolean,
-  labeledGlutenFree: boolean,
+  { hasData, claimSources, gfWheatStarch }: Evidence,
   context: AnalysisContext,
 ): GlutenAnalysis {
   const tips = context === 'menu' ? menuTips(warnings) : []
+  const starchNote = gfWheatStarch ? [GF_STARCH_NOTE] : []
+
+  // Certificering wint: een glutenvrij-claim op het product gaat boven (vaak vervuilde)
+  // database-tekst. Tegenstrijdige termen blijven zichtbaar als notitie, niet als blokkade.
+  if (context === 'label' && claimSources.length > 0) {
+    const conflicts = [...new Set([...matches, ...warnings].map((m) => m.term))]
+    return {
+      status: 'safe',
+      certified: true,
+      matches: [],
+      warnings: [],
+      reasons: [
+        `Gecertificeerd glutenvrij product (claim gevonden in: ${claimSources.join(', ')}).`,
+        ...starchNote,
+      ],
+      conflicts,
+      tips,
+    }
+  }
 
   if (matches.length > 0) {
     const sources = [...new Set(matches.map(describeMatch))]
@@ -310,12 +367,8 @@ function conclude(
   }
 
   const reason =
-    context === 'menu'
-      ? 'Geen glutenbronnen herkend in deze tekst.'
-      : labeledGlutenFree
-        ? 'Product is gelabeld als glutenvrij en bevat geen glutenbronnen.'
-        : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
-  return { status: 'safe', matches, warnings, reasons: [reason], tips }
+    context === 'menu' ? 'Geen glutenbronnen herkend in deze tekst.' : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
+  return { status: 'safe', matches, warnings, reasons: [reason, ...starchNote], tips }
 }
 
 /** Subset van een Open Food Facts product die we gebruiken. */
@@ -328,6 +381,10 @@ export interface OffProductFields {
   traces?: string
   traces_tags?: string[]
   labels_tags?: string[]
+  labels?: string
+  product_name?: string
+  product_name_nl?: string
+  brands?: string
 }
 
 /** Tags als "en:gluten" → "gluten". */
@@ -351,13 +408,37 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
     'label',
   )
 
-  const hasData = ingredientTexts.length > 0 || (p.allergens_tags?.length ?? 0) > 0
-  const labeledGlutenFree = (p.labels_tags ?? []).some((t) => /no-gluten|gluten-free|sans-gluten/.test(t))
-  return conclude(result, hasData, labeledGlutenFree, 'label')
+  const claimSources = [
+    hasGlutenFreeClaim(p.product_name) || hasGlutenFreeClaim(p.product_name_nl) ? 'productnaam' : '',
+    hasGlutenFreeClaim(p.brands) ? 'merk' : '',
+    hasGlutenFreeClaim(p.labels) || (p.labels_tags ?? []).some((t) => hasGlutenFreeClaim(t.replace(/^\w{2}:/, '')))
+      ? 'keurmerk'
+      : '',
+    ingredientTexts.some(hasGlutenFreeClaim) ? 'ingrediënten' : '',
+  ].filter(Boolean)
+
+  return conclude(
+    result,
+    {
+      hasData: ingredientTexts.length > 0 || (p.allergens_tags?.length ?? 0) > 0,
+      claimSources,
+      gfWheatStarch: mentionsGfWheatStarch(ingredientTexts),
+    },
+    'label',
+  )
 }
 
 /** Vrije tekst analyseren: OCR van een etiket of menukaart, of QR-inhoud. */
 export function analyzeText(text: string, context: AnalysisContext = 'label'): GlutenAnalysis {
   const result = scan([{ text, source: 'text' }], context)
-  return conclude(result, text.trim().length > 0, hasNegation(text), context)
+  return conclude(
+    result,
+    {
+      hasData: text.trim().length > 0,
+      // Op een menukaart zegt "glutenvrije pasta" niets over de rest van de kaart.
+      claimSources: context === 'label' && hasGlutenFreeClaim(text) ? ['etiket'] : [],
+      gfWheatStarch: mentionsGfWheatStarch([text]),
+    },
+    context,
+  )
 }

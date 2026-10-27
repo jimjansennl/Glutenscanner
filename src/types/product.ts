@@ -24,6 +24,10 @@ export interface GlutenAnalysis {
   reasons: string[]
   /** Concrete vragen/adviezen, vooral voor restaurants. */
   tips: string[]
+  /** Product draagt een glutenvrij-claim; die gaat boven database-tekst. */
+  certified?: boolean
+  /** Termen uit de database die de claim tegenspreken (waarschijnlijk vervuilde data). */
+  conflicts?: string[]
 }
 
 export interface Product {

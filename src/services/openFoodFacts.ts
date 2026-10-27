@@ -14,6 +14,7 @@ const FIELDS = [
   'traces',
   'traces_tags',
   'labels_tags',
+  'labels',
 ].join(',')
 
 export interface OffProduct extends OffProductFields {
