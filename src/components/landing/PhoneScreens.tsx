@@ -100,7 +100,6 @@ export function ScreenScanner() {
           <span className="absolute inset-x-3 top-1/2 h-0.5 bg-accent shadow-[0_0_8px_1px] shadow-accent" />
         </div>
         <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-1.5 text-[9px]">
-          <span className="rounded-full bg-neutral-800/80 px-3 py-1">∞ Onbeperkt gratis scannen</span>
           <span className="rounded-full bg-neutral-800/80 px-3 py-1">Richt de camera op de barcode.</span>
         </div>
       </div>

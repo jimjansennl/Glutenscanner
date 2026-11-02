@@ -174,14 +174,15 @@ const FAQ = [
 
 function Carousel() {
   const track = useRef<HTMLDivElement>(null)
-  const scroll = (dir: number) => track.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
+  const scroll = (dir: number) => track.current?.scrollBy({ left: dir * 288, behavior: 'smooth' })
   return (
     <div data-reveal className="mt-14">
-      <div ref={track} className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-[max(1.5rem,calc((100vw-72rem)/2))] pb-6 [scrollbar-width:none]">
+      {/* Precies vier kaarten breed (4 × 264 + 3 × 24 px), zodat niets half uit beeld valt. */}
+      <div ref={track} className="mx-auto flex max-w-[1128px] snap-x snap-mandatory gap-6 overflow-x-auto pb-6 [scrollbar-width:none]">
         {CAROUSEL.map(({ word, line, accent, bg, screen }) => (
           <article
             key={word}
-            className={`flex w-[290px] shrink-0 snap-center flex-col items-center overflow-hidden rounded-[36px] pt-8 text-center shadow-xl ${bg}`}
+            className={`flex w-[264px] shrink-0 snap-start flex-col items-center overflow-hidden rounded-[36px] pt-8 text-center shadow-xl ${bg}`}
           >
             <p className={`font-display text-[46px] font-extrabold uppercase leading-none ${bg.includes('#7ee2a8') || bg.includes('#ffd75e') ? 'text-[#14130f]' : 'text-white'}`}>
               {word}

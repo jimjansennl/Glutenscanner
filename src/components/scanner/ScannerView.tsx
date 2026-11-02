@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from 'react'
-import { Barcode, Camera, Images, Infinity as InfinityIcon, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
+import { Barcode, Camera, Images, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
 import { useBarcodeScanner, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
 
@@ -147,10 +147,6 @@ export function ScannerView({ mode, onModeChange, onNavigate, onCode, onPhoto }:
             <Pill className="bg-danger/90">{error}</Pill>
           ) : mode === 'barcode' ? (
             <>
-              <Pill>
-                <InfinityIcon size={18} className="text-accent" />
-                Onbeperkt gratis scannen
-              </Pill>
               <Pill>
                 <Barcode size={18} className="text-accent" />
                 {ready ? 'Richt de camera op de barcode.' : 'Camera starten…'}
