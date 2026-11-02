@@ -4,6 +4,8 @@ Mobiele webapp om barcodes van producten te scannen en te controleren of ze glut
 
 ## Functies
 
+- **Op de telefoon een echte scanner, op de desktop een informatiesite** (met QR-code om de scanner op je telefoon te openen; `#app` opent de scanner ook op de desktop)
+
 - **Barcode & QR-scan** (EAN/UPC/QR) met productdata van Open Food Facts
 - **Duidelijke status**: Glutenvrij, Bevat Gluten! (met de getraceerde glutenbron) of Twijfelgeval
 - **Meertalige analyse**: herkent glutenbronnen in NL, EN, DE, FR, ES, IT, PT, PL, NO, DA en SV en meldt ze in het Nederlands (bijv. *trigo → tarwe*)

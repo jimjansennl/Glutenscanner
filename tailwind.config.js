@@ -13,6 +13,11 @@ export default {
           700: '#1F9A3E',
         },
         safe: '#30D158',
+        // Merkgroen voor bediening (tabbalk, schakelaars, knoppen); statusgroen blijft 'safe'.
+        accent: {
+          DEFAULT: '#1FA463',
+          soft: '#143826',
+        },
         danger: '#FF453A',
         warning: '#FF9F0A',
         surface: {

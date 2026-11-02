@@ -1,25 +1,24 @@
-import { BookOpen, Camera, History, House, ScanBarcode, type LucideIcon } from 'lucide-react'
+import { BookOpen, Camera, Clock3, Settings, type LucideIcon } from 'lucide-react'
 
-export type NavTab = 'home' | 'barcode' | 'photo' | 'guide' | 'history'
+export type NavTab = 'scan' | 'history' | 'guide' | 'settings'
 
 const TABS: { id: NavTab; label: string; icon: LucideIcon }[] = [
-  { id: 'home', label: 'Start', icon: House },
-  { id: 'barcode', label: 'Barcode', icon: ScanBarcode },
-  { id: 'photo', label: 'Foto / Menu', icon: Camera },
+  { id: 'scan', label: 'Scan', icon: Camera },
+  { id: 'history', label: 'Geschiedenis', icon: Clock3 },
   { id: 'guide', label: 'Gids', icon: BookOpen },
-  { id: 'history', label: 'Historie', icon: History },
+  { id: 'settings', label: 'Instellingen', icon: Settings },
 ]
 
 interface Props {
-  active: NavTab
+  active: NavTab | null
   onSelect: (tab: NavTab) => void
 }
 
-/** iOS-achtige tabbalk onderin, doorschijnend zodat hij ook over de camera werkt. */
+/** Zwevende tabbalk in pilvorm, zoals iOS 26-apps; het actieve tabblad krijgt een eigen pil. */
 export function BottomNav({ active, onSelect }: Props) {
   return (
-    <nav className="sticky bottom-0 z-30 border-t border-white/10 bg-black/75 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150">
-      <ul className="mx-auto grid max-w-md grid-cols-5">
+    <nav className="sticky bottom-0 z-30 bg-gradient-to-t from-black via-black/90 to-transparent px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+      <ul className="mx-auto grid max-w-md grid-cols-4 rounded-full border border-white/10 bg-surface/95 p-1.5 shadow-2xl shadow-black backdrop-blur-xl">
         {TABS.map(({ id, label, icon: Icon }) => {
           const selected = id === active
           return (
@@ -27,11 +26,11 @@ export function BottomNav({ active, onSelect }: Props) {
               <button
                 onClick={() => onSelect(id)}
                 aria-current={selected ? 'page' : undefined}
-                className={`flex w-full flex-col items-center gap-1 pb-2 pt-2.5 text-[10px] font-medium transition-colors ${
-                  selected ? 'text-safe' : 'text-muted active:text-white'
+                className={`flex w-full flex-col items-center gap-0.5 rounded-full py-2 text-[11px] font-semibold transition-colors ${
+                  selected ? 'bg-black text-accent' : 'text-white/85 active:text-white'
                 }`}
               >
-                <Icon size={24} strokeWidth={selected ? 2.4 : 1.9} />
+                <Icon size={24} strokeWidth={selected ? 2.4 : 2} />
                 {label}
               </button>
             </li>

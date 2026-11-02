@@ -4,8 +4,10 @@ import {
   CandyCane,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Croissant,
   Gift,
+  Languages,
   Search,
   SearchCheck,
   Soup,
@@ -14,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
+import { PageHeader } from '../components/ui/PageHeader'
 import { GUIDE, type GuideCategory, type GuideItem, type RiskLevel } from '../data/glutenGuide'
 import { normalize } from '../services/glutenParser'
 
@@ -139,7 +142,7 @@ function CategoryCard({
   )
 }
 
-export function GuidePage() {
+export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
   const [query, setQuery] = useState('')
   const [openCategory, setOpenCategory] = useState<string | null>(null)
   const [openItem, setOpenItem] = useState<string | null>(null)
@@ -157,11 +160,23 @@ export function GuidePage() {
   )
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <header className="flex flex-col items-center gap-1 pt-4 text-center">
-        <h1 className="text-[34px] font-bold leading-tight tracking-tight">Glutengids</h1>
-        <p className="text-[15px] text-muted">Waar gluten schuilen en wat je wél kunt eten</p>
-      </header>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
+      <PageHeader title="Gids" className="-mx-4" />
+      <p className="text-center text-[15px] text-muted">Waar gluten schuilen en wat je wél kunt eten</p>
+
+      <button
+        onClick={onTravelCard}
+        className="flex items-center gap-4 rounded-[22px] bg-accent-soft p-4 text-left ring-1 ring-accent/40 active:opacity-80"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent">
+          <Languages size={22} />
+        </span>
+        <span className="flex-1">
+          <span className="block text-[17px] font-semibold">Reiskaart voor restaurants</span>
+          <span className="block text-[13px] text-white/70">Leg coeliakie uit aan de bediening, in 10 talen</span>
+        </span>
+        <ChevronRight size={20} className="text-white/60" />
+      </button>
 
       <label className="flex items-center gap-2 rounded-full bg-surface px-4 py-2.5 focus-within:ring-2 focus-within:ring-safe">
         <Search size={18} className="shrink-0 text-muted" />

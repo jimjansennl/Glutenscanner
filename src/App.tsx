@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
+import { LandingPage } from './components/landing/LandingPage'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
 import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
@@ -7,7 +8,6 @@ import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
 import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
-import { HomePage } from './pages/HomePage'
 import { ResultPage } from './pages/ResultPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { TravelCardPage } from './pages/TravelCardPage'
@@ -17,16 +17,15 @@ import { applyProfile, loadProfile, saveProfile, type SafetyProfile } from './se
 import { analyzeCode } from './services/scanService'
 import type { GlutenStatus, ScanResult } from './types/product'
 
+type Tab = Exclude<NavTab, 'scan'>
+
 type View =
-  | { name: 'home' }
-  | { name: 'scanner'; mode: ScanMode }
+  | { name: 'scanner' }
   | { name: 'photo'; image: Blob; imageUrl: string }
   | { name: 'loading'; label: string }
-  | { name: 'result'; result: ScanResult; back: 'home' | 'history' }
-  | { name: 'travel' }
-  | { name: 'history' }
-  | { name: 'guide' }
-  | { name: 'settings' }
+  | { name: 'result'; result: ScanResult; back: 'scan' | 'history' }
+  | { name: 'travel'; back: 'guide' | 'settings' }
+  | { name: Tab }
 
 /** Voelbare feedback: kort tikje = veilig, dubbel = twijfel, lang dubbel = gluten. */
 const HAPTICS: Record<GlutenStatus, number[]> = {
@@ -35,27 +34,28 @@ const HAPTICS: Record<GlutenStatus, number[]> = {
   danger: [200, 100, 200],
 }
 
-/** Schermen met de tabbalk onderin; de camera-schermen tekenen hun eigen balk. */
+/** Schermen met de tabbalk onderin; het camerascherm tekent zijn eigen balk. */
 function WithNav({
   children,
-  active = 'home',
+  active,
   onNavigate,
 }: {
   children: ReactNode
-  active?: NavTab
+  active: NavTab | null
   onNavigate: (tab: NavTab) => void
 }) {
   return (
     <div className="flex min-h-full flex-col">
       {children}
       <BottomNav active={active} onSelect={onNavigate} />
-      <DisclaimerModal />
     </div>
   )
 }
 
-function App() {
-  const [view, setView] = useState<View>({ name: 'home' })
+/** De scanner-app zoals op de telefoon: opent direct op de camera. */
+function ScannerApp() {
+  const [view, setView] = useState<View>({ name: 'scanner' })
+  const [scanMode, setScanMode] = useState<ScanMode>('barcode')
   const abortRef = useRef<AbortController | null>(null)
   const imageUrlRef = useRef<string | null>(null)
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
@@ -85,16 +85,12 @@ function App() {
     (result: ScanResult) => {
       navigator.vibrate?.(HAPTICS[profiled(result).status])
       setHistory(addToHistory(result))
-      setView({ name: 'result', result, back: 'home' })
+      setView({ name: 'result', result, back: 'scan' })
     },
     [profiled],
   )
 
-  const navigate = useCallback(
-    (tab: NavTab) =>
-      go(tab === 'barcode' || tab === 'photo' ? { name: 'scanner', mode: tab } : { name: tab }),
-    [go],
-  )
+  const navigate = useCallback((tab: NavTab) => go(tab === 'scan' ? { name: 'scanner' } : { name: tab }), [go])
 
   const run = useCallback(
     async (label: string, task: (signal: AbortSignal) => Promise<ScanResult>) => {
@@ -127,16 +123,15 @@ function App() {
   )
 
   switch (view.name) {
-    case 'home':
+    case 'scanner':
       return (
-        <WithNav onNavigate={navigate}>
-          <HomePage
-            profile={profile}
-            onScan={(mode) => navigate(mode)}
-            onTravelCard={() => go({ name: 'travel' })}
-            onSettings={() => go({ name: 'settings' })}
-          />
-        </WithNav>
+        <ScannerView
+          mode={scanMode}
+          onModeChange={setScanMode}
+          onNavigate={navigate}
+          onCode={handleCode}
+          onPhoto={handlePhoto}
+        />
       )
     case 'history':
       return (
@@ -155,23 +150,22 @@ function App() {
     case 'guide':
       return (
         <WithNav active="guide" onNavigate={navigate}>
-          <GuidePage />
+          <GuidePage onTravelCard={() => go({ name: 'travel', back: 'guide' })} />
         </WithNav>
       )
     case 'settings':
       return (
-        <WithNav onNavigate={navigate}>
+        <WithNav active="settings" onNavigate={navigate}>
           <SettingsPage
             profile={profile}
             onProfileChange={(next) => {
               saveProfile(next)
               setProfile(next)
             }}
+            onTravelCard={() => go({ name: 'travel', back: 'settings' })}
           />
         </WithNav>
       )
-    case 'scanner':
-      return <ScannerView mode={view.mode} onNavigate={navigate} onCode={handleCode} onPhoto={handlePhoto} />
     case 'photo':
       return (
         <PhotoAnalysis
@@ -187,16 +181,16 @@ function App() {
               analysis: analyzeText(text, context),
             })
           }
-          onCancel={() => go({ name: 'scanner', mode: 'photo' })}
+          onCancel={() => go({ name: 'scanner' })}
         />
       )
     case 'loading':
       return (
-        <WithNav onNavigate={navigate}>
+        <WithNav active="scan" onNavigate={navigate}>
           <main className="flex flex-1 flex-col items-center justify-center gap-4 text-muted">
-            <Loader2 size={40} className="animate-spin text-safe" />
+            <Loader2 size={40} className="animate-spin text-accent" />
             <p className="text-[17px]">{view.label}</p>
-            <button onClick={() => go({ name: 'home' })} className="text-[15px] text-safe">
+            <button onClick={() => go({ name: 'scanner' })} className="text-[15px] text-accent">
               Annuleren
             </button>
           </main>
@@ -207,18 +201,49 @@ function App() {
         <WithNav active={view.back} onNavigate={navigate}>
           <ResultPage
             result={{ ...view.result, analysis: profiled(view.result) }}
-            onHome={() => go({ name: view.back })}
-            onPhotoScan={() => go({ name: 'scanner', mode: 'photo' })}
+            onHome={() => navigate(view.back)}
+            onPhotoScan={() => {
+              setScanMode('photo')
+              go({ name: 'scanner' })
+            }}
           />
         </WithNav>
       )
     case 'travel':
       return (
-        <WithNav onNavigate={navigate}>
-          <TravelCardPage onBack={() => go({ name: 'home' })} />
+        <WithNav active={view.back} onNavigate={navigate}>
+          <TravelCardPage onBack={() => go({ name: view.back })} />
         </WithNav>
       )
   }
+}
+
+/** Desktop met muis = informatiesite; telefoon/tablet = scanner. "#app" opent de scanner altijd. */
+const DESKTOP_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)'
+
+function subscribe(onChange: () => void) {
+  const media = window.matchMedia(DESKTOP_QUERY)
+  media.addEventListener('change', onChange)
+  window.addEventListener('hashchange', onChange)
+  return () => {
+    media.removeEventListener('change', onChange)
+    window.removeEventListener('hashchange', onChange)
+  }
+}
+
+function showLandingPage() {
+  return window.matchMedia(DESKTOP_QUERY).matches && window.location.hash !== '#app'
+}
+
+function App() {
+  const landing = useSyncExternalStore(subscribe, showLandingPage)
+  if (landing) return <LandingPage />
+  return (
+    <>
+      <ScannerApp />
+      <DisclaimerModal />
+    </>
+  )
 }
 
 export default App

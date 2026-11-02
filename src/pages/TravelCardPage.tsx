@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Languages } from 'lucide-react'
+import { PageHeader } from '../components/ui/PageHeader'
 import { readJson, writeJson } from '../lib/storage'
 
 type Lang = 'nl' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt' | 'no' | 'da' | 'sv'
@@ -73,20 +73,8 @@ export function TravelCardPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      <header className="relative flex h-11 items-center justify-center">
-        <button
-          onClick={onBack}
-          className="absolute left-0 -ml-2 rounded-full p-2 text-safe active:opacity-60"
-          aria-label="Terug naar start"
-        >
-          <ChevronLeft size={28} />
-        </button>
-        <span className="flex items-center gap-1.5 text-[17px] font-semibold">
-          <Languages size={18} className="text-safe" />
-          Reiskaart
-        </span>
-      </header>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pb-6">
+      <PageHeader title="Reiskaart" onBack={onBack} className="-mx-4" />
 
       <p className="text-center text-[15px] text-muted">Kies de taal en laat dit scherm aan de bediening zien.</p>
 
@@ -98,7 +86,7 @@ export function TravelCardPage({ onBack }: { onBack: () => void }) {
             aria-selected={id === lang}
             onClick={() => choose(id)}
             className={`rounded-full px-4 py-2 text-[15px] font-medium transition-colors ${
-              id === lang ? 'bg-safe text-black' : 'bg-surface text-white/80 active:bg-surface-raised'
+              id === lang ? 'bg-accent text-white' : 'bg-surface text-white/80 active:bg-surface-raised'
             }`}
           >
             {CARDS[id].name}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { History } from 'lucide-react'
+import { PageHeader } from '../components/ui/PageHeader'
 import type { HistoryItem } from '../services/history'
 import type { GlutenStatus } from '../types/product'
 
@@ -34,10 +35,10 @@ export function HistoryPage({ items, statusOf, onOpen, onClear }: Props) {
   const visible = filter === 'all' ? items : items.filter((i) => statusOf(i) === filter)
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <h1 className="pt-4 text-center text-[34px] font-bold leading-tight tracking-tight">Historie</h1>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
+      <PageHeader title="Geschiedenis" className="-mx-4" />
 
-      <div className="sticky top-0 z-10 -mx-4 bg-black/80 px-4 py-2 backdrop-blur-xl">
+      <div className="sticky top-14 z-10 -mx-4 bg-black/80 px-4 py-2 backdrop-blur-xl">
         <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1" role="tablist" aria-label="Filter op status">
           {FILTERS.map(({ id, label, dot }) => (
             <button
@@ -89,7 +90,7 @@ export function HistoryPage({ items, statusOf, onOpen, onClear }: Props) {
 
       {items.length > 0 && (
         <button onClick={onClear} className="self-center py-2 text-[15px] text-danger active:opacity-60">
-          Historie wissen
+          Geschiedenis wissen
         </button>
       )}
     </main>

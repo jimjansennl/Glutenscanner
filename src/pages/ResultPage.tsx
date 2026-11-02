@@ -1,7 +1,8 @@
 import { Fragment } from 'react'
-import { Barcode, Camera, ChevronLeft, ExternalLink, FileText, Info, QrCode } from 'lucide-react'
+import { Barcode, Camera, ExternalLink, FileText, Info, QrCode } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
+import { PageHeader } from '../components/ui/PageHeader'
 import type { GlutenMatch, ScanResult } from '../types/product'
 
 const SOURCE_META = {
@@ -59,21 +60,13 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
     result.source === 'photo' ? (result.context === 'menu' ? 'Menukaart' : 'Etiket') : meta.label
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      <header className="relative flex h-11 items-center justify-center">
-        <button
-          onClick={onHome}
-          className="absolute left-0 -ml-2 rounded-full p-2 text-safe active:opacity-60"
-          aria-label="Terug"
-        >
-          <ChevronLeft size={28} />
-        </button>
-        <span className="flex items-center gap-1.5 text-[15px] font-medium text-muted">
-          <meta.icon size={16} />
-          {headerLabel}
-          {result.rawValue && isCodeScan && result.source !== 'qr' && ` · ${result.rawValue}`}
-        </span>
-      </header>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
+      <PageHeader title="Resultaat" onBack={onHome} className="-mx-4" />
+      <span className="flex items-center justify-center gap-1.5 text-[15px] font-medium text-muted">
+        <meta.icon size={16} />
+        {headerLabel}
+        {result.rawValue && isCodeScan && result.source !== 'qr' && ` · ${result.rawValue}`}
+      </span>
 
       {product && (
         <section className="flex flex-col items-center gap-2 text-center">
@@ -124,7 +117,7 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
           href={`https://world.openfoodfacts.org/product/${encodeURIComponent(product.barcode)}`}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-center gap-1.5 text-[15px] text-safe active:opacity-60"
+          className="flex items-center justify-center gap-1.5 text-[15px] text-accent active:opacity-60"
         >
           Bekijk of verbeter op Open Food Facts
           <ExternalLink size={14} />

@@ -1,66 +1,144 @@
-import { Check, HeartPulse, ShieldAlert } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { ArrowUpRight, Check, ChevronRight, Info, Languages, ScanBarcode, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
+import { PageHeader } from '../components/ui/PageHeader'
 import { PROFILES, type SafetyProfile } from '../services/profile'
 
 interface Props {
   profile: SafetyProfile
   onProfileChange: (profile: SafetyProfile) => void
+  onTravelCard: () => void
 }
 
-const ICONS: Record<SafetyProfile, { icon: typeof ShieldAlert; color: string }> = {
-  strict: { icon: ShieldAlert, color: 'text-danger bg-danger/15' },
-  sensitive: { icon: HeartPulse, color: 'text-warning bg-warning/15' },
+const PROFILE_ICONS: Record<SafetyProfile, typeof ShieldCheck> = {
+  strict: ShieldCheck,
+  sensitive: UserCheck,
 }
 
-export function SettingsPage({ profile, onProfileChange }: Props) {
+function Group({ title, children }: { title?: string; children: ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pb-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <h1 className="pt-4 text-center text-[34px] font-bold leading-tight tracking-tight">Instellingen</h1>
+    <section className="flex flex-col gap-2">
+      {title && <h2 className="px-4 text-[20px] font-semibold text-white/60">{title}</h2>}
+      <div className="overflow-hidden rounded-[26px] bg-surface">{children}</div>
+    </section>
+  )
+}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-center text-[13px] font-medium uppercase tracking-wide text-muted">Veiligheidsprofiel</h2>
-        <div className="flex flex-col gap-3" role="radiogroup" aria-label="Veiligheidsprofiel">
-          {(Object.keys(PROFILES) as SafetyProfile[]).map((id) => {
-            const selected = id === profile
-            const { icon: Icon, color } = ICONS[id]
-            return (
-              <button
-                key={id}
-                role="radio"
-                aria-checked={selected}
-                onClick={() => onProfileChange(id)}
-                className={`relative flex flex-col items-center gap-2 rounded-[22px] bg-surface p-5 text-center transition-shadow ${
-                  selected ? 'ring-2 ring-safe' : 'active:bg-surface-raised'
-                }`}
-              >
-                {selected && (
-                  <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-safe text-black">
-                    <Check size={16} strokeWidth={3} />
+/** iOS-achtige rij met icoon links en waarde/pijl rechts; scheidingslijn springt in tot de tekst. */
+function Row({
+  icon,
+  label,
+  sub,
+  value,
+  trailing,
+  href,
+  onClick,
+}: {
+  icon: ReactNode
+  label: string
+  sub?: string
+  value?: string
+  trailing?: ReactNode
+  href?: string
+  onClick?: () => void
+}) {
+  const content = (
+    <>
+      <span className="flex w-8 shrink-0 justify-center text-white/70">{icon}</span>
+      <span className="flex min-w-0 flex-1 flex-col border-b border-surface-line py-3.5 pr-4 group-last:border-b-0">
+        <span className="flex items-center gap-3">
+          <span className="flex-1 text-[17px]">{label}</span>
+          {value && <span className="text-[17px] text-muted">{value}</span>}
+          {trailing}
+        </span>
+        {sub && <span className="text-[15px] text-muted">{sub}</span>}
+      </span>
+    </>
+  )
+  const className = 'group flex w-full items-center gap-3 pl-4 text-left active:bg-surface-raised'
+  if (href)
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={className}>
+        {content}
+      </a>
+    )
+  if (onClick)
+    return (
+      <button onClick={onClick} className={className}>
+        {content}
+      </button>
+    )
+  return <div className={className.replace(' active:bg-surface-raised', '')}>{content}</div>
+}
+
+export function SettingsPage({ profile, onProfileChange, onTravelCard }: Props) {
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
+      <PageHeader title="Instellingen" />
+
+      <div className="flex flex-col gap-7 px-4 pb-6 pt-5">
+        <Group>
+          <Row icon={<Info size={22} />} label="Versie" value={__APP_VERSION__} />
+          <Row
+            icon={<ScanBarcode size={22} />}
+            label="Productgegevens van Open Food Facts (ODbL)"
+            href="https://world.openfoodfacts.org"
+            trailing={<ArrowUpRight size={20} className="text-muted" />}
+          />
+        </Group>
+
+        <Group title="Veiligheidsprofiel">
+          <div className="flex flex-col gap-2 p-2" role="radiogroup" aria-label="Veiligheidsprofiel">
+            {(Object.keys(PROFILES) as SafetyProfile[]).map((id) => {
+              const selected = id === profile
+              const Icon = PROFILE_ICONS[id]
+              return (
+                <button
+                  key={id}
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => onProfileChange(id)}
+                  className={`flex items-center gap-4 rounded-[20px] border px-4 py-4 text-left transition-colors ${
+                    selected ? 'border-accent/60 bg-accent-soft' : 'border-surface-line'
+                  }`}
+                >
+                  <Icon size={26} className={selected ? 'text-accent' : 'text-white/70'} />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-[19px] font-semibold">{PROFILES[id].title}</span>
+                    <span className="text-[15px] leading-snug text-muted">{PROFILES[id].description}</span>
                   </span>
-                )}
-                <span className={`flex h-12 w-12 items-center justify-center rounded-full ${color}`}>
-                  <Icon size={24} />
-                </span>
-                <span className="text-[17px] font-semibold">{PROFILES[id].title}</span>
-                <span className="text-[15px] leading-snug text-muted">{PROFILES[id].description}</span>
-              </button>
-            )
-          })}
-        </div>
-        <p className="px-4 text-center text-[13px] leading-snug text-muted">
-          Geldt direct voor nieuwe scans én je historie. Harde glutenbronnen zijn in beide profielen altijd rood.
-        </p>
-      </section>
+                  {selected ? (
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent">
+                      <Check size={18} strokeWidth={3} />
+                    </span>
+                  ) : (
+                    <span className="h-8 w-8 shrink-0 rounded-full border-2 border-white/25" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </Group>
 
-      <section className="flex flex-col items-center gap-2 rounded-[22px] bg-surface p-5 text-center">
-        <h2 className="text-[13px] font-medium uppercase tracking-wide text-muted">Over deze app</h2>
-        <p className="text-[15px] leading-relaxed text-white/85">
-          Gratis, zonder limieten en zonder account. Je profiel en historie blijven alleen op dit toestel.
+        <Group title="Op reis">
+          <Row
+            icon={<Languages size={22} />}
+            label="Reiskaart voor restaurants"
+            sub="Uitleg over coeliakie in 10 talen"
+            onClick={onTravelCard}
+            trailing={<ChevronRight size={20} className="text-muted" />}
+          />
+        </Group>
+
+        <Group title="Belangrijk">
+          <Row icon={<ShieldAlert size={22} />} label="Medische disclaimer" sub={DISCLAIMER_SHORT} />
+        </Group>
+
+        <p className="px-4 text-center text-[13px] leading-relaxed text-muted">
+          Volledig gratis: onbeperkt scannen, geen account, geen abonnement. Je profiel en geschiedenis blijven op dit
+          toestel.
         </p>
-        <p className="text-[13px] leading-relaxed text-muted">
-          Productdata: Open Food Facts (ODbL). {DISCLAIMER_SHORT}
-        </p>
-      </section>
+      </div>
     </main>
   )
 }
