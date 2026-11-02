@@ -11,7 +11,7 @@ Mobiele webapp om barcodes van producten te scannen en te controleren of ze glut
 - **Meertalige analyse**: herkent glutenbronnen in NL, EN, DE, FR, ES, IT, PT, PL, NO, DA en SV en meldt ze in het Nederlands (bijv. *trigo → tarwe*)
 - **Menukaart-analyse**: let op gebonden sauzen, dressings, sojasaus, paneermeel, croutons, beslag, gedeelde frituur en kruisbesmetting, met concrete vragen voor de bediening
 - **Echte tekstherkenning (OCR)** van etiketten en menukaarten met Tesseract.js, volledig in de browser (de foto verlaat het toestel niet). Taalmodellen (NL + EN, ca. 6 MB) worden bij de eerste foto geladen en daarna bewaard
-- **Glutengids**: feestdagen, snoep & borrel, jus & bouillon, brood & desserts, granen met risiconiveaus en verborgen bronnen, met zoekfunctie
+- **Glutengids**: ingrediëntengids met acht tabbladen (tarwe, gerst, rogge, haver, derivaten, additieven, verwerkingshulpstoffen, verborgen bronnen), elk met risiconiveau en veilige alternatieven; plus thema's (feestdagen, snoep & borrel, jus & bouillon, brood & desserts) en zoekfunctie
 - **Reiskaart** in 10 talen (o.a. Noors, Deens en Zweeds) om aan de bediening te laten zien
 - **Veiligheidsprofiel**: *Strikte coeliakie* (sporen = rood) of *Glutenintolerant / gevoelig* (sporen = oranje); geldt ook direct voor de historie
 - **Historie** met filters (Alles / Glutenvrij / Bevat gluten / Twijfel) en voelbare feedback per status

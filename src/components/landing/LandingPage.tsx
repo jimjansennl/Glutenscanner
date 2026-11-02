@@ -18,10 +18,10 @@ import {
   ShieldCheck,
   Sparkles,
   UtensilsCrossed,
-  X,
   type LucideIcon,
 } from 'lucide-react'
 import { GUIDE } from '../../data/glutenGuide'
+import { INGREDIENT_COUNT, INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
 import {
   Phone,
@@ -39,6 +39,7 @@ const APP_HREF = '#app'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
 const YEAR = new Date().getFullYear()
+const GUIDE_TOPICS = INGREDIENT_COUNT + GUIDE.reduce((n, c) => n + c.items.length, 0)
 
 /** Laat elementen met data-reveal zacht invliegen zodra ze in beeld komen. */
 function useReveal() {
@@ -149,17 +150,6 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
   { word: 'Reis', line: 'zonder zorgen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
 
-const COMPARISON: { label: string; ours: string | boolean; paid: string | boolean }[] = [
-  { label: 'Prijs', ours: '€ 0, voor altijd', paid: 'Abonnement' },
-  { label: 'Aantal scans', ours: 'Onbeperkt', paid: 'Vaak maar 1 gratis' },
-  { label: 'Account nodig', ours: 'Nee', paid: 'Vaak wel' },
-  { label: 'Barcode- én ingrediëntenscan', ours: true, paid: true },
-  { label: 'Tekstherkenning op je eigen toestel', ours: true, paid: false },
-  { label: 'Menukaart-analyse met vragen voor de bediening', ours: true, paid: false },
-  { label: 'Reiskaart in 10 talen', ours: true, paid: false },
-  { label: 'Veiligheidsprofiel', ours: true, paid: true },
-]
-
 const FAQ = [
   {
     q: 'Is Glutenscanner echt helemaal gratis?',
@@ -182,21 +172,6 @@ const FAQ = [
     a: 'Glutenscanner is een hulpmiddel voor een snelle tweede blik, geen medisch advies. Bij twijfel kiest de app altijd voor de voorzichtige uitslag. Controleer altijd de fysieke verpakking.',
   },
 ]
-
-function Cell({ value, ours = false }: { value: string | boolean; ours?: boolean }) {
-  if (typeof value === 'boolean') {
-    return value ? (
-      <span className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full ${ours ? 'bg-accent text-white' : 'bg-neutral-200 text-neutral-600'}`}>
-        <Check size={18} strokeWidth={3} aria-label="Ja" />
-      </span>
-    ) : (
-      <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-300">
-        <X size={18} strokeWidth={3} aria-label="Nee" />
-      </span>
-    )
-  }
-  return <span className={ours ? 'font-display text-[18px] font-bold text-accent' : 'text-neutral-500'}>{value}</span>
-}
 
 function Carousel() {
   const track = useRef<HTMLDivElement>(null)
@@ -380,7 +355,7 @@ export function LandingPage() {
           ['€ 0', 'voor altijd'],
           ['∞', 'scans per dag'],
           ['11', 'talen herkend'],
-          ['37', 'gidsonderwerpen'],
+          [String(GUIDE_TOPICS), 'gidsonderwerpen'],
         ].map(([n, l]) => (
           <div key={l} data-reveal className="flex flex-col items-center rounded-[28px] bg-white py-8 text-center shadow-sm ring-1 ring-neutral-200">
             <span className="font-display text-[54px] font-extrabold leading-none text-accent">{n}</span>
@@ -481,63 +456,49 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Vergelijking */}
-      <section className="bg-[#f3eee2] px-6 py-28">
-        <SectionTitle eyebrow="Vergelijk" title="Gratis, en toch completer" sub="Waarom betalen voor een tweede blik op je eten?" />
-        <div data-reveal className="mx-auto mt-14 max-w-4xl overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-neutral-200">
-          <div className="grid grid-cols-[1fr_220px_220px] items-center border-b border-neutral-200 text-center">
-            <span />
-            <span className="flex items-center justify-center gap-2 bg-accent py-5 font-display text-[19px] font-bold text-white">
-              <ScanBarcode size={20} /> Glutenscanner
-            </span>
-            <span className="py-5 font-display text-[17px] font-semibold text-neutral-500">Betaalde scanner-apps</span>
-          </div>
-          {COMPARISON.map((row) => (
-            <div key={row.label} className="grid grid-cols-[1fr_220px_220px] items-center border-b border-neutral-100 text-center last:border-0">
-              <span className="px-8 py-4 text-left text-[17px]">{row.label}</span>
-              <span className="bg-accent/5 py-4">
-                <Cell value={row.ours} ours />
-              </span>
-              <span className="py-4">
-                <Cell value={row.paid} />
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Gids */}
       <section id="gids" className="scroll-mt-28 bg-[#10140f] px-6 py-28 text-white">
-        <SectionTitle light eyebrow="Glutengids" title="Weet waar gluten schuilen" sub="Van kerststol tot bouillonblokje: per onderwerp waar je op let en wat je wél kunt eten." />
-        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-3 gap-5">
-          {GUIDE.map((c, i) => {
-            const high = c.items.filter((it) => it.risk === 'hoog').length
+        <SectionTitle light eyebrow="Glutengids" title="Weet waar gluten schuilen" sub="Van tarwe en mout tot E-nummers en verwerkingshulpstoffen: per ingrediënt het risico en een veilig alternatief." />
+        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-4 gap-5">
+          {INGREDIENT_TABS.map((t, i) => {
+            const high = t.entries.filter((e) => e.risk === 'hoog').length
             return (
               <article
-                key={c.id}
+                key={t.id}
                 data-reveal
-                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-8 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
-                style={{ transitionDelay: `${(i % 3) * 100}ms` }}
+                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
+                style={{ transitionDelay: `${(i % 4) * 80}ms` }}
               >
-                <h3 className="font-display text-[23px] font-bold">{c.title}</h3>
+                <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
                 <p className="mt-1 text-[14px] text-white/55">
-                  {c.items.length} onderwerpen · <span className="text-[#ff8a80]">{high} hoog risico</span>
+                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
                 </p>
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  {c.items.slice(0, 5).map((it) => (
+                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                  {t.entries.slice(0, 4).map((e) => (
                     <span
-                      key={it.name}
-                      className={`rounded-full px-3 py-1 text-[13px] font-medium ${
-                        it.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : it.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
+                      key={e.name}
+                      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
+                        e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
                       }`}
                     >
-                      {it.name}
+                      {e.name}
                     </span>
                   ))}
                 </div>
               </article>
             )
           })}
+        </div>
+        <div data-reveal className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 text-center">
+          <p className="text-[17px] text-white/65">Plus thema&apos;s vol praktische tips:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {GUIDE.map((c) => (
+              <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
+                {c.title}
+              </span>
+            ))}
+            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Reiskaart in 10 talen</span>
+          </div>
         </div>
         <div className="mt-12 flex justify-center">
           <PrimaryButton>Open de volledige gids</PrimaryButton>
