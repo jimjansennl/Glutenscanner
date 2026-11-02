@@ -16,6 +16,7 @@ import {
   ScanBarcode,
   ScanText,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   UtensilsCrossed,
   type LucideIcon,
@@ -34,8 +35,11 @@ import {
   ScreenTravel,
 } from './PhoneScreens'
 
-/** Opent de scanner in deze browser (ook op de desktop). */
-const APP_HREF = '#app'
+/**
+ * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
+ * Alle knoppen wijzen daarom naar de QR-code; op de telefoon opent dezelfde site als scanner.
+ */
+const PHONE_HREF = '#telefoon'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
 const YEAR = new Date().getFullYear()
@@ -85,7 +89,7 @@ function QrCode({ size = 176 }: { size?: number }) {
   return <div ref={ref} className="rounded-3xl bg-white p-3 shadow-xl" style={{ width: size + 24, height: size + 24 }} />
 }
 
-function PrimaryButton({ children, href = APP_HREF }: { children: ReactNode; href?: string }) {
+function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; href?: string }) {
   return (
     <a
       href={href}
@@ -128,11 +132,6 @@ function FloatChip({ className, children, tone = 'light' }: { className: string;
     </span>
   )
 }
-
-const GLUTEN_WORDS = [
-  'tarwe', 'trigo', 'gerst', 'frumento', 'rogge', 'Weizen', 'spelt', 'cebada', 'mout', 'orzo', 'haver', 'hvete',
-  'blé', 'segale', 'kamut', 'Gerste', 'bulgur', 'centeno', 'couscous', 'vete', 'seitan', 'malta', 'griesmeel', 'råg',
-]
 
 const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
   { icon: ScanBarcode, title: 'Richt je camera', text: 'Op een barcode, ingrediëntenlijst of menukaart. Geen typen, geen account.' },
@@ -254,8 +253,9 @@ export function LandingPage() {
             <a href="#gids" className="hover:text-white">Glutengids</a>
             <a href="#vragen" className="hover:text-white">Vragen</a>
           </nav>
-          <a href={APP_HREF} className="rounded-full bg-accent px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a9258]">
-            Start met scannen
+          <a href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a9258]">
+            <Smartphone size={17} />
+            Op je telefoon
           </a>
         </div>
       </header>
@@ -287,7 +287,7 @@ export function LandingPage() {
             account, gewoon in je browser op <b className="text-white">{SITE_LABEL}</b>.
           </p>
           <div className="mt-9 flex items-center gap-4">
-            <PrimaryButton>Start met scannen</PrimaryButton>
+            <PrimaryButton>Open op je telefoon</PrimaryButton>
             <a href="#hoe" className="rounded-full border border-white/20 px-8 py-4 font-display text-[18px] font-semibold text-white/90 transition hover:bg-white/10">
               Hoe werkt het?
             </a>
@@ -333,21 +333,6 @@ export function LandingPage() {
           </FloatChip>
         </div>
       </section>
-
-      {/* Lopende band met glutenwoorden */}
-      <div className="relative z-10 -mt-1 overflow-hidden bg-accent py-5 text-white">
-        <div className="flex w-max animate-marquee items-center gap-8 font-display text-[26px] font-bold">
-          {[...GLUTEN_WORDS, ...GLUTEN_WORDS].map((w, i) => (
-            <span key={i} className="flex items-center gap-8">
-              {w}
-              <span className="text-[#ffd75e]">✦</span>
-            </span>
-          ))}
-        </div>
-      </div>
-      <p className="bg-[#fbf8f1] pt-5 text-center text-[15px] font-medium text-neutral-500">
-        We herkennen ze allemaal, in 11 talen, en vertellen het je in gewoon Nederlands.
-      </p>
 
       {/* Cijfers */}
       <section className="mx-auto grid max-w-5xl grid-cols-4 gap-6 px-6 pt-20">
@@ -501,12 +486,12 @@ export function LandingPage() {
           </div>
         </div>
         <div className="mt-12 flex justify-center">
-          <PrimaryButton>Open de volledige gids</PrimaryButton>
+          <PrimaryButton>Bekijk de gids op je telefoon</PrimaryButton>
         </div>
       </section>
 
       {/* Naar je telefoon */}
-      <section className="px-6 py-28">
+      <section id="telefoon" className="scroll-mt-28 px-6 py-28">
         <div data-reveal className="mx-auto flex max-w-5xl flex-col items-center rounded-[40px] bg-white px-10 py-16 text-center shadow-sm ring-1 ring-neutral-200">
           <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub={`Richt de camera van je telefoon op de code, of ga naar ${SITE_LABEL}. De scanner start meteen.`} />
           <div className="mt-10 flex items-center gap-14">
@@ -534,24 +519,6 @@ export function LandingPage() {
         <Faq />
       </section>
 
-      {/* Slot-CTA */}
-      <section className="px-6 py-28">
-        <div data-reveal className="relative mx-auto max-w-5xl overflow-hidden rounded-[44px] bg-[#10140f] px-10 py-20 text-center text-white">
-          <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[700px] -translate-x-1/2 rounded-full bg-accent/30 blur-[100px]" />
-          <h2 className="relative font-display text-[60px] font-extrabold leading-[1.02] tracking-tight">
-            Begin vandaag.
-            <br />
-            <span className="text-[#7ee2a8]">Het kost je niks.</span>
-          </h2>
-          <p className="relative mx-auto mt-6 max-w-xl text-[19px] text-white/70">
-            Open de scanner en richt je camera op het eerste het beste etiket. Je ziet direct wat erin zit.
-          </p>
-          <div className="relative mt-10 flex justify-center">
-            <PrimaryButton>Start met scannen</PrimaryButton>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-14">
         <div className="mx-auto grid max-w-6xl grid-cols-[1.4fr_1fr_1fr] gap-10 text-[15px] text-neutral-600">
@@ -564,7 +531,7 @@ export function LandingPage() {
           </div>
           <div className="flex flex-col gap-2.5">
             <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#14130f]">Snel naar</p>
-            <a href={APP_HREF} className="hover:text-accent">De scanner</a>
+            <a href={PHONE_HREF} className="hover:text-accent">Op je telefoon</a>
             <a href="#hoe" className="hover:text-accent">Hoe het werkt</a>
             <a href="#functies" className="hover:text-accent">Functies</a>
             <a href="#gids" className="hover:text-accent">Glutengids</a>

@@ -41,8 +41,7 @@
     transition: none;
   }
   .animate-float,
-  .animate-float-slow,
-  .animate-marquee {
+  .animate-float-slow {
     animation: none;
   }
 }
