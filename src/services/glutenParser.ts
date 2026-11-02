@@ -9,7 +9,7 @@ interface Trigger {
 }
 
 /**
- * Harde gluten-bronnen in NL / EN / DE / FR / ES / IT / PT / PL. De tekst is vooraf
+ * Harde gluten-bronnen in NL / EN / DE / FR / ES / IT / PT / PL / NO / DA / SV. De tekst is vooraf
  * genormaliseerd (kleine letters, geen accenten), dus "sémola" wordt "semola".
  * Nederlandse termen matchen ook midden in samenstellingen (volkorentarwemeel,
  * gerstemout); korte woorden gebruiken woordgrenzen ("goat" ≠ "oat", "orzo" ≠ "orzon").
@@ -17,12 +17,12 @@ interface Trigger {
 const GLUTEN_TRIGGERS: Trigger[] = [
   {
     label: 'Tarwe',
-    pattern: /tarwe|wheat|weizen|froment|\bble\b|\bdurum|trigo|frumento|grano (?:tenero|duro)|pszen/g,
+    pattern: /tarwe|wheat|weizen|froment|\bble\b|\bdurum|trigo|frumento|grano (?:tenero|duro)|pszen|hvete|hvede|\bvete/g,
   },
-  { label: 'Gerst', pattern: /gerst|barley|\borge\b|cebada|\borzo\b|cevada|jeczmien/g },
-  { label: 'Rogge', pattern: /rogge|\brye\b|roggen|seigle|centeno|segale|centeio|\bzyto\b/g },
+  { label: 'Gerst', pattern: /gerst|barley|\borge\b|cebada|\borzo\b|cevada|jeczmien|bygg|\bbyg(?:mel|gryn)?\b|\bkorn\b/g },
+  { label: 'Rogge', pattern: /rogge|\brye\b|roggen|seigle|centeno|segale|centeio|\bzyto\b|\brug(?:mel|brod|kerner|flager)?\b|\brag(?:mjol|brod)?\b/g },
   { label: 'Spelt', pattern: /spelt|dinkel|epeautre|espelta|\bfarro\b/g },
-  { label: 'Haver', pattern: /haver|\boat(?:s|meal)?\b|hafer|avoine|\bavena\b|aveia|owies/g },
+  { label: 'Haver', pattern: /haver|\boat(?:s|meal)?\b|hafer|avoine|\bavena\b|aveia|owies|havre/g },
   { label: 'Kamut', pattern: /kamut|khorasan/g },
   { label: 'Bulgur', pattern: /bulgur|boulgour|burghul/g },
   { label: 'Couscous', pattern: /couscous|cuscus/g },
@@ -133,10 +133,10 @@ const EXCLUSIONS =
 
 /** "glutenvrij" e.d. mag niet als "gluten" matchen. */
 const NEGATIONS =
-  /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu/g
+  /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu|glutenfri\w*|uten gluten|uden gluten|utan gluten/g
 
 /** Glutenvrije haver: geen harde trigger, wel twijfel (avenine / certificering). */
-const GLUTEN_FREE_OATS = /(?:glutenvrije|gluten[- ]?free|glutenfreier?) ?(?:haver\w*|oat\w*|hafer\w*)/g
+const GLUTEN_FREE_OATS = /(?:glutenvrije|gluten[- ]?free|glutenfreier?|glutenfri) ?(?:haver\w*|oat\w*|hafer\w*|havre\w*)/g
 
 /**
  * Glutenvrij (Codex-)tarwezetmeel: wettelijk glutenvrij (max. 20 ppm), dus geen tarwe-match.
@@ -162,7 +162,7 @@ const GF_WHEAT_STARCH = new RegExp(
  * Werkt op genormaliseerde tekst én op OFF-labeltags ("en:gluten-free", "en:no-gluten").
  */
 const GLUTEN_FREE_CLAIM =
-  /(?<!(?:niet|not|nicht|non|no|ne) )(?:glutenvrij\w*|gluten[- ]?free|no[- ]gluten|sans[- ]gluten|glutenfrei\w*|senza[- ]glutine|privo di glutine|sin[- ]gluten|libre de gluten|sem[- ]gluten|isento de gluten|bez glutenu|crossed[- ]grain)/
+  /(?<!(?:niet|not|nicht|non|no|ne) )(?:glutenvrij\w*|gluten[- ]?free|no[- ]gluten|sans[- ]gluten|glutenfrei\w*|senza[- ]glutine|privo di glutine|sin[- ]gluten|libre de gluten|sem[- ]gluten|isento de gluten|bez glutenu|glutenfri\w*|crossed[- ]grain)/
 
 /** "Kan sporen bevatten van …" en varianten: alles tot het einde van de zin. */
 const TRACE_PHRASES = new RegExp(
@@ -181,6 +181,9 @@ const TRACE_PHRASES = new RegExp(
       'puo contenere(?: tracce di)?',
       'tracce di',
       'pode conter(?: vestigios de)?',
+      'kan inneholde(?: spor av)?',
+      'kan indeholde(?: spor af)?',
+      'kan innehalla(?: spar av)?',
       'in een (?:omgeving|bedrijf) waar',
     ].join('|') +
     ')([^.;\\n]*)',

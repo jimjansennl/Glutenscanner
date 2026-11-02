@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ChevronLeft, Languages } from 'lucide-react'
 import { readJson, writeJson } from '../lib/storage'
 
-type Lang = 'nl' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt'
+type Lang = 'nl' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt' | 'no' | 'da' | 'sv'
 
 const CARDS: Record<Lang, { name: string; title: string; text: string }> = {
   nl: {
@@ -39,6 +39,21 @@ const CARDS: Record<Lang, { name: string; title: string; text: string }> = {
     name: 'Português',
     title: 'Tenho doença celíaca',
     text: 'Não posso comer glúten: nada de trigo, cevada, centeio, espelta ou aveia, nem em molhos, pão ralado ou óleo de fritura partilhado. Mesmo pequenos vestígios fazem-me mal. Pode ajudar-me a escolher um prato seguro? Muito obrigado/a!',
+  },
+  no: {
+    name: 'Norsk',
+    title: 'Jeg har cøliaki',
+    text: 'Jeg kan ikke spise gluten: ingen hvete, bygg, rug, spelt eller havre, heller ikke i sauser, brødsmuler eller frityrolje som deles med annen mat. Selv små spor gjør meg syk. Kan du hjelpe meg med å velge en trygg rett? Tusen takk!',
+  },
+  da: {
+    name: 'Dansk',
+    title: 'Jeg har cøliaki',
+    text: 'Jeg kan ikke tåle gluten: ingen hvede, byg, rug, spelt eller havre, heller ikke i saucer, rasp eller fritureolie, der deles med andre retter. Selv små spor gør mig syg. Kan du hjælpe mig med at vælge en sikker ret? Mange tak!',
+  },
+  sv: {
+    name: 'Svenska',
+    title: 'Jag har celiaki',
+    text: 'Jag kan inte äta gluten: inget vete, korn, råg, dinkel eller havre, inte heller i såser, ströbröd eller frityrolja som delas med annan mat. Även små spår gör mig sjuk. Kan du hjälpa mig att välja en säker rätt? Tack så mycket!',
   },
 }
 
