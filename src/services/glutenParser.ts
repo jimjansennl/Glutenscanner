@@ -60,13 +60,18 @@ const SUSPICIOUS_TRIGGERS: Trigger[] = [
   },
   {
     label: 'Pasta / noedels',
-    pattern: /\bpasta\b|noedel|noodle|vermicelli|fideo|spaghett|tagliatell|lasagn|ravioli|gnocchi|tortellini/g,
+    pattern: /\bpasta\b|noedel|noodle|vermicelli|fideo|spaghett|tagliatell|lasagn|ravioli|gnocchi|tortellini|\bramen\b|\budon\b|\bmie\b|\bsoba\b/g,
     tip: 'Vraag naar glutenvrije pasta, en of die in apart water wordt gekookt.',
   },
   {
     label: 'Sojasaus',
     pattern: /sojasaus|soy ?sauce|shoyu|salsa de soja|salsa di soia|molho de soja|sauce soja|teriyaki|hoisin/g,
     tip: 'Gewone sojasaus wordt gebrouwen met tarwe: vraag of de keuken tamari (glutenvrij) gebruikt.',
+  },
+  {
+    label: 'Miso',
+    pattern: /\bmiso/g,
+    tip: 'Miso is soms gemaakt met gerst: vraag of het rijst- of sojamiso is.',
   },
   { label: 'Bier', pattern: /\bbier\b|\bbeer\b|cerveza|\bbirra\b|cerveja|\bbiere\b/g },
   {

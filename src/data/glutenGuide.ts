@@ -413,7 +413,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Gewone sojasaus wordt gebrouwen met tarwe; ook in teriyaki-, hoisin- en oestersaus.',
         checklist: ['Let op sojasaus, teriyaki en hoisin in recepten', 'In Aziatische restaurants expliciet vragen'],
-        alternatives: ['Tamari (glutenvrije sojasaus)', 'Coconut aminos'],
+        alternatives: ['Tamari (glutenvrije sojasaus)', 'Kokosaminos (saus van kokos)'],
       },
       {
         name: 'Kruidenmixen',
