@@ -30,6 +30,7 @@ const GLUTEN_TRIGGERS: Trigger[] = [
   { label: 'Griesmeel', pattern: /griesmeel|semolina|semoule|griess|\bsemola\b/g },
   { label: 'Deegwaren', pattern: /deegwar/g },
   { label: 'Seitan', pattern: /seitan/g },
+  { label: 'Matze', pattern: /\bmatz(?:e|o|ah)/g },
   { label: 'Oergraan', pattern: /triticale|\bemmer\b|einkorn|eenkoorn|freekeh/g },
   { label: 'Gluten', pattern: /gluten|glutine/g },
 ]
