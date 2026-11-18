@@ -395,8 +395,8 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
               <Languages size={24} />
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-[17px] font-semibold leading-tight">Reiskaart in 10 talen</span>
-              <span className="text-[14px] leading-snug text-muted">Laat in het buitenland zien dat je geen gluten mag</span>
+              <span className="text-[17px] font-semibold leading-tight">Kaart voor de bediening</span>
+              <span className="text-[14px] leading-snug text-muted">Laat in het restaurant zien dat je geen gluten mag, in 10 talen</span>
             </span>
             <ChevronRight size={22} className="shrink-0 text-muted" />
           </button>

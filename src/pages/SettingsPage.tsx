@@ -120,11 +120,11 @@ export function SettingsPage({ profile, onProfileChange, onTravelCard }: Props) 
           </div>
         </Group>
 
-        <Group title="Op reis">
+        <Group title="Uit eten">
           <Row
             icon={<Languages size={22} />}
-            label="Reiskaart voor restaurants"
-            sub="Uitleg over coeliakie in 10 talen"
+            label="Kaart voor de bediening"
+            sub="Laat zien dat je geen gluten mag, in 10 talen"
             onClick={onTravelCard}
             trailing={<ChevronRight size={20} className="text-muted" />}
           />

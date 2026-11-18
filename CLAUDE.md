@@ -80,7 +80,7 @@ barcode wordt naar Open Food Facts gestuurd.
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
   `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van
   scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" (11 talen, jouw
-  profiel, geschiedenis, reiskaart). Elke pagina begint met een
+  profiel, geschiedenis, kaart voor de bediening). Elke pagina begint met een
   donkere band in de stijl van het bovenstuk. De router zit in `LandingPage.tsx`
   (History API, geen extra pakket). `vercel.json` stuurt alle adressen naar `index.html`.
 - De **startpagina** (`/`) heeft: het donkere bovenstuk, de drie stappen ("Drie stappen. Zo gedaan."), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
@@ -105,7 +105,7 @@ barcode wordt naar Open Food Facts gestuurd.
 - Opzet "Mag ik dit eten?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
   Mag), één zin waarom, een tip en "Neem liever". Daaronder snelle zoekwoorden, drie
   kleurvakken en de thema's (Supermarkt, Sinterklaas, School & feestjes, Etiket lezen,
-  Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), plus de reiskaart.
+  Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), plus de "Kaart voor de bediening" (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
 - **Niet doen:** dezelfde standaard-risicotekst bij elk ingrediënt, woorden als
   "Risiconiveau-informatie", "Hoog risico" of Engelse termen. De gebruiker liet een andere
   app zien die het zo doet; wij willen het mooier, slimmer en eenvoudiger. Neem nooit

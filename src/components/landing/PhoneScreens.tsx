@@ -266,7 +266,7 @@ export function ScreenTravel() {
   return (
     <>
       <StatusBar />
-      <Title>Reiskaart</Title>
+      <Title>Kaart voor de bediening</Title>
       <div className="flex flex-1 flex-col gap-2.5 overflow-hidden px-3">
         <div className="flex flex-wrap justify-center gap-1 text-[8px] font-semibold">
           {['Español', 'Italiano', 'Français', 'Svenska', 'Norsk'].map((l, i) => (

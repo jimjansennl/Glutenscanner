@@ -245,7 +245,7 @@ const EXTRAS = [
   [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: hij herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.', 'bg-[#ffd75e]'],
   [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig? Jij kiest of "kan sporen bevatten" rood of oranje wordt. Dat zet je bij Instellingen.', 'bg-white'],
   [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien. Filter op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
-  [Plane, 'Reiskaart', 'Een kaart in 10 talen die je aan de bediening laat zien. Daarop staat dat je geen gluten mag.', 'bg-white'],
+  [Plane, 'Kaart voor de bediening', 'Laat in een restaurant zien dat je geen gluten mag. Hier en in het buitenland, in 10 talen.', 'bg-white'],
 ] as const
 
 const FAQ = [
@@ -263,7 +263,7 @@ const FAQ = [
   },
   {
     q: 'Werkt het in het buitenland?',
-    a: 'Zeker. De scanner herkent glutentermen in 11 Europese talen en meldt ze in het Nederlands. Met de reiskaart leg je coeliakie uit aan de bediening, in 10 talen.',
+    a: 'Zeker. De scanner herkent glutentermen in 11 Europese talen en meldt ze in het Nederlands. Met de kaart voor de bediening leg je coeliakie uit aan de bediening, in 10 talen.',
   },
   {
     q: 'Kan ik er blind op vertrouwen?',
@@ -614,7 +614,7 @@ function GuidePage() {
                 {c.title}
               </span>
             ))}
-            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Reiskaart in 10 talen</span>
+            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Kaart voor de bediening in 10 talen</span>
           </div>
         </div>
         <div className="mt-12 flex justify-center">

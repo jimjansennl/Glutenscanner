@@ -78,6 +78,8 @@ function ScannerApp() {
       // Alleen resultaat- en fotoschermen gebruiken de vastgelegde foto nog.
       if (next.name !== 'result' && next.name !== 'photo' && next.name !== 'loading') releaseImage()
       setView(next)
+      // Elk nieuw scherm begint bovenaan, niet halverwege waar het vorige scherm was.
+      window.scrollTo(0, 0)
     },
     [releaseImage],
   )

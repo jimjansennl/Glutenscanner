@@ -192,7 +192,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Lunchpakketjes, patat en pannenkoeken op locatie.',
         checklist: ['Bel of mail de school ruim van tevoren', 'Geef een eigen lunchpakket en snacks mee'],
-        alternatives: ['Eigen lunchpakket', 'Laat de reiskaart zien in het buitenland'],
+        alternatives: ['Eigen lunchpakket', 'Laat de kaart voor de bediening zien'],
       },
       {
         name: 'Kantine & sportclub',

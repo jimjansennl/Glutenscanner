@@ -40,7 +40,7 @@ const EXTRAS: [LucideIcon, string, string][] = [
   [Languages, '11 talen', 'Hij herkent glutenwoorden in 11 talen, zoals trigo en Weizen, en zegt in het Nederlands wat het is.'],
   [ShieldCheck, 'Jouw profiel', 'Jij kiest bij Instellingen of "kan sporen bevatten" rood of oranje wordt.'],
   [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien, met filters.'],
-  [Plane, 'Reiskaart', 'Een kaart in 10 talen om aan de bediening te laten zien.'],
+  [Plane, 'Kaart voor de bediening', 'Laat in een restaurant zien dat je geen gluten mag, in 10 talen.'],
 ]
 
 const CAROUSEL: { word: string; line: string; dark: boolean; bg: string; screen: ReactNode }[] = [
@@ -68,7 +68,7 @@ const FAQ = [
   },
   {
     q: 'Werkt het in het buitenland?',
-    a: 'Ja. De scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is. Met de reiskaart leg je coeliakie uit aan de bediening, in 10 talen.',
+    a: 'Ja. De scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is. Met de kaart voor de bediening leg je coeliakie uit aan de bediening, in 10 talen.',
   },
   {
     q: 'Kan ik er blind op vertrouwen?',
@@ -191,7 +191,7 @@ function Gids({ onOpenGuide }: { onOpenGuide: () => void }) {
             {c.title}
           </span>
         ))}
-        <span className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">Reiskaart in 10 talen</span>
+        <span className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">Kaart voor de bediening in 10 talen</span>
       </div>
       <button
         onClick={onOpenGuide}
