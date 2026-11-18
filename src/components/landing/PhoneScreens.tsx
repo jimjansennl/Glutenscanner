@@ -5,7 +5,6 @@ import {
   Camera,
   CheckCircle2,
   Clock3,
-  Languages,
   MessageCircleQuestion,
   ScanBarcode,
   Settings,
@@ -267,24 +266,26 @@ export function ScreenTravel() {
     <>
       <StatusBar />
       <Title>Kaart voor de bediening</Title>
-      <div className="flex flex-1 flex-col gap-2.5 overflow-hidden px-3">
-        <div className="flex flex-wrap justify-center gap-1 text-[8px] font-semibold">
-          {['Español', 'Italiano', 'Français', 'Svenska', 'Norsk'].map((l, i) => (
-            <span key={l} className={`rounded-full px-2 py-1 ${i === 1 ? 'bg-accent' : 'bg-neutral-800 text-white/80'}`}>
-              {l}
-            </span>
+      <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3 text-left">
+        <div className="flex items-center gap-2 rounded-xl bg-neutral-900 px-2.5 py-1.5 ring-1 ring-white/10">
+          <span className="text-[14px] leading-none">🇮🇹</span>
+          <span className="flex-1 text-[10px] font-semibold">Italiano</span>
+          <span className="rounded-full bg-accent/20 px-1.5 text-[7px] font-semibold text-accent">Hier</span>
+        </div>
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-white p-3 text-black">
+          <p className="text-[13px] font-extrabold leading-tight">Sono celiaco/a</p>
+          <p className="text-[8.5px] font-semibold leading-snug">Non posso mangiare glutine. Anche una piccolissima quantità è troppo.</p>
+          {[
+            ['Niente di questo nel mio piatto', 'Frumento, orzo, segale, farro…', 'bg-[#ffe3e0] text-[#c0281d]'],
+            ['In cucina', 'Padella e tagliere puliti…', 'bg-[#fff1d6] text-[#a35f00]'],
+            ['Di solito va bene', 'Riso, patate, carne, pesce…', 'bg-[#e3f6ea] text-[#137a46]'],
+          ].map(([h, t, c]) => (
+            <div key={h} className={`rounded-lg px-2 py-1 ${c}`}>
+              <p className="text-[8px] font-bold">{h}</p>
+              <p className="text-[7.5px] text-black/80">{t}</p>
+            </div>
           ))}
         </div>
-        <div className="flex flex-col items-center gap-2 rounded-3xl bg-white p-4 text-center text-black">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-danger text-lg font-black text-white">!</span>
-          <p className="text-[15px] font-bold">Sono celiaco/a</p>
-          <p className="text-[9.5px] leading-relaxed">
-            Non posso mangiare glutine: niente frumento, orzo, segale, farro o avena, nemmeno in salse o pangrattato…
-          </p>
-        </div>
-        <p className="flex items-center justify-center gap-1 text-[9px] text-white/60">
-          <Languages size={11} /> Laat dit scherm aan de bediening zien
-        </p>
       </div>
       <MiniNav active="guide" />
     </>

@@ -110,6 +110,11 @@ barcode wordt naar Open Food Facts gestuurd.
   "Risiconiveau-informatie", "Hoog risico" of Engelse termen. De gebruiker liet een andere
   app zien die het zo doet; wij willen het mooier, slimmer en eenvoudiger. Neem nooit
   teksten of beelden over uit andere apps.
+- **Kaart voor de bediening** (`src/pages/TravelCardPage.tsx`): eigen tekst in 10 talen met
+  een titel, één zin uitleg en drie gekleurde blokken (Niet in mijn eten / In de keuken / Dit
+  kan meestal wel). Slimme taalknop: kiest op reis vanzelf de taal via de tijdzone van de
+  telefoon (label "Hier"), anders de laatst gekozen taal. "Lees mee in het Nederlands" toont
+  de vertaling. Pas bij een tekstwijziging alle 10 talen aan.
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 
