@@ -1,29 +1,23 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   Check,
-  Clock3,
   Heart,
   Infinity as InfinityIcon,
-  Languages,
-  Lock,
   Minus,
   Plus,
   ScanBarcode,
-  ScanText,
   ShieldCheck,
   Smartphone,
   Sparkles,
-  UtensilsCrossed,
   type LucideIcon,
 } from 'lucide-react'
-import { GUIDE } from '../../data/glutenGuide'
-import { INGREDIENT_COUNT, INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
+import { DesktopPanel } from './LandingPanels'
+import type { PanelId } from './panels'
 import {
   Phone,
   ScreenDanger,
@@ -43,7 +37,6 @@ const PHONE_HREF = '#telefoon'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
 const YEAR = new Date().getFullYear()
-const GUIDE_TOPICS = INGREDIENT_COUNT + GUIDE.reduce((n, c) => n + c.items.length, 0)
 
 /** Laat elementen met data-reveal zacht invliegen zodra ze in beeld komen. */
 function useReveal() {
@@ -239,8 +232,20 @@ function Faq() {
   )
 }
 
+/** Functies en Glutengids hebben geen eigen blok op de pagina; die openen een venster. */
+const NAV: [string, string][] = [
+  ['#hoe', 'Hoe het werkt'],
+  ['functies', 'Functies'],
+  ['#in-actie', 'In actie'],
+  ['gids', 'Glutengids'],
+  ['#vragen', 'Vragen'],
+]
+const NAV_CLS = 'rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]'
+
 export function LandingPage() {
   useReveal()
+  const [panel, setPanel] = useState<PanelId | null>(null)
+  const closePanel = useCallback(() => setPanel(null), [])
   return (
     <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
       {/* Navigatie */}
@@ -248,24 +253,31 @@ export function LandingPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
           <Logo light />
           <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
-            {[
-              ['#hoe', 'Hoe het werkt'],
-              ['#functies', 'Functies'],
-              ['#in-actie', 'In actie'],
-              ['#gids', 'Glutengids'],
-              ['#vragen', 'Vragen'],
-            ].map(([href, label]) => (
-              <a key={href} href={href} className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]">
-                {label}
-              </a>
-            ))}
+            {NAV.map(([target, label]) =>
+              target.startsWith('#') ? (
+                <a key={label} href={target} onClick={closePanel} className={NAV_CLS}>
+                  {label}
+                </a>
+              ) : (
+                <button
+                  key={label}
+                  onClick={() => setPanel(target as PanelId)}
+                  aria-pressed={panel === target}
+                  className={`${NAV_CLS} ${panel === target ? 'bg-white/10 text-[#7ee2a8]' : ''}`}
+                >
+                  {label}
+                </button>
+              ),
+            )}
           </nav>
-          <a href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
+          <a href={PHONE_HREF} onClick={closePanel} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
             <Smartphone size={17} />
             Op je telefoon
           </a>
         </div>
       </header>
+
+      {panel && <DesktopPanel id={panel} onClose={closePanel} />}
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">
@@ -338,21 +350,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Cijfers */}
-      <section className="mx-auto grid max-w-5xl grid-cols-4 gap-6 px-6 pt-20">
-        {[
-          ['€ 0', 'voor altijd'],
-          ['∞', 'scans per dag'],
-          ['11', 'talen herkend'],
-          [String(GUIDE_TOPICS), 'gidsonderwerpen'],
-        ].map(([n, l]) => (
-          <div key={l} data-reveal className="flex flex-col items-center rounded-[28px] bg-white py-8 text-center shadow-sm ring-1 ring-neutral-200">
-            <span className="font-display text-[54px] font-extrabold leading-none text-accent">{n}</span>
-            <span className="mt-2 text-[16px] text-neutral-600">{l}</span>
-          </div>
-        ))}
-      </section>
-
       {/* Hoe het werkt */}
       <section id="hoe" className="scroll-mt-28 px-6 py-28">
         <SectionTitle eyebrow="Hoe het werkt" title="Drie seconden. Drie stappen." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
@@ -369,56 +366,6 @@ export function LandingPage() {
               <h3 className="mt-6 font-display text-[26px] font-bold">{title}</h3>
               <p className="mt-2 max-w-xs text-[17px] leading-relaxed text-neutral-600">{text}</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Functies: bento */}
-      <section id="functies" className="scroll-mt-28 bg-[#f3eee2] px-6 py-28">
-        <SectionTitle eyebrow="Functies" title={<>Alles om glutenvrij te eten.<br />Zonder betaalmuur.</>} />
-        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-6 gap-5">
-          <article data-reveal className="col-span-4 flex flex-col items-center rounded-[32px] bg-[#14130f] p-10 text-center text-white">
-            <ScanText size={40} className="text-[#7ee2a8]" />
-            <h3 className="mt-5 font-display text-[32px] font-bold">Ingrediënten- én barcodescanner</h3>
-            <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/70">
-              Fotografeer een etiket of scan een EAN, UPC of QR-code. Productdata komt uit Open Food Facts, de tekst wordt
-              op je eigen telefoon gelezen.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {['EAN', 'UPC', 'QR', 'Etiket', 'Menukaart'].map((t) => (
-                <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-[14px] font-semibold">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </article>
-          <article data-reveal className="col-span-2 flex flex-col items-center justify-center rounded-[32px] bg-accent p-8 text-center text-white">
-            <InfinityIcon size={56} />
-            <h3 className="mt-3 font-display text-[30px] font-bold">Onbeperkt</h3>
-            <p className="mt-2 text-[16px] text-white/85">Scan zo vaak je wilt. Geen eerste-scan-gratis-trucje.</p>
-          </article>
-          {(
-            [
-              [UtensilsCrossed, 'Menukaart-analyse', 'Herkent gebonden sauzen, croutons, paneermeel, sojasaus en gedeelde frituur, en geeft je vragen voor de bediening.', 'bg-white'],
-              [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.', 'bg-[#ffd75e]'],
-              [ShieldCheck, 'Veiligheidsprofiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.', 'bg-white'],
-              [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.', 'bg-white'],
-              [Clock3, 'Scangeschiedenis', 'Al je scans bij elkaar, te filteren op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
-              [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
-            ] as const
-          ).map(([Icon, title, text, bg], i) => (
-            <article
-              key={title}
-              data-reveal
-              className={`col-span-2 flex flex-col items-center rounded-[32px] p-8 text-center ring-1 ring-black/5 ${bg}`}
-              style={{ transitionDelay: `${(i % 3) * 100}ms` }}
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#14130f] text-white">
-                <Icon size={26} />
-              </span>
-              <h3 className="mt-5 font-display text-[24px] font-bold">{title}</h3>
-              <p className="mt-2 text-[16px] leading-relaxed text-neutral-700">{text}</p>
-            </article>
           ))}
         </div>
       </section>
@@ -442,55 +389,6 @@ export function LandingPage() {
             Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Dan
             hoort de hulp daarbij gewoon voor iedereen beschikbaar te zijn: onbeperkt, zonder account en zonder reclame.
           </p>
-        </div>
-      </section>
-
-      {/* Gids */}
-      <section id="gids" className="scroll-mt-28 bg-[#10140f] px-6 py-28 text-white">
-        <SectionTitle light eyebrow="Glutengids" title="Weet waar gluten schuilen" sub="Van tarwe en mout tot E-nummers en verwerkingshulpstoffen: per ingrediënt het risico en een veilig alternatief." />
-        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-4 gap-5">
-          {INGREDIENT_TABS.map((t, i) => {
-            const high = t.entries.filter((e) => e.risk === 'hoog').length
-            return (
-              <article
-                key={t.id}
-                data-reveal
-                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
-                style={{ transitionDelay: `${(i % 4) * 80}ms` }}
-              >
-                <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
-                <p className="mt-1 text-[14px] text-white/55">
-                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-                  {t.entries.slice(0, 4).map((e) => (
-                    <span
-                      key={e.name}
-                      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
-                        e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
-                      }`}
-                    >
-                      {e.name}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            )
-          })}
-        </div>
-        <div data-reveal className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 text-center">
-          <p className="text-[17px] text-white/65">Plus thema&apos;s vol praktische tips:</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {GUIDE.map((c) => (
-              <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
-                {c.title}
-              </span>
-            ))}
-            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Reiskaart in 10 talen</span>
-          </div>
-        </div>
-        <div className="mt-12 flex justify-center">
-          <PrimaryButton>Bekijk de gids op je telefoon</PrimaryButton>
         </div>
       </section>
 

@@ -201,6 +201,9 @@ function Gids({ onOpenGuide }: { onOpenGuide?: () => void }) {
         ))}
         <span className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">Reiskaart in 10 talen</span>
       </div>
+      {!onOpenGuide && (
+        <p className="mt-6 text-center text-[15px] text-white/60">De volledige gids staat in de scanner op je telefoon, onder "Gids".</p>
+      )}
       {onOpenGuide && (
         <button
           onClick={onOpenGuide}
@@ -253,6 +256,47 @@ export function InfoPanel({ id, onBack, onOpenGuide }: { id: PanelId; onBack: ()
         {id === 'functies' && <Features />}
         {id === 'in-actie' && <Carousel />}
         {id === 'gids' && <Gids onOpenGuide={onOpenGuide} />}
+        {id === 'vragen' && <Faq />}
+      </div>
+    </div>
+  )
+}
+
+/** Desktopvenster over de website, onder de kop; Esc, het kruisje of ernaast klikken sluit het. */
+export function DesktopPanel({ id, onClose }: { id: PanelId; onClose: () => void }) {
+  const { title } = PANELS.find((p) => p.id === id)!
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-30 flex items-start justify-center bg-black/60 px-6 pb-6 pt-28 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="animate-slide-up max-h-full w-full max-w-[1200px] overflow-y-auto rounded-[36px] bg-[#10140f] p-8 text-white shadow-2xl ring-1 ring-white/10"
+      >
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="font-display text-[36px] font-bold tracking-tight">{title}</h2>
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Sluiten">
+            <X size={22} />
+          </button>
+        </div>
+        {id === 'hoe' && <Hoe />}
+        {id === 'functies' && <Features />}
+        {id === 'in-actie' && <Carousel />}
+        {id === 'gids' && <Gids />}
         {id === 'vragen' && <Faq />}
       </div>
     </div>

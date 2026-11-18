@@ -73,9 +73,14 @@ barcode wordt naar Open Food Facts gestuurd.
   is bewust weggehaald, want die staat al in de kop.
 - De **kop** heeft de menu-items Hoe het werkt, Functies, In actie, Glutengids en Vragen,
   in dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
-- De onderdelen onder het bovenstuk blijven, zoals de drie stappen
-  ("Drie seconden. Drie stappen."). Scrollen mag. Een pagina van één scherm vond de
+- Onder het bovenstuk staan, in deze volgorde: de drie stappen ("Drie seconden. Drie
+  stappen."), de carrousel "Bekijk het zelf", "Waarom gratis?", het blok met de QR-code,
+  de veelgestelde vragen en de footer. Scrollen mag. Een pagina van één scherm vond de
   gebruiker te kaal en "wit en saai".
+- **Bewust weggehaald, niet terugzetten:** de cijferblokken (€ 0, ∞, 11, 106), het
+  functieblok met de gekleurde tegels en het glutengidsblok. "Functies" en "Glutengids"
+  in de kop openen daarom een venster over de pagina (`DesktopPanel` in
+  `LandingPanels.tsx`). De andere menu-items springen naar hun blok.
 - De **footer** is plat, één regel: logo, disclaimer met Open Food Facts en
   "© jaar · Gemaakt met ♥ in Nederland". Herhaal er niets uit de kop.
 - De carrousel "Bekijk het zelf" laat precies 4 kaarten zien en niets half buiten beeld.
