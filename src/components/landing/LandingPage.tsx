@@ -1,23 +1,33 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  BookOpen,
+  Camera,
   Check,
+  CheckCircle2,
+  Clock3,
   Heart,
   Infinity as InfinityIcon,
+  Languages,
+  Lock,
   Minus,
   Plus,
   ScanBarcode,
+  ScanText,
   ShieldCheck,
   Smartphone,
   Sparkles,
+  UtensilsCrossed,
+  XCircle,
   type LucideIcon,
 } from 'lucide-react'
+import { GUIDE } from '../../data/glutenGuide'
+import { INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
-import { DesktopPanel } from './LandingPanels'
-import type { PanelId } from './panels'
 import {
   Phone,
   ScreenDanger,
@@ -31,15 +41,62 @@ import {
 
 /**
  * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
- * Alle knoppen wijzen daarom naar de QR-code; op de telefoon opent dezelfde site als scanner.
+ * Elk menu-item is een eigen pagina met een eigen adres (/functies, /vragen, ...).
+ * De knoppen "Op je telefoon" wijzen naar de QR-code op de startpagina.
  */
-const PHONE_HREF = '#telefoon'
+const PHONE_HREF = '/#telefoon'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
 const YEAR = new Date().getFullYear()
 
+const PAGES = [
+  { path: '/hoe-het-werkt', label: 'Hoe het werkt' },
+  { path: '/functies', label: 'Functies' },
+  { path: '/in-actie', label: 'In actie' },
+  { path: '/glutengids', label: 'Glutengids' },
+  { path: '/vragen', label: 'Vragen' },
+] as const
+
+/* ---------- Eenvoudige router: echte adressen via de History API ---------- */
+
+function subscribePath(onChange: () => void) {
+  window.addEventListener('popstate', onChange)
+  return () => window.removeEventListener('popstate', onChange)
+}
+
+function usePath() {
+  return useSyncExternalStore(subscribePath, () => window.location.pathname)
+}
+
+/** Gaat naar een pagina (en eventueel een blok erop) zonder de site te herladen. */
+function go(href: string) {
+  const [path, hash] = href.split('#')
+  if (path !== window.location.pathname || hash) {
+    window.history.pushState(null, '', href)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+  requestAnimationFrame(() => {
+    const target = hash ? document.getElementById(hash) : null
+    if (target) target.scrollIntoView({ behavior: 'smooth' })
+    else window.scrollTo(0, 0)
+  })
+}
+
+function Link({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  function onClick(e: MouseEvent<HTMLAnchorElement>) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    e.preventDefault()
+    go(href)
+  }
+  return (
+    <a href={href} onClick={onClick} className={className}>
+      {children}
+    </a>
+  )
+}
+
 /** Laat elementen met data-reveal zacht invliegen zodra ze in beeld komen. */
-function useReveal() {
+function useReveal(path: string) {
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>('[data-reveal]')
     const observer = new IntersectionObserver(
@@ -55,7 +112,7 @@ function useReveal() {
     )
     els.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [])
+  }, [path])
 }
 
 function Logo({ light = false }: { light?: boolean }) {
@@ -84,13 +141,13 @@ function QrCode({ size = 176 }: { size?: number }) {
 
 function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; href?: string }) {
   return (
-    <a
+    <Link
       href={href}
       className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-display text-[18px] font-semibold text-white shadow-xl shadow-accent/30 transition hover:-translate-y-0.5 hover:bg-[#1a9258] hover:shadow-2xl hover:shadow-accent/40"
     >
       {children}
       <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-    </a>
+    </Link>
   )
 }
 
@@ -141,6 +198,42 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
   { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
   { word: 'Reis', line: 'zonder zorgen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
+
+const WAYS: { icon: LucideIcon; title: string; text: string; tip: string }[] = [
+  {
+    icon: ScanBarcode,
+    title: 'Barcode',
+    text: 'Kies Barcode en richt de camera op de streepjescode. Je hoeft niets te tikken: hij leest hem vanzelf.',
+    tip: 'Werkt het snelst in de supermarkt.',
+  },
+  {
+    icon: ScanText,
+    title: 'Etiket',
+    text: 'Kies Foto en fotografeer de lijst met ingrediënten. De scanner zoekt woorden als tarwe, gerst en mout.',
+    tip: 'Ook voor buitenlandse etiketten.',
+  },
+  {
+    icon: Camera,
+    title: 'Menukaart',
+    text: 'Kies Foto en fotografeer het menu. Je ziet welke gerechten twijfel geven en wat je kunt vragen.',
+    tip: 'Handig in een restaurant.',
+  },
+]
+
+const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] = [
+  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Mag je eten.', cls: 'bg-[#e3f6ea] text-[#137a46]' },
+  { icon: AlertTriangle, label: 'Twijfel', text: 'Lees het etiket nog eens of vraag het na.', cls: 'bg-[#fff1d6] text-[#a35f00]' },
+  { icon: XCircle, label: 'Bevat gluten', text: 'Niet eten.', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
+]
+
+const FEATURES = [
+  [UtensilsCrossed, 'Menukaart-analyse', 'Herkent gebonden sauzen, croutons, paneermeel, sojasaus en gedeelde frituur, en geeft je vragen voor de bediening.', 'bg-white'],
+  [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.', 'bg-[#ffd75e]'],
+  [ShieldCheck, 'Veiligheidsprofiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.', 'bg-white'],
+  [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.', 'bg-white'],
+  [Clock3, 'Scangeschiedenis', 'Al je scans bij elkaar, te filteren op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
+  [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
+] as const
 
 const FAQ = [
   {
@@ -232,53 +325,24 @@ function Faq() {
   )
 }
 
-/** Functies en Glutengids hebben geen eigen blok op de pagina; die openen een venster. */
-const NAV: [string, string][] = [
-  ['#hoe', 'Hoe het werkt'],
-  ['functies', 'Functies'],
-  ['#in-actie', 'In actie'],
-  ['gids', 'Glutengids'],
-  ['#vragen', 'Vragen'],
-]
-const NAV_CLS = 'rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]'
+/* ---------- Pagina's ---------- */
 
-export function LandingPage() {
-  useReveal()
-  const [panel, setPanel] = useState<PanelId | null>(null)
-  const closePanel = useCallback(() => setPanel(null), [])
+/** Donkere band bovenaan elke pagina, in de stijl van het bovenstuk van de startpagina. */
+function PageBand({ eyebrow, title, sub }: { eyebrow: string; title: ReactNode; sub?: string }) {
   return (
-    <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
-      {/* Navigatie */}
-      <header className="fixed inset-x-0 top-4 z-40 px-6">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
-          <Logo light />
-          <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
-            {NAV.map(([target, label]) =>
-              target.startsWith('#') ? (
-                <a key={label} href={target} onClick={closePanel} className={NAV_CLS}>
-                  {label}
-                </a>
-              ) : (
-                <button
-                  key={label}
-                  onClick={() => setPanel(target as PanelId)}
-                  aria-pressed={panel === target}
-                  className={`${NAV_CLS} ${panel === target ? 'bg-white/10 text-[#7ee2a8]' : ''}`}
-                >
-                  {label}
-                </button>
-              ),
-            )}
-          </nav>
-          <a href={PHONE_HREF} onClick={closePanel} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
-            <Smartphone size={17} />
-            Op je telefoon
-          </a>
-        </div>
-      </header>
+    <section className="relative overflow-hidden bg-[#10140f] px-6 pb-20 pt-40 text-white">
+      <div className="pointer-events-none absolute -top-48 left-1/2 h-[520px] w-[1000px] -translate-x-1/2 rounded-full bg-accent/25 blur-[140px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px]" />
+      <div className="relative">
+        <SectionTitle light eyebrow={eyebrow} title={title} sub={sub} />
+      </div>
+    </section>
+  )
+}
 
-      {panel && <DesktopPanel id={panel} onClose={closePanel} />}
-
+function HomePage() {
+  return (
+    <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-accent/25 blur-[140px]" />
@@ -351,7 +415,7 @@ export function LandingPage() {
       </section>
 
       {/* Hoe het werkt */}
-      <section id="hoe" className="scroll-mt-28 px-6 py-28">
+      <section className="px-6 py-28">
         <SectionTitle eyebrow="Hoe het werkt" title="Drie seconden. Drie stappen." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
         <div className="relative mx-auto mt-16 grid max-w-5xl grid-cols-3 gap-8">
           <div className="absolute left-[16%] right-[16%] top-12 border-t-2 border-dashed border-accent/40" />
@@ -368,14 +432,6 @@ export function LandingPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* In actie */}
-      <section id="in-actie" className="scroll-mt-28 py-28">
-        <div className="px-6">
-          <SectionTitle eyebrow="In actie" title="Bekijk het zelf" sub="Strak, donker en duidelijk. Ontworpen om in één oogopslag te lezen, ook in een drukke supermarkt." />
-        </div>
-        <Carousel />
       </section>
 
       {/* Waarom gratis */}
@@ -415,11 +471,221 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Vragen */}
-      <section id="vragen" className="scroll-mt-28 bg-[#f3eee2] px-6 py-28">
-        <SectionTitle eyebrow="Vragen" title="Veelgestelde vragen" />
+    </>
+  )
+}
+
+function HowPage() {
+  return (
+    <>
+      <PageBand eyebrow="Hoe het werkt" title="Zo gebruik je de scanner" sub="Drie manieren om te scannen. Kies wat je voor je hebt." />
+      <section className="px-6 py-24">
+        <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6">
+          {WAYS.map(({ icon: Icon, title, text, tip }, i) => (
+            <article key={title} data-reveal className="flex flex-col rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-neutral-200" style={{ transitionDelay: `${i * 100}ms` }}>
+              <span className="relative flex h-16 w-16 items-center justify-center rounded-[22px] bg-accent text-white shadow-xl shadow-accent/30">
+                <Icon size={30} />
+                <span className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#ffd75e] font-display text-[15px] font-bold text-[#14130f]">
+                  {i + 1}
+                </span>
+              </span>
+              <h3 className="mt-6 font-display text-[28px] font-bold">{title}</h3>
+              <p className="mt-2 text-[17px] leading-relaxed text-neutral-600">{text}</p>
+              <p className="mt-auto pt-5 text-[15px] font-semibold text-accent">{tip}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="bg-[#f3eee2] px-6 py-24">
+        <SectionTitle eyebrow="De uitslag" title="Wat betekent de kleur?" sub="Na elke scan zie je meteen een kleur. Daaronder staat waarom." />
+        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-3 gap-6">
+          {COLORS.map(({ icon: Icon, label, text, cls }) => (
+            <div key={label} data-reveal className={`flex flex-col items-center rounded-[32px] px-6 py-10 text-center ${cls}`}>
+              <Icon size={56} />
+              <h3 className="mt-4 font-display text-[28px] font-bold">{label}</h3>
+              <p className="mt-1 text-[17px]">{text}</p>
+            </div>
+          ))}
+        </div>
+        <p data-reveal className="mx-auto mt-10 flex max-w-2xl items-center justify-center gap-2 text-center text-[16px] text-neutral-600">
+          <ShieldCheck size={20} className="shrink-0 text-accent" />
+          Twijfel je? Kijk dan altijd nog even zelf op de verpakking.
+        </p>
+      </section>
+    </>
+  )
+}
+
+function FeaturesPage() {
+  return (
+    <>
+      <PageBand eyebrow="Functies" title={<>Alles om glutenvrij te eten.<br />Zonder betaalmuur.</>} />
+      <section className="bg-[#f3eee2] px-6 py-24">
+        <div className="mx-auto grid max-w-6xl grid-cols-6 gap-5">
+          <article data-reveal className="col-span-4 flex flex-col items-center rounded-[32px] bg-[#14130f] p-10 text-center text-white">
+            <ScanText size={40} className="text-[#7ee2a8]" />
+            <h3 className="mt-5 font-display text-[32px] font-bold">Ingrediënten- én barcodescanner</h3>
+            <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/70">
+              Fotografeer een etiket of scan een EAN, UPC of QR-code. Productdata komt uit Open Food Facts, de tekst wordt
+              op je eigen telefoon gelezen.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {['EAN', 'UPC', 'QR', 'Etiket', 'Menukaart'].map((t) => (
+                <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-[14px] font-semibold">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </article>
+          <article data-reveal className="col-span-2 flex flex-col items-center justify-center rounded-[32px] bg-accent p-8 text-center text-white">
+            <InfinityIcon size={56} />
+            <h3 className="mt-3 font-display text-[30px] font-bold">Onbeperkt</h3>
+            <p className="mt-2 text-[16px] text-white/85">Scan zo vaak je wilt. Geen eerste-scan-gratis-trucje.</p>
+          </article>
+          {FEATURES.map(([Icon, title, text, bg], i) => (
+            <article
+              key={title}
+              data-reveal
+              className={`col-span-2 flex flex-col items-center rounded-[32px] p-8 text-center ring-1 ring-black/5 ${bg}`}
+              style={{ transitionDelay: `${(i % 3) * 100}ms` }}
+            >
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#14130f] text-white">
+                <Icon size={26} />
+              </span>
+              <h3 className="mt-5 font-display text-[24px] font-bold">{title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-neutral-700">{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  )
+}
+
+function ActionPage() {
+  return (
+    <>
+      <PageBand eyebrow="In actie" title="Bekijk het zelf" sub="Strak, donker en duidelijk. Ontworpen om in één oogopslag te lezen, ook in een drukke supermarkt." />
+      <section className="pb-20 pt-6">
+        <Carousel />
+      </section>
+    </>
+  )
+}
+
+function GuidePage() {
+  return (
+    <>
+      <PageBand
+        eyebrow="Glutengids"
+        title="Weet waar gluten schuilen"
+        sub="Van tarwe en mout tot E-nummers: per ingrediënt het risico en een veilig alternatief."
+      />
+      <section className="bg-[#10140f] px-6 pb-24 text-white">
+        <div className="mx-auto grid max-w-6xl grid-cols-4 gap-5">
+          {INGREDIENT_TABS.map((t, i) => {
+            const high = t.entries.filter((e) => e.risk === 'hoog').length
+            return (
+              <article
+                key={t.id}
+                data-reveal
+                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
+                style={{ transitionDelay: `${(i % 4) * 80}ms` }}
+              >
+                <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
+                <p className="mt-1 text-[14px] text-white/55">
+                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
+                </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                  {t.entries.slice(0, 4).map((e) => (
+                    <span
+                      key={e.name}
+                      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
+                        e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
+                      }`}
+                    >
+                      {e.name}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            )
+          })}
+        </div>
+        <div data-reveal className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 text-center">
+          <p className="text-[17px] text-white/65">Plus thema&apos;s vol praktische tips:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {GUIDE.map((c) => (
+              <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
+                {c.title}
+              </span>
+            ))}
+            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Reiskaart in 10 talen</span>
+          </div>
+        </div>
+        <div className="mt-12 flex justify-center">
+          <PrimaryButton>Bekijk de gids op je telefoon</PrimaryButton>
+        </div>
+      </section>
+    </>
+  )
+}
+
+function QuestionsPage() {
+  return (
+    <>
+      <PageBand eyebrow="Vragen" title="Veelgestelde vragen" />
+      <section className="bg-[#f3eee2] px-6 pb-24 pt-4">
         <Faq />
       </section>
+    </>
+  )
+}
+
+const PAGE_VIEWS: Record<string, () => ReactNode> = {
+  '/hoe-het-werkt': HowPage,
+  '/functies': FeaturesPage,
+  '/in-actie': ActionPage,
+  '/glutengids': GuidePage,
+  '/vragen': QuestionsPage,
+}
+
+const NAV_CLS = 'rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]'
+
+export function LandingPage() {
+  const path = usePath()
+  const View = PAGE_VIEWS[path] ?? HomePage
+  const current = PAGES.find((p) => p.path === path)
+  useReveal(path)
+  useEffect(() => {
+    document.title = current ? `${current.label} · Glutenscanner` : 'Glutenscanner'
+  }, [current])
+
+  return (
+    <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
+      {/* Navigatie */}
+      <header className="fixed inset-x-0 top-4 z-40 px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
+          <Link href="/" className="rounded-2xl">
+            <Logo light />
+          </Link>
+          <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
+            {PAGES.map(({ path: href, label }) => (
+              <Link key={href} href={href} className={`${NAV_CLS} ${href === path ? 'bg-white/10 text-[#7ee2a8]' : ''}`}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <Link href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
+            <Smartphone size={17} />
+            Op je telefoon
+          </Link>
+        </div>
+      </header>
+
+      <main key={path}>
+        <View />
+      </main>
 
       {/* Footer: één platte regel; de navigatie staat al in de kop. */}
       <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-6">
