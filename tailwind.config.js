@@ -28,10 +28,6 @@ export default {
         muted: '#8E8E93',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
         scanline: {
           '0%, 100%': { top: '0%' },
           '50%': { top: 'calc(100% - 2px)' },
@@ -47,8 +43,6 @@ export default {
         },
       },
       animation: {
-        float: 'float 5s ease-in-out infinite',
-        'float-slow': 'float 7s ease-in-out infinite',
         scanline: 'scanline 2.4s ease-in-out infinite',
         'pop-in': 'pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both',
         'slide-up': 'slide-up 0.35s ease-out both',

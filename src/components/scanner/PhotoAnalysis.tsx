@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, Loader2, ScanText, Sparkles, X } from 'lucide-rea
 import type { AnalysisContext } from '../../types/product'
 import { decodeImage, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { isOcrAvailable, recognizeText, type OcrProgress } from '../../services/ocr'
+import { guessContext } from '../../services/textKind'
 
 type StepState = 'pending' | 'active' | 'done' | 'skipped'
 
@@ -50,11 +51,13 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
   const [progress, setProgress] = useState<OcrProgress | null>(null)
   const [manual, setManual] = useState<null | 'unclear' | 'failed'>(null)
   const [text, setText] = useState('')
-  const [context, setContext] = useState<AnalysisContext>('menu')
-  const callbacks = useRef({ onCode, onText, context })
+  const [context, setContext] = useState<AnalysisContext>('label')
+  /** Pas als de gebruiker zelf kiest, gebruiken we zijn keuze in plaats van onze gok. */
+  const [chosen, setChosen] = useState(false)
+  const callbacks = useRef({ onCode, onText, context, chosen })
   useEffect(() => {
-    callbacks.current = { onCode, onText, context }
-  }, [onCode, onText, context])
+    callbacks.current = { onCode, onText, context, chosen }
+  }, [onCode, onText, context, chosen])
 
   useEffect(() => {
     const { onCode } = callbacks.current
@@ -86,10 +89,12 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
         if (cancelled) return
         setLoadStep('done')
         setReadStep('done')
+        // Keuze van dít moment: de gebruiker kan tijdens het lezen nog wisselen.
+        const ctx = callbacks.current.chosen ? callbacks.current.context : guessContext(result.text)
         if (result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE) {
-          // Context van dít moment: de gebruiker kan tijdens het lezen nog wisselen.
-          callbacks.current.onText(result.text, callbacks.current.context)
+          callbacks.current.onText(result.text, ctx)
         } else {
+          setContext(ctx)
           setText(result.text)
           setManual('unclear')
         }
@@ -147,25 +152,31 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
       </div>
 
       <div className="flex flex-col gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <div className="flex self-center rounded-full bg-surface p-1" role="tablist" aria-label="Soort tekst">
-          {(
-            [
-              ['menu', 'Menukaart'],
-              ['label', 'Etiket'],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={context === id}
-              onClick={() => setContext(id)}
-              className={`rounded-full px-5 py-2 text-[15px] font-semibold transition-colors ${
-                context === id ? 'bg-white text-black' : 'text-white/70'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="flex self-center rounded-full bg-surface p-1" role="tablist" aria-label="Soort tekst">
+            {(
+              [
+                ['label', 'Etiket'],
+                ['menu', 'Menukaart'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={chosen && context === id}
+                onClick={() => {
+                  setContext(id)
+                  setChosen(true)
+                }}
+                className={`rounded-full px-5 py-2 text-[15px] font-semibold transition-colors ${
+                  chosen && context === id ? 'bg-white text-black' : 'text-white/70'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {!chosen && <p className="text-[13px] text-muted">Wordt vanzelf herkend. Tik alleen als het niet klopt.</p>}
         </div>
 
         {/* Blok gecentreerd, regels onderling uitgelijnd zodat de vinkjes in één lijn staan. */}

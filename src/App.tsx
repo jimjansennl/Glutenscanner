@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type Re
 import { Loader2 } from 'lucide-react'
 import { LandingPage } from './components/landing/LandingPage'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
-import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
+import { ScannerView } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
 import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
@@ -55,7 +55,6 @@ function WithNav({
 /** De scanner-app zoals op de telefoon: opent direct op de camera. */
 function ScannerApp() {
   const [view, setView] = useState<View>({ name: 'scanner' })
-  const [scanMode, setScanMode] = useState<ScanMode>('barcode')
   const abortRef = useRef<AbortController | null>(null)
   const imageUrlRef = useRef<string | null>(null)
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
@@ -126,8 +125,6 @@ function ScannerApp() {
     case 'scanner':
       return (
         <ScannerView
-          mode={scanMode}
-          onModeChange={setScanMode}
           onNavigate={navigate}
           onCode={handleCode}
           onPhoto={handlePhoto}
@@ -202,10 +199,7 @@ function ScannerApp() {
           <ResultPage
             result={{ ...view.result, analysis: profiled(view.result) }}
             onHome={() => navigate(view.back)}
-            onPhotoScan={() => {
-              setScanMode('photo')
-              go({ name: 'scanner' })
-            }}
+            onPhotoScan={() => go({ name: 'scanner' })}
           />
         </WithNav>
       )
