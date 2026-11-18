@@ -197,24 +197,40 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
   { word: 'Reis', line: 'met een kaart in 10 talen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
 
-const WAYS: { icon: LucideIcon; title: string; text: string; tip: string }[] = [
+/** Elke manier van scannen een eigen kleur, in de stijl van de rest van de site. */
+const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: string; tile: string; iconCls: string; sub: string; pill: string }[] = [
   {
     icon: ScanBarcode,
     title: 'Barcode',
-    text: 'Kies Barcode en richt de camera op de streepjescode. Je hoeft niets te tikken: hij leest hem vanzelf.',
-    tip: 'Niet elk product staat in de database. Dan krijg je twijfel.',
+    mode: 'Kies Barcode',
+    text: 'Richt de camera op de streepjescode. Hij leest hem vanzelf.',
+    tip: 'Niet gevonden? Dan krijg je twijfel.',
+    tile: 'bg-[#14130f] text-white',
+    iconCls: 'bg-accent text-white shadow-accent/40',
+    sub: 'text-white/70',
+    pill: 'bg-white/10 text-[#7ee2a8]',
   },
   {
     icon: ScanText,
     title: 'Etiket',
-    text: 'Kies Foto en fotografeer de lijst met ingrediënten. De scanner zoekt woorden als tarwe, gerst en mout.',
-    tip: 'Ook buitenlandse woorden, zoals trigo en Weizen.',
+    mode: 'Kies Foto',
+    text: 'Fotografeer de ingrediënten. Hij zoekt woorden als tarwe, gerst en mout.',
+    tip: 'Ook trigo, Weizen en meer',
+    tile: 'bg-accent text-white',
+    iconCls: 'bg-white text-accent shadow-black/20',
+    sub: 'text-white/85',
+    pill: 'bg-white/15 text-white',
   },
   {
     icon: Camera,
     title: 'Menukaart',
-    text: 'Kies Foto en fotografeer het menu. Je ziet waar gluten in kunnen zitten, zoals saus of paneermeel, en wat je kunt vragen.',
-    tip: 'Handig in een restaurant.',
+    mode: 'Kies Foto',
+    text: 'Fotografeer het menu. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.',
+    tip: 'Handig in een restaurant',
+    tile: 'bg-[#ffd75e] text-[#14130f]',
+    iconCls: 'bg-[#14130f] text-[#ffd75e] shadow-black/20',
+    sub: 'text-[#14130f]/75',
+    pill: 'bg-[#14130f]/10 text-[#14130f]',
   },
 ]
 
@@ -478,17 +494,25 @@ function HowPage() {
       <PageBand eyebrow="Hoe het werkt" title="Zo gebruik je de scanner" sub="Drie manieren om te scannen. Kies wat je voor je hebt." />
       <section className="px-6 py-24">
         <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6">
-          {WAYS.map(({ icon: Icon, title, text, tip }, i) => (
-            <article key={title} data-reveal className="flex flex-col rounded-[32px] bg-white p-8 shadow-sm ring-1 ring-neutral-200" style={{ transitionDelay: `${i * 100}ms` }}>
-              <span className="relative flex h-16 w-16 items-center justify-center rounded-[22px] bg-accent text-white shadow-xl shadow-accent/30">
-                <Icon size={30} />
-                <span className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#ffd75e] font-display text-[15px] font-bold text-[#14130f]">
+          {WAYS.map(({ icon: Icon, title, mode, text, tip, tile, iconCls, sub, pill }, i) => (
+            <article
+              key={title}
+              data-reveal
+              className={`flex flex-col items-center rounded-[36px] px-8 pb-9 pt-11 text-center shadow-xl shadow-black/5 ${tile}`}
+              style={{ transitionDelay: `${i * 100}ms` }}
+            >
+              <span className={`relative flex h-20 w-20 items-center justify-center rounded-[26px] shadow-xl ${iconCls}`}>
+                <Icon size={36} />
+                <span className={`absolute -right-2.5 -top-2.5 flex h-9 w-9 items-center justify-center rounded-full font-display text-[16px] font-bold text-[#14130f] shadow-md ${tile.includes('#ffd75e') ? 'bg-white' : 'bg-[#ffd75e]'}`}>
                   {i + 1}
                 </span>
               </span>
-              <h3 className="mt-6 font-display text-[28px] font-bold">{title}</h3>
-              <p className="mt-2 text-[17px] leading-relaxed text-neutral-600">{text}</p>
-              <p className="mt-auto pt-5 text-[15px] font-semibold text-accent">{tip}</p>
+              <h3 className="mt-7 font-display text-[32px] font-bold leading-none">{title}</h3>
+              <p className={`mt-2 font-display text-[15px] font-bold uppercase tracking-[0.12em] ${sub}`}>{mode}</p>
+              <p className={`mt-4 max-w-[280px] text-[17px] leading-relaxed ${sub}`}>{text}</p>
+              <div className="mt-auto pt-6">
+                <span className={`inline-flex rounded-full px-4 py-2 text-[14px] font-semibold ${pill}`}>{tip}</span>
+              </div>
             </article>
           ))}
         </div>
