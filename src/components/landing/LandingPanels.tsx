@@ -4,19 +4,17 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   Camera,
   CheckCircle2,
   ChevronRight,
   Clock3,
+  Plane,
   Languages,
-  Lock,
   Minus,
   Plus,
   ScanBarcode,
   ScanText,
   ShieldCheck,
-  UtensilsCrossed,
   X,
   XCircle,
   type LucideIcon,
@@ -38,13 +36,11 @@ const COLORS: [LucideIcon, string, string, string][] = [
   [XCircle, 'Bevat gluten', 'Gluten gevonden. Niet eten', 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-[#ff5a4e]/25'],
 ]
 
-const FEATURES: [LucideIcon, string, string][] = [
-  [UtensilsCrossed, 'Menukaart', 'Herkent sauzen, croutons, paneermeel, sojasaus en frituur, en geeft je vragen voor de bediening.'],
-  [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: de scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.'],
-  [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.'],
-  [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.'],
-  [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien onder Geschiedenis. Filter op glutenvrij, twijfel of bevat gluten.'],
-  [Lock, 'Privé', 'Geen account en geen reclame. Je foto’s en geschiedenis blijven op je telefoon.'],
+const EXTRAS: [LucideIcon, string, string][] = [
+  [Languages, '11 talen', 'Hij herkent glutenwoorden in 11 talen, zoals trigo en Weizen, en zegt in het Nederlands wat het is.'],
+  [ShieldCheck, 'Jouw profiel', 'Jij kiest bij Instellingen of "kan sporen bevatten" rood of oranje wordt.'],
+  [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien, met filters.'],
+  [Plane, 'Reiskaart', 'Een kaart in 10 talen om aan de bediening te laten zien.'],
 ]
 
 const CAROUSEL: { word: string; line: string; dark: boolean; bg: string; screen: ReactNode }[] = [
@@ -107,21 +103,17 @@ function Hoe() {
           </span>
         </div>
       ))}
-    </div>
-  )
-}
-
-function Features() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {FEATURES.map(([Icon, title, text]) => (
-        <article key={title} className="rounded-[28px] bg-white/[0.06] p-6 ring-1 ring-white/10">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
-            <Icon size={24} />
+      <h3 className="mt-4 text-[13px] font-bold uppercase tracking-[0.12em] text-white/50">Wat hij nog meer kan</h3>
+      {EXTRAS.map(([Icon, title, text]) => (
+        <div key={title} className="flex items-start gap-4 rounded-[24px] bg-white/[0.06] p-5 ring-1 ring-white/10">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#7ee2a8]">
+            <Icon size={22} />
           </span>
-          <h3 className="mt-4 font-display text-[22px] font-bold">{title}</h3>
-          <p className="mt-1 text-[15px] leading-snug text-white/65">{text}</p>
-        </article>
+          <span>
+            <b className="block font-display text-[18px]">{title}</b>
+            <span className="text-[15px] leading-snug text-white/70">{text}</span>
+          </span>
+        </div>
       ))}
     </div>
   )
@@ -248,7 +240,6 @@ export function InfoPanel({ id, onBack, onOpenGuide }: { id: PanelId; onBack: ()
       </header>
       <div className="px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-2">
         {id === 'hoe' && <Hoe />}
-        {id === 'functies' && <Features />}
         {id === 'in-actie' && <Carousel />}
         {id === 'gids' && <Gids onOpenGuide={onOpenGuide} />}
         {id === 'vragen' && <Faq />}

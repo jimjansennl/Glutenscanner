@@ -5,15 +5,14 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   Camera,
   Check,
   CheckCircle2,
   Clock3,
   Heart,
   Infinity as InfinityIcon,
+  Plane,
   Languages,
-  Lock,
   Minus,
   Plus,
   ScanBarcode,
@@ -21,7 +20,6 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
-  UtensilsCrossed,
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
@@ -41,7 +39,7 @@ import {
 
 /**
  * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
- * Elk menu-item is een eigen pagina met een eigen adres (/functies, /vragen, ...).
+ * Elk menu-item is een eigen pagina met een eigen adres (/hoe-het-werkt, /vragen, ...).
  * De knoppen "Op je telefoon" wijzen naar de QR-code op de startpagina.
  */
 const PHONE_HREF = '/#telefoon'
@@ -52,7 +50,6 @@ const YEAR = new Date().getFullYear()
 
 const PAGES = [
   { path: '/hoe-het-werkt', label: 'Hoe het werkt' },
-  { path: '/functies', label: 'Functies' },
   { path: '/in-actie', label: 'In actie' },
   { path: '/glutengids', label: 'Glutengids' },
   { path: '/vragen', label: 'Vragen' },
@@ -227,13 +224,12 @@ const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] =
   { icon: XCircle, label: 'Bevat gluten', text: 'Gluten gevonden. Niet eten.', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
 ]
 
-const FEATURES = [
-  [UtensilsCrossed, 'Menukaart-analyse', 'Herkent gebonden sauzen, croutons, paneermeel, sojasaus en gedeelde frituur, en geeft je vragen voor de bediening.', 'bg-white'],
-  [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: de scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.', 'bg-[#ffd75e]'],
-  [ShieldCheck, 'Veiligheidsprofiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.', 'bg-white'],
-  [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.', 'bg-white'],
-  [Clock3, 'Scangeschiedenis', 'Je laatste 15 scans terugzien onder Geschiedenis. Filter op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
-  [Lock, 'Privé', 'Geen account en geen reclame. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
+/** Wat de scanner nog meer kan: alleen wat niet al elders op de site staat. */
+const EXTRAS = [
+  [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: hij herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.', 'bg-[#ffd75e]'],
+  [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig? Jij kiest of "kan sporen bevatten" rood of oranje wordt. Dat zet je bij Instellingen.', 'bg-white'],
+  [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien. Filter op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
+  [Plane, 'Reiskaart', 'Een kaart in 10 talen die je aan de bediening laat zien. Daarop staat dat je geen gluten mag.', 'bg-white'],
 ] as const
 
 const FAQ = [
@@ -513,48 +509,21 @@ function HowPage() {
           Twijfel je? Kijk dan altijd nog even zelf op de verpakking.
         </p>
       </section>
-    </>
-  )
-}
-
-function FeaturesPage() {
-  return (
-    <>
-      <PageBand eyebrow="Functies" title={<>Alles om glutenvrij te eten.<br />Zonder betaalmuur.</>} />
-      <section className="bg-[#f3eee2] px-6 py-24">
-        <div className="mx-auto grid max-w-6xl grid-cols-6 gap-5">
-          <article data-reveal className="col-span-4 flex flex-col items-center rounded-[32px] bg-[#14130f] p-10 text-center text-white">
-            <ScanText size={40} className="text-[#7ee2a8]" />
-            <h3 className="mt-5 font-display text-[32px] font-bold">Ingrediënten- én barcodescanner</h3>
-            <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/70">
-              Scan de streepjescode of fotografeer het etiket. Productgegevens komen uit Open Food Facts. De tekst op een
-              foto wordt op je eigen telefoon gelezen.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {['Barcode', 'Etiket', 'Menukaart'].map((t) => (
-                <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-[14px] font-semibold">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </article>
-          <article data-reveal className="col-span-2 flex flex-col items-center justify-center rounded-[32px] bg-accent p-8 text-center text-white">
-            <InfinityIcon size={56} />
-            <h3 className="mt-3 font-display text-[30px] font-bold">Onbeperkt</h3>
-            <p className="mt-2 text-[16px] text-white/85">Scan zo vaak je wilt. Geen eerste-scan-gratis-trucje.</p>
-          </article>
-          {FEATURES.map(([Icon, title, text, bg], i) => (
+      <section className="px-6 py-24">
+        <SectionTitle eyebrow="Handig" title="Wat de scanner nog meer kan" />
+        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-4 gap-5">
+          {EXTRAS.map(([Icon, title, text, bg], i) => (
             <article
               key={title}
               data-reveal
-              className={`col-span-2 flex flex-col items-center rounded-[32px] p-8 text-center ring-1 ring-black/5 ${bg}`}
-              style={{ transitionDelay: `${(i % 3) * 100}ms` }}
+              className={`flex flex-col items-center rounded-[32px] p-7 text-center ring-1 ring-black/5 ${bg}`}
+              style={{ transitionDelay: `${i * 80}ms` }}
             >
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#14130f] text-white">
                 <Icon size={26} />
               </span>
-              <h3 className="mt-5 font-display text-[24px] font-bold">{title}</h3>
-              <p className="mt-2 text-[16px] leading-relaxed text-neutral-700">{text}</p>
+              <h3 className="mt-5 font-display text-[22px] font-bold">{title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{text}</p>
             </article>
           ))}
         </div>
@@ -645,7 +614,8 @@ function QuestionsPage() {
 
 const PAGE_VIEWS: Record<string, () => ReactNode> = {
   '/hoe-het-werkt': HowPage,
-  '/functies': FeaturesPage,
+  // Functies is opgegaan in Hoe het werkt; oude links komen daar terecht.
+  '/functies': HowPage,
   '/in-actie': ActionPage,
   '/glutengids': GuidePage,
   '/vragen': QuestionsPage,
@@ -658,6 +628,11 @@ export function LandingPage() {
   const View = PAGE_VIEWS[path] ?? HomePage
   const current = PAGES.find((p) => p.path === path)
   useReveal(path)
+  useEffect(() => {
+    if (path !== '/functies') return
+    window.history.replaceState(null, '', '/hoe-het-werkt' + window.location.hash)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }, [path])
   useEffect(() => {
     document.title = current ? `${current.label} · Glutenscanner` : 'Glutenscanner'
   }, [current])

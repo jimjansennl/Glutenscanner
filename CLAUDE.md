@@ -45,7 +45,7 @@ npx vite preview --port 4173   # gebouwde versie bekijken
 - **Telefoon of tablet:** de app opent direct de **scanner** (`ScannerApp` in `src/App.tsx`).
   Onderin staat een tabbalk: Scan, Geschiedenis, Gids en Instellingen.
 - **Hamburgermenu (☰)** linksboven in de scanner: dezelfde onderdelen als de kop van
-  de website (Hoe het werkt, Functies, In actie, Glutengids, Vragen), elk als eigen
+  de website (Hoe het werkt, In actie, Glutengids, Vragen), elk als eigen
   scherm. De code staat in `src/components/landing/LandingPanels.tsx` en
   `src/components/landing/panels.ts`. Zolang het menu open is, reageert de camera niet
   op barcodes.
@@ -72,17 +72,20 @@ barcode wordt naar Open Food Facts gestuurd.
   hart.", drie telefoons in een waaier en de zwevende labels. Daar is de gebruiker blij mee.
 - Er staat **één knop** in het bovenstuk: "Open op je telefoon". De knop "Hoe werkt het?"
   is bewust weggehaald, want die staat al in de kop.
-- De **kop** blijft zoals hij is: logo, de menu-items Hoe het werkt, Functies, In actie,
-  Glutengids en Vragen, en de groene knop "Op je telefoon". De menu-items staan in
+- De **kop** blijft zoals hij is: logo, de menu-items Hoe het werkt, In actie,
+  Glutengids en Vragen, en de groene knop "Op je telefoon". "Functies" is bewust
+  opgegaan in Hoe het werkt (te veel overlap); `/functies` stuurt door naar `/hoe-het-werkt`. De menu-items staan in
   dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
-  `/functies`, `/in-actie`, `/glutengids` en `/vragen`. Elke pagina begint met een
+  `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van
+  scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" (11 talen, jouw
+  profiel, geschiedenis, reiskaart). Elke pagina begint met een
   donkere band in de stijl van het bovenstuk. De router zit in `LandingPage.tsx`
   (History API, geen extra pakket). `vercel.json` stuurt alle adressen naar `index.html`.
 - De **startpagina** (`/`) heeft: het donkere bovenstuk, de drie stappen ("Drie stappen. Zo gedaan."), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
   Scrollen mag. Een pagina van één scherm vond de gebruiker te kaal en "wit en saai".
-- **Niet terugzetten op de startpagina:** de cijferblokken (€ 0, ∞, 11, 106), het
-  functieblok, het glutengidsblok, de carrousel en de vragen. Die staan op hun eigen
+- **Niet terugzetten:** een aparte pagina Functies, en op de startpagina de cijferblokken
+  (€ 0, ∞, 11, 106), het functieblok, het glutengidsblok, de carrousel en de vragen. Die staan op hun eigen
   pagina, of zijn weg (de cijferblokken).
 - De **footer** is plat, één regel: logo, disclaimer met Open Food Facts en
   "© jaar · Gemaakt met ♥ in Nederland". Herhaal er niets uit de kop.
