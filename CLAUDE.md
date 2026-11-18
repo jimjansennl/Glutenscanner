@@ -80,7 +80,7 @@ barcode wordt naar Open Food Facts gestuurd.
   dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
 - Zoekbalk in de gids (app én website): wit, rond, met groene knop "Zoek"; de vakken Nee/Let op/Mag zijn donker met alleen kleur in icoon en woord (gebruiker koos optie A).
 - De pagina **Glutengids** is dezelfde gids als in de app (zoeken, Nee/Let op/Mag, thema's, per soort,
-  kaart, feestelijk eten), breed opgezet; lijsten openen in een venster. In het ☰-menu van de
+  kaart, feestelijk eten), breed opgezet in één raster van 4 kolommen (Thema's, Per soort, Ook handig); lijsten openen in een venster. In het ☰-menu van de
   app opent "Glutengids" direct het tabblad Gids.
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
   `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van

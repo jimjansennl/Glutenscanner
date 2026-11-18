@@ -149,13 +149,17 @@ function panelTitle(panel: Panel): [string, string?] {
   }
 }
 
+/** Eén tegelstijl voor het hele raster: even hoog, even rond, dezelfde rand. */
+const TILE =
+  'flex min-h-[76px] items-center gap-3 rounded-[20px] bg-white/[0.06] px-5 py-4 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]'
+
 function SectionLabel({ children }: { children: ReactNode }) {
   return <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.14em] text-white/50">{children}</h3>
 }
 
 function WideRow({ icon: Icon, color, title, sub, onClick }: { icon: typeof Languages; color: string; title: string; sub: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="group flex items-center gap-4 rounded-[24px] bg-white/[0.06] p-5 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]">
+    <button onClick={onClick} className="group flex items-center gap-4 rounded-[20px] bg-white/[0.06] px-5 py-4 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]">
       <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${color}`}>
         <Icon size={26} />
       </span>
@@ -249,61 +253,63 @@ export function SiteGuide() {
               })}
             </div>
 
-            <div className="mt-14 grid grid-cols-2 gap-10">
-              <div>
-                <SectionLabel>Thema&apos;s</SectionLabel>
-                <div className="grid grid-cols-2 gap-3">
-                  {GUIDE.filter((c) => !FEAST_IDS.includes(c.id)).map((c) => {
-                    const Icon = THEME_ICONS[c.icon]
-                    return (
-                      <button
-                        key={c.id}
-                        onClick={() => setPanel({ kind: 'theme', id: c.id })}
-                        className="flex items-center gap-3 rounded-[22px] bg-white/[0.06] p-4 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]"
-                      >
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent">
-                          <Icon size={23} />
-                        </span>
-                        <span className="font-display text-[18px] font-bold leading-tight">{c.title}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-                <div className="mt-3 flex flex-col gap-3">
-                  <WideRow
-                    icon={Languages}
-                    color="bg-[#3b6fd8]"
-                    title="Kaart voor de bediening"
-                    sub="Laat in het restaurant zien dat je geen gluten mag, in 10 talen"
-                    onClick={() => setPanel({ kind: 'card' })}
-                  />
-                  <WideRow
-                    icon={PartyPopper}
-                    color="bg-[#ff5a4e]"
-                    title="Feestelijk eten"
-                    sub="Kerst, borrel, snacks, sauzen en desserts"
-                    onClick={() => setPanel({ kind: 'feast' })}
-                  />
-                </div>
+            <div className="mx-auto mt-14 max-w-6xl">
+              <SectionLabel>Thema&apos;s</SectionLabel>
+              <div className="grid grid-cols-4 gap-4">
+                {GUIDE.filter((c) => !FEAST_IDS.includes(c.id)).map((c) => {
+                  const Icon = THEME_ICONS[c.icon]
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setPanel({ kind: 'theme', id: c.id })}
+                      className={TILE}
+                    >
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent">
+                        <Icon size={22} />
+                      </span>
+                      <span className="font-display text-[17px] font-bold leading-tight">{c.title}</span>
+                    </button>
+                  )
+                })}
               </div>
 
-              <div>
+              <div className="mt-10">
                 <SectionLabel>Per soort</SectionLabel>
-                <div className="grid grid-cols-2 gap-3">
-                  {GROUPS.map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => setPanel({ kind: 'group', id: g.id })}
-                      className="flex flex-col gap-3 rounded-[22px] bg-white/[0.06] px-5 py-4 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]"
-                    >
-                      <span className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-[18px] font-bold leading-tight">{g.label}</span>
-                        <span className="text-[14px] text-white/45">{g.items.length}</span>
-                      </span>
-                      <RiskBar items={g.items} />
-                    </button>
-                  ))}
-                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-4">
+                {GROUPS.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setPanel({ kind: 'group', id: g.id })}
+                    className={`${TILE} flex-col !items-stretch !gap-3`}
+                  >
+                    <span className="flex items-baseline justify-between gap-2">
+                      <span className="font-display text-[17px] font-bold leading-tight">{g.label}</span>
+                      <span className="text-[14px] text-white/45">{g.items.length}</span>
+                    </span>
+                    <RiskBar items={g.items} />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-10">
+                <SectionLabel>Ook handig</SectionLabel>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <WideRow
+                  icon={Languages}
+                  color="bg-[#3b6fd8]"
+                  title="Kaart voor de bediening"
+                  sub="Laat zien dat je geen gluten mag, in 10 talen"
+                  onClick={() => setPanel({ kind: 'card' })}
+                />
+                <WideRow
+                  icon={PartyPopper}
+                  color="bg-[#ff5a4e]"
+                  title="Feestelijk eten"
+                  sub="Kerst, borrel, snacks, sauzen en desserts"
+                  onClick={() => setPanel({ kind: 'feast' })}
+                />
               </div>
             </div>
           </>
