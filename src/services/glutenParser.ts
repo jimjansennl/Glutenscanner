@@ -137,6 +137,13 @@ const GENERAL_MENU_TIP = 'Meld je glutenintolerantie altijd expliciet aan de bed
 const EXCLUSIONS =
   /(?:(?:harina|farina|farine|farinha) (?:de |di |d'|da )?)?(?:boekweit|buckwheat|buchweizen|ble noir|sarrasin|trigo sarraceno|grano saraceno|trigo mourisco|sarraceno|saraceno)\p{L}*(?: (?:flour|meel|bloem|mehl))?/gu
 
+/**
+ * Glucosestroop, dextrose en maltodextrine uit tarwe of gerst zijn zo gezuiverd dat ze in de EU
+ * als glutenvrij gelden (Verordening 1169/2011, bijlage II). De bron "(tarwe)" mag dan geen alarm geven.
+ */
+const EXEMPT_DERIVATES =
+  /(?:glucose(?:-fructose)?[- ]?(?:stroop|siroop|syrup|sirup|sirop|jarabe|sciroppo|xarope)|dextrose|maltodextrin\w*|glucose)\s*\((?:uit |van |from |aus |de |di |da )?(?:tarwe|wheat|weizen|ble|trigo|frumento|gerst|barley|gerste|orge|cebada|orzo)\)/g
+
 /** "glutenvrij" e.d. mag niet als "gluten" matchen. */
 const NEGATIONS =
   /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu|glutenfri\w*|uten gluten|uden gluten|utan gluten/g
@@ -268,7 +275,7 @@ function scan(inputs: ScanInput[], context: AnalysisContext): Pick<GlutenAnalysi
       warnings.push(...findMatches(clean, [...GLUTEN_TRIGGERS, ...SUSPICIOUS_TRIGGERS], 'traces'))
     }
 
-    let clean = body.replace(GF_WHEAT_STARCH, ' ').replace(EXCLUSIONS, ' ')
+    let clean = body.replace(GF_WHEAT_STARCH, ' ').replace(EXEMPT_DERIVATES, ' ').replace(EXCLUSIONS, ' ')
     for (const m of clean.matchAll(GLUTEN_FREE_OATS)) {
       warnings.push({ label: 'Glutenvrije haver', term: m[0], source: input.source })
     }
