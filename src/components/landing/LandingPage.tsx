@@ -523,38 +523,20 @@ export function LandingPage() {
         <Faq />
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-14">
-        <div className="mx-auto grid max-w-6xl grid-cols-[1.4fr_1fr_1fr] gap-10 text-[15px] text-neutral-600">
-          <div className="flex flex-col gap-4">
-            <Logo />
-            <p className="max-w-sm leading-relaxed">
-              Scan barcodes, etiketten en menukaarten op gluten. Gratis en onbeperkt, voor iedereen met coeliakie of
-              glutengevoeligheid.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2.5">
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#14130f]">Snel naar</p>
-            <a href={PHONE_HREF} className="hover:text-accent">Op je telefoon</a>
-            <a href="#hoe" className="hover:text-accent">Hoe het werkt</a>
-            <a href="#functies" className="hover:text-accent">Functies</a>
-            <a href="#gids" className="hover:text-accent">Glutengids</a>
-          </div>
-          <div className="flex flex-col gap-2.5">
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#14130f]">Goed om te weten</p>
-            <p className="leading-relaxed">{DISCLAIMER_SHORT}</p>
-            <p>
-              Productdata:{' '}
-              <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
-                Open Food Facts
-              </a>{' '}
-              (ODbL)
-            </p>
-          </div>
+      {/* Footer: één platte regel; de navigatie staat al in de kop. */}
+      <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 text-[14px] text-neutral-500">
+          <Logo />
+          <p className="text-center leading-relaxed">
+            {DISCLAIMER_SHORT} Productdata:{' '}
+            <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
+              Open Food Facts
+            </a>
+          </p>
+          <p className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+            © {YEAR} · Gemaakt met <Heart size={14} className="fill-[#ff5a4e] text-[#ff5a4e]" /> in Nederland
+          </p>
         </div>
-        <p className="mx-auto mt-12 flex max-w-6xl items-center justify-center gap-1.5 border-t border-neutral-200 pt-8 text-[14px] text-neutral-500">
-          © {YEAR} {SITE_LABEL} · Gemaakt met <Heart size={14} className="fill-[#ff5a4e] text-[#ff5a4e]" /> in Nederland
-        </p>
       </footer>
     </div>
   )
