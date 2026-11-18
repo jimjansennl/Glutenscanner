@@ -43,7 +43,7 @@ const FEATURES: [LucideIcon, string, string][] = [
   [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.'],
   [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.'],
   [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.'],
-  [Clock3, 'Geschiedenis', 'Al je scans bij elkaar, te filteren op glutenvrij, twijfel of bevat gluten.'],
+  [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien onder Geschiedenis. Filter op glutenvrij, twijfel of bevat gluten.'],
   [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.'],
 ]
 
