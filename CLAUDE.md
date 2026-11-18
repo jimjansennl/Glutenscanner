@@ -61,6 +61,7 @@ Belangrijke bestanden:
 | `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen, met restaurantrisico's voor menukaarten. |
 | `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode. |
 | `src/data/ingredientGuide.ts`, `src/data/glutenGuide.ts` | Inhoud van de glutengids. |
+| `src/data/guideItems.ts`, `src/components/guide/*`, `src/data/travelCards.ts` | Gedeelde gidsinhoud en bouwstenen. De app (`GuidePage.tsx`) en de website (`SiteGuide.tsx`, pagina `/glutengids`) gebruiken dezelfde data: pas de gids op één plek aan. |
 | `src/components/landing/PhoneScreens.tsx` | Nagebouwde telefoonschermen voor de website, geen screenshots. Pas ze aan als de echte app verandert. |
 
 Privacy: foto's en geschiedenis blijven op de telefoon (localStorage). Alleen een
@@ -77,6 +78,9 @@ barcode wordt naar Open Food Facts gestuurd.
   Glutengids en Vragen, en de groene knop "Op je telefoon". "Functies" is bewust
   opgegaan in Hoe het werkt (te veel overlap); `/functies` stuurt door naar `/hoe-het-werkt`. De menu-items staan in
   dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
+- De pagina **Glutengids** is dezelfde gids als in de app (zoeken, Nee/Let op/Mag, thema's, per soort,
+  kaart, feestelijk eten), breed opgezet; lijsten openen in een venster. In het ☰-menu van de
+  app opent "Glutengids" direct het tabblad Gids.
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
   `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van
   scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" (11 talen, jouw

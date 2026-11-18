@@ -19,8 +19,6 @@ import {
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
-import { GUIDE } from '../../data/glutenGuide'
-import { INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { PANELS, type PanelId } from './panels'
 import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, ScreenScanner, ScreenTravel } from './PhoneScreens'
 
@@ -156,54 +154,6 @@ function Carousel() {
   )
 }
 
-function Gids({ onOpenGuide }: { onOpenGuide: () => void }) {
-  return (
-    <div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {INGREDIENT_TABS.map((t) => {
-          const high = t.entries.filter((e) => e.risk === 'hoog').length
-          return (
-            <article key={t.id} className="flex flex-col items-center rounded-[24px] bg-white/[0.06] p-5 text-center ring-1 ring-white/10">
-              <h3 className="font-display text-[18px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
-              <p className="mt-1 text-[13px] text-white/55">
-                {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} met gluten</span></>}
-              </p>
-              <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-                {t.entries.slice(0, 4).map((e) => (
-                  <span
-                    key={e.name}
-                    className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
-                      e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
-                    }`}
-                  >
-                    {e.name}
-                  </span>
-                ))}
-              </div>
-            </article>
-          )
-        })}
-      </div>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-        <span className="mr-1 text-[15px] text-white/60">Plus tips over:</span>
-        {GUIDE.map((c) => (
-          <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">
-            {c.title}
-          </span>
-        ))}
-        <span className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">Kaart voor de bediening in 10 talen</span>
-      </div>
-      <button
-        onClick={onOpenGuide}
-        className="mx-auto mt-6 flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-display text-[17px] font-bold"
-      >
-        Open de volledige gids
-        <ChevronRight size={20} />
-      </button>
-    </div>
-  )
-}
-
 function Faq() {
   const [open, setOpen] = useState(0)
   return (
@@ -228,7 +178,7 @@ function Faq() {
 }
 
 /** Telefoonversie van de website: elk onderdeel als eigen scherm, net als in de app. */
-export function InfoPanel({ id, onBack, onOpenGuide }: { id: PanelId; onBack: () => void; onOpenGuide: () => void }) {
+export function InfoPanel({ id, onBack }: { id: PanelId; onBack: () => void }) {
   const { title } = PANELS.find((p) => p.id === id)!
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#10140f] text-white" role="dialog" aria-modal="true" aria-label={title}>
@@ -241,7 +191,6 @@ export function InfoPanel({ id, onBack, onOpenGuide }: { id: PanelId; onBack: ()
       <div className="px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-2">
         {id === 'hoe' && <Hoe />}
         {id === 'in-actie' && <Carousel />}
-        {id === 'gids' && <Gids onOpenGuide={onOpenGuide} />}
         {id === 'vragen' && <Faq />}
       </div>
     </div>

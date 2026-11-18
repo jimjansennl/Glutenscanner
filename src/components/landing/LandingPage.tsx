@@ -23,9 +23,8 @@ import {
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
-import { GUIDE } from '../../data/glutenGuide'
-import { INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
+import { SiteGuide } from './SiteGuide'
 import {
   Phone,
   ScreenDanger,
@@ -572,53 +571,13 @@ function GuidePage() {
     <>
       <PageBand
         eyebrow="Glutengids"
-        title="Weet waar gluten schuilen"
-        sub="Van tarwe en mout tot E-nummers: per ingrediënt hoe groot de kans op gluten is, en wat je in plaats daarvan kunt nemen."
+        title="Mag ik dit eten?"
+        sub="Typ een product en zie meteen of het mag. Dit is dezelfde gids als in de app op je telefoon."
       />
-      <section className="bg-[#10140f] px-6 pb-24 text-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-4 gap-5">
-          {INGREDIENT_TABS.map((t, i) => {
-            const high = t.entries.filter((e) => e.risk === 'hoog').length
-            return (
-              <article
-                key={t.id}
-                data-reveal
-                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
-                style={{ transitionDelay: `${(i % 4) * 80}ms` }}
-              >
-                <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
-                <p className="mt-1 text-[14px] text-white/55">
-                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} met gluten</span></>}
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-                  {t.entries.slice(0, 4).map((e) => (
-                    <span
-                      key={e.name}
-                      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
-                        e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
-                      }`}
-                    >
-                      {e.name}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            )
-          })}
-        </div>
-        <div data-reveal className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 text-center">
-          <p className="text-[17px] text-white/65">Plus thema&apos;s vol praktische tips:</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {GUIDE.map((c) => (
-              <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
-                {c.title}
-              </span>
-            ))}
-            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Kaart voor de bediening in 10 talen</span>
-          </div>
-        </div>
-        <div className="mt-12 flex justify-center">
-          <PrimaryButton>Bekijk de gids op je telefoon</PrimaryButton>
+      <SiteGuide />
+      <section className="bg-[#10140f] px-6 pb-24">
+        <div className="flex justify-center">
+          <PrimaryButton>Neem de gids mee op je telefoon</PrimaryButton>
         </div>
       </section>
     </>

@@ -141,15 +141,22 @@ function ScannerApp() {
             onCode={info ? () => {} : handleCode}
             onPhoto={handlePhoto}
           />
-          {info === 'menu' && <InfoMenu onSelect={setInfo} onClose={() => setInfo(null)} />}
+          {info === 'menu' && (
+            <InfoMenu
+              onSelect={(id) => {
+                // De glutengids staat al in de app: open die direct, geen tweede versie.
+                if (id === 'gids') {
+                  setInfo(null)
+                  navigate('guide')
+                } else setInfo(id)
+              }}
+              onClose={() => setInfo(null)}
+            />
+          )}
           {info && info !== 'menu' && (
             <InfoPanel
               id={info}
               onBack={() => setInfo('menu')}
-              onOpenGuide={() => {
-                setInfo(null)
-                navigate('guide')
-              }}
             />
           )}
         </>
