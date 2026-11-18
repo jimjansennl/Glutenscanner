@@ -1,5 +1,5 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import {
   AlertTriangle,
@@ -17,6 +17,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
+import { Panel } from './LandingPanels'
+import { PANELS, type PanelId } from './panels'
 import { Phone, ScreenDanger, ScreenSafe, ScreenScanner } from './PhoneScreens'
 
 /**
@@ -112,21 +114,37 @@ const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] =
 
 export function LandingPage() {
   useReveal()
+  const [panel, setPanel] = useState<PanelId | null>(null)
+  const closePanel = useCallback(() => setPanel(null), [])
   return (
     <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
       {/* Navigatie */}
       <header className="fixed inset-x-0 top-4 z-40 px-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
           <Logo light />
-          <a href="#hoe" className="text-[15px] font-medium text-white/75 hover:text-white">
-            Hoe het werkt
-          </a>
-          <a href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a9258]">
+          <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
+            <a href="#hoe" className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]">
+              Hoe het werkt
+            </a>
+            {PANELS.map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setPanel(id)}
+                aria-pressed={panel === id}
+                className={`rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8] ${panel === id ? 'bg-white/10 text-[#7ee2a8]' : ''}`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <a href={PHONE_HREF} onClick={closePanel} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
             <Smartphone size={17} />
             Op je telefoon
           </a>
         </div>
       </header>
+
+      {panel && <Panel id={panel} onClose={closePanel} />}
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">

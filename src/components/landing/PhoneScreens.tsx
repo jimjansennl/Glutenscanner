@@ -1,9 +1,13 @@
 import type { ReactNode } from 'react'
 import {
+  AlertTriangle,
   BookOpen,
   Camera,
   CheckCircle2,
+  ChevronDown,
   Clock3,
+  Languages,
+  MessageCircleQuestion,
   ScanBarcode,
   Settings,
   XCircle,
@@ -104,6 +108,33 @@ export function ScreenScanner() {
   )
 }
 
+/** Fotoscan van een ingrediëntenlijst. */
+export function ScreenPhoto() {
+  return (
+    <>
+      <StatusBar />
+      <Title>Glutenscanner</Title>
+      <div className="relative flex-1 overflow-hidden bg-[linear-gradient(170deg,#f4efe4,#e2d7c0)]">
+        <Segmented mode="photo" />
+        <div className="absolute inset-x-5 top-14 rounded-2xl border-2 border-accent/80 p-3 text-[8.5px] leading-relaxed text-neutral-800 shadow-[0_0_18px_rgba(31,164,99,0.45)]">
+          <p className="mb-1 font-bold">Ingrediënten:</p>
+          <p>
+            Rijstmeel, suiker, cacaoboter, <mark className="rounded bg-danger/25 px-0.5 font-bold text-red-800">gerstemoutextract</mark>,
+            zout, emulgator (sojalecithine). Kan sporen van melk bevatten.
+          </p>
+          <span className="absolute inset-x-3 -bottom-px h-0.5 bg-accent shadow-[0_0_8px_1px] shadow-accent" />
+        </div>
+        <div className="absolute inset-x-0 bottom-5 flex items-center justify-center">
+          <span className="rounded-full border-[3px] border-white p-0.5">
+            <span className="block h-10 w-10 rounded-full bg-white" />
+          </span>
+        </div>
+      </div>
+      <MiniNav active="scan" />
+    </>
+  )
+}
+
 function ResultShell({ children, product }: { children: ReactNode; product: string }) {
   return (
     <>
@@ -169,5 +200,92 @@ export function ScreenDanger() {
         cebada → gerst
       </div>
     </ResultShell>
+  )
+}
+
+export function ScreenMenu() {
+  return (
+    <ResultShell product="Menukaart">
+      <div className="flex flex-col items-center gap-2 rounded-3xl bg-neutral-900 px-3 py-4 text-center">
+        <Circle tone="warning">
+          <AlertTriangle size={40} />
+        </Circle>
+        <span className="text-[20px] font-bold text-warning">Twijfelgeval</span>
+        <span className="text-[9px] text-white/60">Croutons en dressing op de kaart</span>
+      </div>
+      <p className="text-center text-[8px] uppercase tracking-wide text-white/50">Vraag in het restaurant</p>
+      {['Vraag de salade zonder croutons.', 'Vraag naar de dressing: soms met bloem of sojasaus.'].map((t) => (
+        <div key={t} className="flex flex-col items-center gap-1 rounded-2xl bg-neutral-900 p-2 text-center text-[9px]">
+          <MessageCircleQuestion size={12} className="text-safe" />
+          {t}
+        </div>
+      ))}
+    </ResultShell>
+  )
+}
+
+export function ScreenGuide() {
+  return (
+    <>
+      <StatusBar />
+      <Title>Gids</Title>
+      <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3">
+        <div className="rounded-2xl bg-accent-soft p-2.5 text-center text-[9px] ring-1 ring-accent/40">
+          <b>Reiskaart voor restaurants</b>
+          <br />
+          <span className="text-white/70">in 10 talen</span>
+        </div>
+        <div className="rounded-2xl bg-neutral-900 p-3 text-center">
+          <p className="text-[11px] font-semibold">Graan & risiconiveaus</p>
+          {[
+            ['Tarwe', 'Hoog risico', 'bg-danger/15 text-danger'],
+            ['Gerst', 'Hoog risico', 'bg-danger/15 text-danger'],
+            ['Haver', 'Hoog risico', 'bg-danger/15 text-danger'],
+          ].map(([n, r, c]) => (
+            <div key={n} className="mt-2 flex flex-col items-center gap-0.5 border-t border-white/10 pt-2 text-[10px]">
+              {n}
+              <span className={`rounded-full px-2 text-[8px] font-semibold ${c}`}>{r}</span>
+            </div>
+          ))}
+          <div className="mt-2 rounded-xl bg-safe/10 p-2 text-[8.5px]">
+            <p className="font-semibold text-safe">Glutenvrij alternatief</p>
+            ✓ Quinoa · ✓ Boekweit · ✓ Bruine rijst
+          </div>
+        </div>
+        <div className="flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-2.5 text-[10px]">
+          Feestdagengerechten <ChevronDown size={12} />
+        </div>
+      </div>
+      <MiniNav active="guide" />
+    </>
+  )
+}
+
+export function ScreenTravel() {
+  return (
+    <>
+      <StatusBar />
+      <Title>Reiskaart</Title>
+      <div className="flex flex-1 flex-col gap-2.5 overflow-hidden px-3">
+        <div className="flex flex-wrap justify-center gap-1 text-[8px] font-semibold">
+          {['Español', 'Italiano', 'Français', 'Svenska', 'Norsk'].map((l, i) => (
+            <span key={l} className={`rounded-full px-2 py-1 ${i === 1 ? 'bg-accent' : 'bg-neutral-800 text-white/80'}`}>
+              {l}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-col items-center gap-2 rounded-3xl bg-white p-4 text-center text-black">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-danger text-lg font-black text-white">!</span>
+          <p className="text-[15px] font-bold">Sono celiaco/a</p>
+          <p className="text-[9.5px] leading-relaxed">
+            Non posso mangiare glutine: niente frumento, orzo, segale, farro o avena, nemmeno in salse o pangrattato…
+          </p>
+        </div>
+        <p className="flex items-center justify-center gap-1 text-[9px] text-white/60">
+          <Languages size={11} /> Laat dit scherm aan de bediening zien
+        </p>
+      </div>
+      <MiniNav active="guide" />
+    </>
   )
 }
