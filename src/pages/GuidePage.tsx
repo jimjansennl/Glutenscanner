@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ChevronRight, Languages, PartyPopper, Search, X } from 'lucide-react'
 import { AnswerCard, ItemList, RiskBar } from '../components/guide/GuideBits'
 import { RISK_UI, THEME_ICONS } from '../components/guide/guideUi'
@@ -32,6 +32,7 @@ function SubPage({ title, sub, onBack, children }: { title: string; sub?: string
 export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
   const [view, setView] = useState<View>({ kind: 'home' })
   const [query, setQuery] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const q = normalize(query.trim())
   const results = useMemo(() => (q.length >= 2 ? search(q) : []), [q])
   // Elk deel van de gids begint bovenaan.
@@ -109,21 +110,29 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
       <PageHeader title="Gids" className="-mx-4" />
 
       <h2 className="pt-5 text-center text-[32px] font-extrabold leading-tight tracking-tight">Mag ik dit eten?</h2>
-      <label className="mt-3 flex items-center gap-2 rounded-2xl bg-surface px-4 py-3.5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-accent">
-        <Search size={20} className="shrink-0 text-muted" />
+      <label className="mt-4 flex items-center gap-2 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-black focus-within:ring-4 focus-within:ring-accent/40">
+        <Search size={20} className="shrink-0 text-neutral-500" />
         <input
+          ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Typ een product, bijv. couscous"
+          placeholder="Bijv. couscous"
           enterKeyHint="search"
-          className="min-w-0 flex-1 bg-transparent text-[18px] placeholder:text-muted focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent py-1.5 text-[17px] text-black placeholder:text-neutral-500 focus:outline-none"
           aria-label="Zoek een product of ingrediënt"
         />
         {query && (
-          <button onClick={() => setQuery('')} className="rounded-full p-1 text-muted active:bg-white/10" aria-label="Wissen">
+          <button onClick={() => setQuery('')} className="rounded-full p-1 text-neutral-500 active:bg-black/5" aria-label="Wissen">
             <X size={20} />
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => (query ? inputRef.current?.blur() : inputRef.current?.focus())}
+          className="shrink-0 rounded-full bg-accent px-4 py-2 text-[16px] font-semibold text-white active:scale-95"
+        >
+          Zoek
+        </button>
       </label>
 
       {q.length >= 2 ? (
@@ -158,7 +167,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
                 <button
                   key={risk}
                   onClick={() => setView({ kind: 'color', risk })}
-                  className={`flex flex-col items-center gap-1 rounded-[22px] px-2 py-4 text-center ring-2 active:scale-95 ${ui.soft}`}
+                  className="flex flex-col items-center gap-1 rounded-[22px] bg-surface px-2 py-4 text-center ring-1 ring-white/10 active:scale-95 active:bg-surface-raised"
                 >
                   <Icon size={30} className={ui.text} />
                   <span className={`text-[20px] font-extrabold leading-none ${ui.text}`}>{ui.word}</span>

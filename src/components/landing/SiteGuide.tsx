@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ChevronRight, Languages, PartyPopper, Search, X } from 'lucide-react'
 import { GUIDE, type RiskLevel } from '../../data/glutenGuide'
 import { ALL_ITEMS, COLOR_ORDER, FEAST_IDS, GROUPS, THEME_ITEMS, countFood, search, sortName } from '../../data/guideItems'
@@ -170,6 +170,7 @@ function WideRow({ icon: Icon, color, title, sub, onClick }: { icon: typeof Lang
 
 export function SiteGuide() {
   const [query, setQuery] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const [panel, setPanel] = useState<Panel | null>(null)
   const q = normalize(query.trim())
   const results = useMemo(() => (q.length >= 2 ? search(q) : []), [q])
@@ -184,20 +185,28 @@ export function SiteGuide() {
       )}
 
       <div className="mx-auto max-w-6xl">
-        <label className="mx-auto flex max-w-2xl items-center gap-3 rounded-[22px] bg-white/[0.07] px-6 py-5 ring-1 ring-white/15 focus-within:ring-2 focus-within:ring-accent">
-          <Search size={24} className="shrink-0 text-white/50" />
+        <label className="mx-auto flex max-w-2xl items-center gap-3 rounded-full bg-white py-2 pl-7 pr-2 text-black shadow-2xl shadow-black/40 focus-within:ring-4 focus-within:ring-accent/40">
+          <Search size={24} className="shrink-0 text-neutral-500" />
           <input
+            ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Typ een product, bijv. couscous"
-            className="min-w-0 flex-1 bg-transparent text-[20px] placeholder:text-white/40 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent py-2 text-[20px] text-black placeholder:text-neutral-500 focus:outline-none"
             aria-label="Zoek een product of ingrediënt"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="rounded-full p-1.5 text-white/50 hover:bg-white/10" aria-label="Wissen">
+            <button onClick={() => setQuery('')} className="rounded-full p-1.5 text-neutral-500 hover:bg-black/5" aria-label="Wissen">
               <X size={20} />
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => inputRef.current?.focus()}
+            className="shrink-0 rounded-full bg-accent px-7 py-3.5 font-display text-[18px] font-bold text-white transition hover:bg-[#1a9258]"
+          >
+            Zoek
+          </button>
         </label>
 
         {q.length >= 2 ? (
@@ -229,7 +238,7 @@ export function SiteGuide() {
                   <button
                     key={risk}
                     onClick={() => setPanel({ kind: 'color', risk })}
-                    className={`flex flex-col items-center gap-1.5 rounded-[28px] px-4 py-7 text-center ring-2 transition hover:-translate-y-1 ${ui.soft}`}
+                    className="flex flex-col items-center gap-1.5 rounded-[28px] bg-white/[0.06] px-4 py-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
                   >
                     <Icon size={40} className={ui.text} />
                     <span className={`font-display text-[30px] font-extrabold leading-none ${ui.text}`}>{ui.word}</span>
