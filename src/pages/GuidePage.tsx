@@ -295,7 +295,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-6">
       <PageHeader title="Gids" className="-mx-4" />
 
-      <h2 className="pt-5 text-[32px] font-extrabold leading-tight tracking-tight">Mag ik dit eten?</h2>
+      <h2 className="pt-5 text-center text-[32px] font-extrabold leading-tight tracking-tight">Mag ik dit eten?</h2>
       <label className="mt-3 flex items-center gap-2 rounded-2xl bg-surface px-4 py-3.5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-accent">
         <Search size={20} className="shrink-0 text-muted" />
         <input
@@ -336,7 +336,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
         </section>
       ) : (
         <>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
@@ -368,7 +368,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
             })}
           </div>
 
-          <h3 className="mt-7 text-[13px] font-bold uppercase tracking-wide text-muted">Thema&apos;s</h3>
+          <h3 className="mt-7 text-center text-[13px] font-bold uppercase tracking-wide text-muted">Thema&apos;s</h3>
           <div className="mt-2 grid grid-cols-2 gap-2.5">
             {GUIDE.map((c) => {
               const Icon = THEME_ICONS[c.icon]

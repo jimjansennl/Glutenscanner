@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ArrowUpRight, Check, ChevronRight, Info, Languages, ScanBarcode, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
+import { ArrowUpRight, Check, Info, ScanBarcode, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
 import { PROFILES, type SafetyProfile } from '../services/profile'
@@ -7,7 +7,6 @@ import { PROFILES, type SafetyProfile } from '../services/profile'
 interface Props {
   profile: SafetyProfile
   onProfileChange: (profile: SafetyProfile) => void
-  onTravelCard: () => void
 }
 
 const PROFILE_ICONS: Record<SafetyProfile, typeof ShieldCheck> = {
@@ -71,7 +70,7 @@ function Row({
   return <div className={className.replace(' active:bg-surface-raised', '')}>{content}</div>
 }
 
-export function SettingsPage({ profile, onProfileChange, onTravelCard }: Props) {
+export function SettingsPage({ profile, onProfileChange }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
       <PageHeader title="Instellingen" />
@@ -118,16 +117,6 @@ export function SettingsPage({ profile, onProfileChange, onTravelCard }: Props) 
               )
             })}
           </div>
-        </Group>
-
-        <Group title="Uit eten">
-          <Row
-            icon={<Languages size={22} />}
-            label="Kaart voor de bediening"
-            sub="Laat zien dat je geen gluten mag, in 10 talen"
-            onClick={onTravelCard}
-            trailing={<ChevronRight size={20} className="text-muted" />}
-          />
         </Group>
 
         <Group title="Belangrijk">

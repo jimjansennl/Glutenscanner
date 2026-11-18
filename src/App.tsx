@@ -183,7 +183,6 @@ function ScannerApp() {
               saveProfile(next)
               setProfile(next)
             }}
-            onTravelCard={() => go({ name: 'travel', back: 'settings' })}
           />
         </WithNav>
       )

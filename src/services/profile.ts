@@ -9,11 +9,11 @@ const KEY = 'glutenscanner.profile.v1'
 export const PROFILES: Record<SafetyProfile, { title: string; description: string }> = {
   strict: {
     title: 'Strikte coeliakie',
-    description: 'Sporen van verontreiniging = onveilig (rood). Aanbevolen bij coeliakie.',
+    description: '"Kan sporen van gluten bevatten" wordt rood: niet eten. Kies dit bij coeliakie.',
   },
   sensitive: {
     title: 'Glutenintolerant / gevoelig',
-    description: 'Sporen worden oranje gemarkeerd; je beslist zelf op basis van je tolerantie.',
+    description: '"Kan sporen van gluten bevatten" wordt oranje: je kiest zelf of je het eet.',
   },
 }
 

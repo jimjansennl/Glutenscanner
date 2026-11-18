@@ -115,6 +115,7 @@ barcode wordt naar Open Food Facts gestuurd.
   kan meestal wel). Slimme taalknop: kiest op reis vanzelf de taal via de tijdzone van de
   telefoon (label "Hier"), anders de laatst gekozen taal. "Lees mee in het Nederlands" toont
   de vertaling. Pas bij een tekstwijziging alle 10 talen aan.
+  De kaart staat alleen in de Gids, niet (nog eens) bij Instellingen.
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 
