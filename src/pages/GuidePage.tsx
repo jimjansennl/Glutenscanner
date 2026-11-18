@@ -53,7 +53,6 @@ const RISK_UI: Record<RiskLevel, { word: string; long: string; icon: LucideIcon;
 }
 
 const COLOR_ORDER: RiskLevel[] = ['hoog', 'middel', 'laag']
-const SUGGESTIONS = ['Couscous', 'Haver', 'Sojasaus', 'Rijst', 'Pepernoten', 'Drop']
 
 interface Item {
   key: string
@@ -336,19 +335,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
         </section>
       ) : (
         <>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setQuery(s)}
-                className="rounded-full bg-surface px-3.5 py-1.5 text-[15px] text-white/80 ring-1 ring-white/10 active:bg-surface-raised"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 grid grid-cols-3 gap-2.5">
+          <div className="mt-5 grid grid-cols-3 gap-2.5">
             {COLOR_ORDER.map((risk) => {
               const ui = RISK_UI[risk]
               const Icon = ui.icon

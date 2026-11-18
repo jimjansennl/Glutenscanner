@@ -390,7 +390,7 @@ export const GUIDE: GuideCategory[] = [
   },
   {
     id: 'jus-bouillon',
-    title: 'Jus, bouillon & kruiden',
+    title: 'Sauzen & bouillon',
     subtitle: 'Sauzen, bindmiddelen en smaakmakers',
     icon: 'soup',
     items: [

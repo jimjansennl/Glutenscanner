@@ -103,7 +103,7 @@ barcode wordt naar Open Food Facts gestuurd.
 
 **Glutengids (tabblad Gids, `src/pages/GuidePage.tsx`)**
 - Opzet "Mag ik dit eten?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
-  Mag), één zin waarom, een tip en "Neem liever". Daaronder snelle zoekwoorden, drie
+  Mag), één zin waarom, een tip en "Neem liever". Daaronder drie
   kleurvakken en de thema's (Supermarkt, Sinterklaas, School & feestjes, Etiket lezen,
   Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), plus de "Kaart voor de bediening" (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
 - **Niet doen:** dezelfde standaard-risicotekst bij elk ingrediënt, woorden als
