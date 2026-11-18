@@ -10,6 +10,7 @@ import {
   Gift,
   Languages,
   Lightbulb,
+  PartyPopper,
   Search,
   SearchCheck,
   ShoppingCart,
@@ -53,6 +54,8 @@ const RISK_UI: Record<RiskLevel, { word: string; long: string; icon: LucideIcon;
 }
 
 const COLOR_ORDER: RiskLevel[] = ['hoog', 'middel', 'laag']
+/** Thema's die samen "Feestelijk eten" vormen; ze staan niet nog eens los bij Thema's. */
+const FEAST_IDS = ['feestdagen', 'snoep-borrel', 'jus-bouillon', 'brood-desserts']
 const RISK_RANK: Record<RiskLevel, number> = { hoog: 0, middel: 1, laag: 2 }
 const BAR: Record<RiskLevel, string> = { hoog: 'bg-danger', middel: 'bg-warning', laag: 'bg-safe' }
 
@@ -260,7 +263,7 @@ function ItemList({ items, showGroup }: { items: Item[]; showGroup?: boolean }) 
   )
 }
 
-type View = { kind: 'home' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
+type View = { kind: 'home' } | { kind: 'feast' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
 
 function SubPage({ title, sub, onBack, children }: { title: string; sub?: string; onBack: () => void; children: ReactNode }) {
   return (
@@ -303,6 +306,27 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
         <div className="mt-2">
           <ItemList items={items} showGroup />
         </div>
+      </SubPage>
+    )
+  }
+
+  if (view.kind === 'feast') {
+    return (
+      <SubPage title="Feestelijk eten" sub="Waar gluten schuilen bij kerst, borrels, snacks, sauzen en desserts." onBack={() => setView({ kind: 'home' })}>
+        {GUIDE.filter((c) => FEAST_IDS.includes(c.id)).map((c) => {
+          const Icon = THEME_ICONS[c.icon]
+          return (
+            <section key={c.id} className="mt-6">
+              <h3 className="flex items-center gap-2.5 text-[20px] font-bold">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
+                  <Icon size={19} />
+                </span>
+                {c.title}
+              </h3>
+              <ItemList items={THEME_ITEMS[c.id]} />
+            </section>
+          )
+        })}
       </SubPage>
     )
   }
@@ -396,7 +420,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
 
           <h3 className="mt-7 text-center text-[13px] font-bold uppercase tracking-wide text-muted">Thema&apos;s</h3>
           <div className="mt-2 grid grid-cols-2 gap-2.5">
-            {GUIDE.map((c) => {
+            {GUIDE.filter((c) => !FEAST_IDS.includes(c.id)).map((c) => {
               const Icon = THEME_ICONS[c.icon]
               return (
                 <button
@@ -440,6 +464,20 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-[17px] font-semibold leading-tight">Kaart voor de bediening</span>
               <span className="text-[14px] leading-snug text-muted">Laat in het restaurant zien dat je geen gluten mag, in 10 talen</span>
+            </span>
+            <ChevronRight size={22} className="shrink-0 text-muted" />
+          </button>
+
+          <button
+            onClick={() => setView({ kind: 'feast' })}
+            className="mt-2.5 flex items-center gap-4 rounded-[22px] bg-surface p-4 text-left active:bg-surface-raised"
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#ff5a4e]">
+              <PartyPopper size={24} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[17px] font-semibold leading-tight">Feestelijk eten</span>
+              <span className="text-[14px] leading-snug text-muted">Kerst, borrel, snacks, sauzen en desserts</span>
             </span>
             <ChevronRight size={22} className="shrink-0 text-muted" />
           </button>
