@@ -87,7 +87,22 @@ export const INGREDIENT_TABS: IngredientTab[] = [
         note: 'Zit in ontbijtgranen, chocolade, crispy rijst en koekjes.',
         alternatives: ['Ahornsiroop', 'Honing', 'Rijststroop'],
       },
+      {
+        name: 'Moutaroma',
+        summary: 'Smaakje van gerst',
+        risk: 'hoog',
+        note: 'Staat soms als "aroma (gerst)" of "malt flavouring". Zit vaak in cornflakes, chocolade en koekjes.',
+        alternatives: ['Cornflakes met "glutenvrij" erop', 'Chocolade zonder mout'],
+      },
       { name: 'Moutsiroop', summary: 'Stroop van gerstemout', risk: 'hoog', alternatives: ['Ahornsiroop', 'Agavesiroop'] },
+      { name: 'Gerstemeel', summary: 'Gemalen gerst', risk: 'hoog', note: 'Soms door brood en koek gemengd.', alternatives: ['Rijstmeel', 'Boekweitmeel'] },
+      {
+        name: 'Gemout meel',
+        summary: 'Meel van gekiemde gerst',
+        risk: 'hoog',
+        note: 'Bakkers doen het in brood voor een bruin kleurtje en een zoete smaak.',
+        alternatives: ['Glutenvrij brood'],
+      },
       {
         name: 'Moutazijn',
         summary: 'Azijn gebrouwen van gerst',
