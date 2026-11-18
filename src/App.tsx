@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
+import { InfoMenu, InfoPanel } from './components/landing/LandingPanels'
 import { LandingPage } from './components/landing/LandingPage'
+import type { PanelId } from './components/landing/panels'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
 import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
@@ -56,6 +58,8 @@ function WithNav({
 function ScannerApp() {
   const [view, setView] = useState<View>({ name: 'scanner' })
   const [scanMode, setScanMode] = useState<ScanMode>('barcode')
+  /** Hamburgermenu met de onderdelen van de website: dicht, het menu, of één onderdeel. */
+  const [info, setInfo] = useState<null | 'menu' | PanelId>(null)
   const abortRef = useRef<AbortController | null>(null)
   const imageUrlRef = useRef<string | null>(null)
   const [history, setHistory] = useState<HistoryItem[]>(loadHistory)
@@ -125,13 +129,28 @@ function ScannerApp() {
   switch (view.name) {
     case 'scanner':
       return (
-        <ScannerView
-          mode={scanMode}
-          onModeChange={setScanMode}
-          onNavigate={navigate}
-          onCode={handleCode}
-          onPhoto={handlePhoto}
-        />
+        <>
+          <ScannerView
+            mode={scanMode}
+            onModeChange={setScanMode}
+            onNavigate={navigate}
+            onMenu={() => setInfo('menu')}
+            // Achter het menu draait de camera door; een barcode mag dan niets doen.
+            onCode={info ? () => {} : handleCode}
+            onPhoto={handlePhoto}
+          />
+          {info === 'menu' && <InfoMenu onSelect={setInfo} onClose={() => setInfo(null)} />}
+          {info && info !== 'menu' && (
+            <InfoPanel
+              id={info}
+              onBack={() => setInfo('menu')}
+              onOpenGuide={() => {
+                setInfo(null)
+                navigate('guide')
+              }}
+            />
+          )}
+        </>
       )
     case 'history':
       return (

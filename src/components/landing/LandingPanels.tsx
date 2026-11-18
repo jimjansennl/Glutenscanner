@@ -1,22 +1,42 @@
+import '@fontsource-variable/bricolage-grotesque'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  Camera,
+  CheckCircle2,
+  ChevronRight,
   Clock3,
   Languages,
   Lock,
   Minus,
   Plus,
+  ScanBarcode,
+  ScanText,
   ShieldCheck,
   UtensilsCrossed,
   X,
+  XCircle,
   type LucideIcon,
 } from 'lucide-react'
 import { GUIDE } from '../../data/glutenGuide'
 import { INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { PANELS, type PanelId } from './panels'
 import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, ScreenScanner, ScreenTravel } from './PhoneScreens'
+
+const WAYS: [LucideIcon, string, string][] = [
+  [ScanBarcode, 'Barcode', 'Kies Barcode en richt de camera op de streepjescode. Hij leest hem vanzelf.'],
+  [ScanText, 'Etiket', 'Kies Foto en fotografeer de ingrediënten. Ook buitenlandse etiketten.'],
+  [Camera, 'Menukaart', 'Kies Foto en fotografeer het menu. Je krijgt vragen voor de bediening.'],
+]
+
+const COLORS: [LucideIcon, string, string, string][] = [
+  [CheckCircle2, 'Glutenvrij', 'Mag je eten', 'bg-[#7ee2a8]/15 text-[#7ee2a8] ring-[#7ee2a8]/25'],
+  [AlertTriangle, 'Twijfel', 'Lees het etiket of vraag het na', 'bg-[#ffd75e]/15 text-[#ffd75e] ring-[#ffd75e]/25'],
+  [XCircle, 'Bevat gluten', 'Niet eten', 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-[#ff5a4e]/25'],
+]
 
 const FEATURES: [LucideIcon, string, string][] = [
   [UtensilsCrossed, 'Menukaart', 'Herkent sauzen, croutons, paneermeel, sojasaus en frituur, en geeft je vragen voor de bediening.'],
@@ -60,9 +80,40 @@ const FAQ = [
   },
 ]
 
+function Hoe() {
+  return (
+    <div className="flex flex-col gap-3">
+      {WAYS.map(([Icon, title, text], i) => (
+        <article key={title} className="flex items-start gap-4 rounded-[24px] bg-white/[0.06] p-5 ring-1 ring-white/10">
+          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-white">
+            <Icon size={24} />
+            <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#ffd75e] font-display text-[13px] font-bold text-[#14130f]">
+              {i + 1}
+            </span>
+          </span>
+          <span>
+            <h3 className="font-display text-[20px] font-bold">{title}</h3>
+            <p className="mt-0.5 text-[15px] leading-snug text-white/70">{text}</p>
+          </span>
+        </article>
+      ))}
+      <h3 className="mt-4 text-[13px] font-bold uppercase tracking-[0.12em] text-white/50">Wat betekent de kleur?</h3>
+      {COLORS.map(([Icon, label, text, cls]) => (
+        <div key={label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 ring-1 ${cls}`}>
+          <Icon size={26} className="shrink-0" />
+          <span className="leading-tight">
+            <b className="block font-display text-[17px]">{label}</b>
+            <span className="text-[14px] opacity-90">{text}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Features() {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {FEATURES.map(([Icon, title, text]) => (
         <article key={title} className="rounded-[28px] bg-white/[0.06] p-6 ring-1 ring-white/10">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
@@ -113,10 +164,10 @@ function Carousel() {
   )
 }
 
-function Gids() {
+function Gids({ onOpenGuide }: { onOpenGuide?: () => void }) {
   return (
     <div>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {INGREDIENT_TABS.map((t) => {
           const high = t.entries.filter((e) => e.risk === 'hoog').length
           return (
@@ -150,7 +201,15 @@ function Gids() {
         ))}
         <span className="rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold">Reiskaart in 10 talen</span>
       </div>
-      <p className="mt-5 text-center text-[15px] text-white/60">De volledige gids staat in de app, onder "Gids".</p>
+      {onOpenGuide && (
+        <button
+          onClick={onOpenGuide}
+          className="mx-auto mt-6 flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-display text-[17px] font-bold"
+        >
+          Open de volledige gids
+          <ChevronRight size={20} />
+        </button>
+      )}
     </div>
   )
 }
@@ -164,61 +223,83 @@ function Faq() {
           <button
             onClick={() => setOpen(open === i ? -1 : i)}
             aria-expanded={open === i}
-            className="flex w-full items-center justify-between gap-6 py-4 text-left font-display text-[19px] font-semibold"
+            className="flex w-full items-center justify-between gap-4 py-4 text-left font-display text-[18px] font-semibold"
           >
             {q}
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${open === i ? 'bg-accent text-white' : 'bg-white/10 text-[#7ee2a8]'}`}>
               {open === i ? <Minus size={18} /> : <Plus size={18} />}
             </span>
           </button>
-          {open === i && <p className="pb-5 pr-14 text-[16px] leading-relaxed text-white/70">{a}</p>}
+          {open === i && <p className="pb-5 pr-4 text-[16px] leading-relaxed text-white/70">{a}</p>}
         </div>
       ))}
     </div>
   )
 }
 
-const CONTENT: Record<PanelId, () => ReactNode> = {
-  functies: Features,
-  'in-actie': Carousel,
-  gids: Gids,
-  vragen: Faq,
+/** Telefoonversie van de website: elk onderdeel als eigen scherm, net als in de app. */
+export function InfoPanel({ id, onBack, onOpenGuide }: { id: PanelId; onBack: () => void; onOpenGuide: () => void }) {
+  const { title } = PANELS.find((p) => p.id === id)!
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#10140f] text-white" role="dialog" aria-modal="true" aria-label={title}>
+      <header className="sticky top-0 z-10 flex items-center gap-2 bg-[#10140f]/90 px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
+        <button onClick={onBack} className="rounded-full p-2 text-[#7ee2a8] active:bg-white/10" aria-label="Terug naar menu">
+          <ArrowLeft size={24} />
+        </button>
+        <h2 className="font-display text-[24px] font-bold tracking-tight">{title}</h2>
+      </header>
+      <div className="px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-2">
+        {id === 'hoe' && <Hoe />}
+        {id === 'functies' && <Features />}
+        {id === 'in-actie' && <Carousel />}
+        {id === 'gids' && <Gids onOpenGuide={onOpenGuide} />}
+        {id === 'vragen' && <Faq />}
+      </div>
+    </div>
+  )
 }
 
-/** Venster over de pagina: één klik open, Esc, klik ernaast of het kruisje sluit het. */
-export function Panel({ id, onClose }: { id: PanelId; onClose: () => void }) {
-  const { title } = PANELS.find((p) => p.id === id)!
-  const Content = CONTENT[id]
+/** Hamburgermenu op de telefoon met dezelfde onderdelen als de kop van de website. */
+export function InfoMenu({ onSelect, onClose }: { onSelect: (id: PanelId) => void; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
+    return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
   return (
-    <div
-      className="fixed inset-0 z-30 flex items-start justify-center bg-black/60 px-6 pb-6 pt-28 backdrop-blur-sm"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="animate-slide-up max-h-full w-full max-w-[1200px] overflow-y-auto rounded-[36px] bg-[#10140f] p-8 text-white shadow-2xl ring-1 ring-white/10"
-      >
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="font-display text-[36px] font-bold tracking-tight">{title}</h2>
-          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Sluiten">
-            <X size={22} />
+    <div className="animate-slide-up fixed inset-0 z-50 flex flex-col bg-[#10140f] text-white" role="dialog" aria-modal="true" aria-label="Menu">
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[520px] -translate-x-1/2 rounded-full bg-accent/25 blur-[110px]" />
+      <header className="relative flex items-center justify-between px-5 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
+        <span className="flex items-center gap-2.5">
+          <span className="flex h-10 w-10 rotate-[-6deg] items-center justify-center rounded-2xl bg-accent shadow-lg shadow-accent/30">
+            <ScanBarcode size={21} />
+          </span>
+          <span className="font-display text-[21px] font-bold tracking-tight">glutenscanner</span>
+        </span>
+        <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 active:bg-white/20" aria-label="Menu sluiten">
+          <X size={22} />
+        </button>
+      </header>
+      <nav className="relative mt-6 flex flex-col px-3">
+        {PANELS.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => onSelect(id)}
+            className="flex items-center justify-between rounded-2xl px-4 py-4 text-left font-display text-[28px] font-bold tracking-tight active:bg-white/10"
+          >
+            {label}
+            <ChevronRight size={24} className="text-[#7ee2a8]" />
           </button>
-        </div>
-        <Content />
-      </div>
+        ))}
+      </nav>
+      <button
+        onClick={onClose}
+        className="relative mx-5 mb-[max(1.5rem,env(safe-area-inset-bottom))] mt-auto flex items-center justify-center gap-2 rounded-full bg-accent py-4 font-display text-[18px] font-bold shadow-xl shadow-accent/30"
+      >
+        <ScanBarcode size={22} />
+        Terug naar de scanner
+      </button>
     </div>
   )
 }

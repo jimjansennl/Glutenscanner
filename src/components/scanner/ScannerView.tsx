@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from 'react'
-import { Barcode, Camera, Images, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
+import { Barcode, Camera, Images, Menu, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
 import { useBarcodeScanner, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
 
@@ -16,6 +16,7 @@ interface Props {
   mode: ScanMode
   onModeChange: (mode: ScanMode) => void
   onNavigate: (tab: NavTab) => void
+  onMenu: () => void
   onCode: (code: DecodedCode) => void
   onPhoto: (image: Blob) => void
 }
@@ -56,7 +57,7 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
   return { supported, on, toggle }
 }
 
-export function ScannerView({ mode, onModeChange, onNavigate, onCode, onPhoto }: Props) {
+export function ScannerView({ mode, onModeChange, onNavigate, onMenu, onCode, onPhoto }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   // Ook in fotomodus blijft barcode/QR-herkenning actief: een code in beeld wint altijd.
@@ -95,7 +96,14 @@ export function ScannerView({ mode, onModeChange, onNavigate, onCode, onPhoto }:
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
-      <header className="flex h-14 shrink-0 items-end justify-center pb-2 pt-[env(safe-area-inset-top)]">
+      <header className="relative flex h-14 shrink-0 items-end justify-center pb-2 pt-[env(safe-area-inset-top)]">
+        <button
+          onClick={onMenu}
+          className="absolute bottom-1 left-2 rounded-full p-2 active:bg-white/10"
+          aria-label="Menu openen"
+        >
+          <Menu size={26} />
+        </button>
         <h1 className="text-[19px] font-semibold">Glutenscanner</h1>
       </header>
 

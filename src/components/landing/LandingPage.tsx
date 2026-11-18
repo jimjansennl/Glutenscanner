@@ -1,25 +1,39 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import {
-  AlertTriangle,
+  ArrowLeft,
   ArrowRight,
+  BookOpen,
   Check,
-  CheckCircle2,
+  Clock3,
   Heart,
   Infinity as InfinityIcon,
+  Languages,
+  Lock,
+  Minus,
+  Plus,
   ScanBarcode,
   ScanText,
+  ShieldCheck,
   Smartphone,
   Sparkles,
   UtensilsCrossed,
-  XCircle,
   type LucideIcon,
 } from 'lucide-react'
+import { GUIDE } from '../../data/glutenGuide'
+import { INGREDIENT_COUNT, INGREDIENT_TABS } from '../../data/ingredientGuide'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
-import { Panel } from './LandingPanels'
-import { PANELS, type PanelId } from './panels'
-import { Phone, ScreenDanger, ScreenSafe, ScreenScanner } from './PhoneScreens'
+import {
+  Phone,
+  ScreenDanger,
+  ScreenGuide,
+  ScreenMenu,
+  ScreenPhoto,
+  ScreenSafe,
+  ScreenScanner,
+  ScreenTravel,
+} from './PhoneScreens'
 
 /**
  * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
@@ -29,6 +43,7 @@ const PHONE_HREF = '#telefoon'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
 const YEAR = new Date().getFullYear()
+const GUIDE_TOPICS = INGREDIENT_COUNT + GUIDE.reduce((n, c) => n + c.items.length, 0)
 
 /** Laat elementen met data-reveal zacht invliegen zodra ze in beeld komen. */
 function useReveal() {
@@ -86,6 +101,24 @@ function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; h
   )
 }
 
+function SectionTitle({ eyebrow, title, sub, light = false }: { eyebrow: string; title: ReactNode; sub?: string; light?: boolean }) {
+  return (
+    <div data-reveal className="mx-auto flex max-w-3xl flex-col items-center text-center">
+      <span
+        className={`rounded-full px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.14em] ${
+          light ? 'bg-white/10 text-[#7ee2a8]' : 'bg-accent/10 text-accent'
+        }`}
+      >
+        {eyebrow}
+      </span>
+      <h2 className={`mt-5 font-display text-[52px] font-bold leading-[1.05] tracking-tight ${light ? 'text-white' : 'text-[#14130f]'}`}>
+        {title}
+      </h2>
+      {sub && <p className={`mt-4 text-[19px] leading-relaxed ${light ? 'text-white/65' : 'text-neutral-600'}`}>{sub}</p>}
+    </div>
+  )
+}
+
 /** Zwevend labeltje rond de telefoons in de hero. */
 function FloatChip({ className, children, tone = 'light' }: { className: string; children: ReactNode; tone?: 'light' | 'red' | 'green' }) {
   const toneCls = {
@@ -100,22 +133,114 @@ function FloatChip({ className, children, tone = 'light' }: { className: string;
   )
 }
 
-const WAYS: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: ScanBarcode, title: 'Barcode', text: 'Kies Barcode en richt de camera op de streepjescode. Hij leest hem vanzelf.' },
-  { icon: ScanText, title: 'Etiket', text: 'Kies Foto en fotografeer de ingrediënten. Ook buitenlandse etiketten.' },
-  { icon: UtensilsCrossed, title: 'Menukaart', text: 'Kies Foto en fotografeer het menu. Je krijgt vragen voor de bediening.' },
+const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
+  { icon: ScanBarcode, title: 'Richt je camera', text: 'Op een barcode, ingrediëntenlijst of menukaart. Geen typen, geen account.' },
+  { icon: Sparkles, title: 'Zie het direct', text: 'Glutenvrij, twijfelgeval of bevat gluten: groot, kleurrijk en met uitleg.' },
+  { icon: ShieldCheck, title: 'Dubbelcheck', text: 'Je scan is een tweede blik. Kijk daarna nog even op de verpakking, en klaar.' },
 ]
 
-const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] = [
-  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Mag je eten', cls: 'bg-[#7ee2a8]/15 text-[#7ee2a8] ring-1 ring-[#7ee2a8]/25' },
-  { icon: AlertTriangle, label: 'Twijfel', text: 'Lees het etiket of vraag het na', cls: 'bg-[#ffd75e]/15 text-[#ffd75e] ring-1 ring-[#ffd75e]/25' },
-  { icon: XCircle, label: 'Bevat gluten', text: 'Niet eten', cls: 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-1 ring-[#ff5a4e]/25' },
+const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen: ReactNode }[] = [
+  { word: 'Scan', line: 'elk product in seconden', accent: 'text-[#ffd75e]', bg: 'bg-accent', screen: <ScreenScanner /> },
+  { word: 'Spot', line: 'verborgen gluten', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenPhoto /> },
+  { word: 'Weet', line: 'of het veilig is', accent: 'text-[#14130f]', bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
+  { word: 'Zie', line: 'wat er wél in zit', accent: 'text-white', bg: 'bg-[#ff5a4e]', screen: <ScreenDanger /> },
+  { word: 'Vraag', line: 'het restaurant', accent: 'text-[#14130f]', bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
+  { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
+  { word: 'Reis', line: 'zonder zorgen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
+
+const FAQ = [
+  {
+    q: 'Is Glutenscanner echt helemaal gratis?',
+    a: 'Ja. Geen proefperiode, geen scanlimiet, geen abonnement en geen account. Alle functies zijn voor iedereen, altijd.',
+  },
+  {
+    q: 'Moet ik een app downloaden?',
+    a: `Nee. Open ${SITE_LABEL} op je telefoon en de scanner start direct. Wil je een app-icoon? Kies in je browser "Deel" en dan "Zet op beginscherm".`,
+  },
+  {
+    q: 'Worden mijn foto’s geüpload?',
+    a: 'Nee. De tekstherkenning draait op je eigen telefoon. Alleen bij een barcodescan wordt de barcode opgezocht in de open database van Open Food Facts.',
+  },
+  {
+    q: 'Werkt het in het buitenland?',
+    a: 'Zeker. De scanner herkent glutentermen in 11 Europese talen en meldt ze in het Nederlands. Met de reiskaart leg je coeliakie uit aan de bediening, in 10 talen.',
+  },
+  {
+    q: 'Is het veilig voor mensen met coeliakie?',
+    a: 'Glutenscanner is een hulpmiddel voor een snelle tweede blik, geen medisch advies. Bij twijfel kiest de app altijd voor de voorzichtige uitslag. Controleer altijd de fysieke verpakking.',
+  },
+]
+
+function Carousel() {
+  const track = useRef<HTMLDivElement>(null)
+  const scroll = (dir: number) => track.current?.scrollBy({ left: dir * 288, behavior: 'smooth' })
+  return (
+    <div data-reveal className="mt-14">
+      {/* Precies vier kaarten breed (4 × 264 + 3 × 24 px), zodat niets half uit beeld valt. */}
+      <div ref={track} className="mx-auto flex max-w-[1128px] snap-x snap-mandatory gap-6 overflow-x-auto pb-6 [scrollbar-width:none]">
+        {CAROUSEL.map(({ word, line, accent, bg, screen }) => (
+          <article
+            key={word}
+            className={`flex w-[264px] shrink-0 snap-start flex-col items-center overflow-hidden rounded-[36px] pt-8 text-center shadow-xl ${bg}`}
+          >
+            <p className={`font-display text-[46px] font-extrabold uppercase leading-none ${bg.includes('#7ee2a8') || bg.includes('#ffd75e') ? 'text-[#14130f]' : 'text-white'}`}>
+              {word}
+            </p>
+            <p className={`mt-1 px-4 font-display text-[19px] font-bold uppercase leading-tight ${accent}`}>{line}</p>
+            <div className="mt-6 -mb-28">
+              <Phone>{screen}</Phone>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="mt-4 flex justify-center gap-3">
+        {[
+          [-1, ArrowLeft, 'Vorige'],
+          [1, ArrowRight, 'Volgende'],
+        ].map(([dir, Icon, label]) => {
+          const I = Icon as LucideIcon
+          return (
+            <button
+              key={label as string}
+              onClick={() => scroll(dir as number)}
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-neutral-300 bg-white transition hover:border-accent hover:text-accent"
+              aria-label={label as string}
+            >
+              <I size={20} />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function Faq() {
+  const [open, setOpen] = useState(0)
+  return (
+    <div data-reveal className="mx-auto mt-12 max-w-3xl divide-y divide-neutral-200 rounded-[32px] bg-white px-8 shadow-sm ring-1 ring-neutral-200">
+      {FAQ.map(({ q, a }, i) => (
+        <div key={q} className="py-2">
+          <button
+            onClick={() => setOpen(open === i ? -1 : i)}
+            aria-expanded={open === i}
+            className="flex w-full items-center justify-between gap-6 py-4 text-left font-display text-[20px] font-semibold"
+          >
+            {q}
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${open === i ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+              {open === i ? <Minus size={18} /> : <Plus size={18} />}
+            </span>
+          </button>
+          {open === i && <p className="pb-5 pr-14 text-[17px] leading-relaxed text-neutral-600">{a}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function LandingPage() {
   useReveal()
-  const [panel, setPanel] = useState<PanelId | null>(null)
-  const closePanel = useCallback(() => setPanel(null), [])
   return (
     <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
       {/* Navigatie */}
@@ -123,28 +248,24 @@ export function LandingPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
           <Logo light />
           <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
-            <a href="#hoe" className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]">
-              Hoe het werkt
-            </a>
-            {PANELS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setPanel(id)}
-                aria-pressed={panel === id}
-                className={`rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8] ${panel === id ? 'bg-white/10 text-[#7ee2a8]' : ''}`}
-              >
+            {[
+              ['#hoe', 'Hoe het werkt'],
+              ['#functies', 'Functies'],
+              ['#in-actie', 'In actie'],
+              ['#gids', 'Glutengids'],
+              ['#vragen', 'Vragen'],
+            ].map(([href, label]) => (
+              <a key={href} href={href} className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-[#7ee2a8]">
                 {label}
-              </button>
+              </a>
             ))}
           </nav>
-          <a href={PHONE_HREF} onClick={closePanel} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
+          <a href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
             <Smartphone size={17} />
             Op je telefoon
           </a>
         </div>
       </header>
-
-      {panel && <Panel id={panel} onClose={closePanel} />}
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">
@@ -217,66 +338,222 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Hoe het werkt + naar je telefoon: alles wat je moet weten in één blok */}
-      <section id="hoe" className="scroll-mt-24 border-t border-white/10 bg-[#10140f] px-6 py-20 text-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_360px] items-center gap-12">
-          <div data-reveal>
-            <span className="rounded-full bg-white/10 px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.14em] text-[#7ee2a8]">
-              Hoe het werkt
-            </span>
-            <h2 className="mt-5 font-display text-[44px] font-bold leading-[1.05] tracking-tight">Richt, tik, klaar.</h2>
-            <ul className="mt-7 grid grid-cols-3 gap-4">
-              {WAYS.map(({ icon: Icon, title, text }) => (
-                <li key={title} className="rounded-[28px] bg-white/[0.06] p-6 ring-1 ring-white/10">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
-                    <Icon size={24} />
-                  </span>
-                  <h3 className="mt-4 font-display text-[22px] font-bold">{title}</h3>
-                  <p className="mt-1 text-[15px] leading-snug text-white/65">{text}</p>
-                </li>
-              ))}
-            </ul>
-            <ul className="mt-4 grid grid-cols-3 gap-4">
-              {COLORS.map(({ icon: Icon, label, text, cls }) => (
-                <li key={label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${cls}`}>
-                  <Icon size={28} className="shrink-0" />
-                  <span className="leading-tight">
-                    <b className="block font-display text-[17px]">{label}</b>
-                    <span className="text-[14px] opacity-90">{text}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+      {/* Cijfers */}
+      <section className="mx-auto grid max-w-5xl grid-cols-4 gap-6 px-6 pt-20">
+        {[
+          ['€ 0', 'voor altijd'],
+          ['∞', 'scans per dag'],
+          ['11', 'talen herkend'],
+          [String(GUIDE_TOPICS), 'gidsonderwerpen'],
+        ].map(([n, l]) => (
+          <div key={l} data-reveal className="flex flex-col items-center rounded-[28px] bg-white py-8 text-center shadow-sm ring-1 ring-neutral-200">
+            <span className="font-display text-[54px] font-extrabold leading-none text-accent">{n}</span>
+            <span className="mt-2 text-[16px] text-neutral-600">{l}</span>
           </div>
+        ))}
+      </section>
 
-          <aside
-            id="telefoon"
-            data-reveal
-            className="flex scroll-mt-24 flex-col items-center rounded-[36px] bg-accent p-8 text-center text-white shadow-2xl shadow-accent/30"
-          >
-            <h2 className="font-display text-[26px] font-bold">Open op je telefoon</h2>
-            <p className="mt-1 text-[16px] text-white/85">Richt je camera op de code. Geen app, geen account.</p>
-            <div className="mt-6">
-              <QrCode size={168} />
+      {/* Hoe het werkt */}
+      <section id="hoe" className="scroll-mt-28 px-6 py-28">
+        <SectionTitle eyebrow="Hoe het werkt" title="Drie seconden. Drie stappen." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
+        <div className="relative mx-auto mt-16 grid max-w-5xl grid-cols-3 gap-8">
+          <div className="absolute left-[16%] right-[16%] top-12 border-t-2 border-dashed border-accent/40" />
+          {STEPS.map(({ icon: Icon, title, text }, i) => (
+            <div key={title} data-reveal className="relative flex flex-col items-center text-center" style={{ transitionDelay: `${i * 120}ms` }}>
+              <span className="relative flex h-24 w-24 items-center justify-center rounded-[30px] bg-accent text-white shadow-xl shadow-accent/30">
+                <Icon size={40} />
+                <span className="absolute -right-2 -top-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#ffd75e] font-display text-[17px] font-bold text-[#14130f]">
+                  {i + 1}
+                </span>
+              </span>
+              <h3 className="mt-6 font-display text-[26px] font-bold">{title}</h3>
+              <p className="mt-2 max-w-xs text-[17px] leading-relaxed text-neutral-600">{text}</p>
             </div>
-            <p className="mt-5 font-display text-[22px] font-bold">{SITE_LABEL}</p>
-            <p className="mt-4 border-t border-white/20 pt-4 text-[14px] leading-relaxed text-white/80">
-              Tip: tik op <b className="text-white">Deel</b> en dan <b className="text-white">Zet op beginscherm</b>.
-            </p>
-          </aside>
+          ))}
         </div>
       </section>
 
-      <footer className="border-t border-white/10 bg-[#10140f] px-6 py-8 text-center text-[14px] leading-relaxed text-white/45">
-        <p>
-          Ook in de app: glutengids, je eerdere scans en een reiskaart in 10 talen. Foto&apos;s blijven op je telefoon.
-        </p>
-        <p className="mt-1">
-          {DISCLAIMER_SHORT} Productdata:{' '}
-          <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-[#7ee2a8]">
-            Open Food Facts
-          </a>
-          . © {YEAR} {SITE_LABEL}
+      {/* Functies: bento */}
+      <section id="functies" className="scroll-mt-28 bg-[#f3eee2] px-6 py-28">
+        <SectionTitle eyebrow="Functies" title={<>Alles om glutenvrij te eten.<br />Zonder betaalmuur.</>} />
+        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-6 gap-5">
+          <article data-reveal className="col-span-4 flex flex-col items-center rounded-[32px] bg-[#14130f] p-10 text-center text-white">
+            <ScanText size={40} className="text-[#7ee2a8]" />
+            <h3 className="mt-5 font-display text-[32px] font-bold">Ingrediënten- én barcodescanner</h3>
+            <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/70">
+              Fotografeer een etiket of scan een EAN, UPC of QR-code. Productdata komt uit Open Food Facts, de tekst wordt
+              op je eigen telefoon gelezen.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {['EAN', 'UPC', 'QR', 'Etiket', 'Menukaart'].map((t) => (
+                <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-[14px] font-semibold">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </article>
+          <article data-reveal className="col-span-2 flex flex-col items-center justify-center rounded-[32px] bg-accent p-8 text-center text-white">
+            <InfinityIcon size={56} />
+            <h3 className="mt-3 font-display text-[30px] font-bold">Onbeperkt</h3>
+            <p className="mt-2 text-[16px] text-white/85">Scan zo vaak je wilt. Geen eerste-scan-gratis-trucje.</p>
+          </article>
+          {(
+            [
+              [UtensilsCrossed, 'Menukaart-analyse', 'Herkent gebonden sauzen, croutons, paneermeel, sojasaus en gedeelde frituur, en geeft je vragen voor de bediening.', 'bg-white'],
+              [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.', 'bg-[#ffd75e]'],
+              [ShieldCheck, 'Veiligheidsprofiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.', 'bg-white'],
+              [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.', 'bg-white'],
+              [Clock3, 'Scangeschiedenis', 'Al je scans bij elkaar, te filteren op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
+              [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
+            ] as const
+          ).map(([Icon, title, text, bg], i) => (
+            <article
+              key={title}
+              data-reveal
+              className={`col-span-2 flex flex-col items-center rounded-[32px] p-8 text-center ring-1 ring-black/5 ${bg}`}
+              style={{ transitionDelay: `${(i % 3) * 100}ms` }}
+            >
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#14130f] text-white">
+                <Icon size={26} />
+              </span>
+              <h3 className="mt-5 font-display text-[24px] font-bold">{title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-neutral-700">{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* In actie */}
+      <section id="in-actie" className="scroll-mt-28 py-28">
+        <div className="px-6">
+          <SectionTitle eyebrow="In actie" title="Bekijk het zelf" sub="Strak, donker en duidelijk. Ontworpen om in één oogopslag te lezen, ook in een drukke supermarkt." />
+        </div>
+        <Carousel />
+      </section>
+
+      {/* Waarom gratis */}
+      <section className="px-6 pb-28">
+        <div data-reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-[40px] bg-accent px-14 py-16 text-center text-white">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#ffd75e]/20" />
+          <Heart size={44} className="relative mx-auto fill-white" />
+          <h2 className="relative mt-6 font-display text-[44px] font-bold leading-tight">Waarom gratis?</h2>
+          <p className="relative mx-auto mt-5 max-w-2xl text-[21px] leading-relaxed text-white/90">
+            Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Dan
+            hoort de hulp daarbij gewoon voor iedereen beschikbaar te zijn: onbeperkt, zonder account en zonder reclame.
+          </p>
+        </div>
+      </section>
+
+      {/* Gids */}
+      <section id="gids" className="scroll-mt-28 bg-[#10140f] px-6 py-28 text-white">
+        <SectionTitle light eyebrow="Glutengids" title="Weet waar gluten schuilen" sub="Van tarwe en mout tot E-nummers en verwerkingshulpstoffen: per ingrediënt het risico en een veilig alternatief." />
+        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-4 gap-5">
+          {INGREDIENT_TABS.map((t, i) => {
+            const high = t.entries.filter((e) => e.risk === 'hoog').length
+            return (
+              <article
+                key={t.id}
+                data-reveal
+                className="flex flex-col items-center rounded-[28px] bg-white/[0.06] p-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
+                style={{ transitionDelay: `${(i % 4) * 80}ms` }}
+              >
+                <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
+                <p className="mt-1 text-[14px] text-white/55">
+                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
+                </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                  {t.entries.slice(0, 4).map((e) => (
+                    <span
+                      key={e.name}
+                      className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
+                        e.risk === 'hoog' ? 'bg-[#ff5a4e]/15 text-[#ff8a80]' : e.risk === 'middel' ? 'bg-[#ffd75e]/15 text-[#ffd75e]' : 'bg-[#7ee2a8]/15 text-[#7ee2a8]'
+                      }`}
+                    >
+                      {e.name}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            )
+          })}
+        </div>
+        <div data-reveal className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 text-center">
+          <p className="text-[17px] text-white/65">Plus thema&apos;s vol praktische tips:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {GUIDE.map((c) => (
+              <span key={c.id} className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
+                {c.title}
+              </span>
+            ))}
+            <span className="rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">Reiskaart in 10 talen</span>
+          </div>
+        </div>
+        <div className="mt-12 flex justify-center">
+          <PrimaryButton>Bekijk de gids op je telefoon</PrimaryButton>
+        </div>
+      </section>
+
+      {/* Naar je telefoon */}
+      <section id="telefoon" className="scroll-mt-28 px-6 py-28">
+        <div data-reveal className="mx-auto flex max-w-5xl flex-col items-center rounded-[40px] bg-white px-10 py-16 text-center shadow-sm ring-1 ring-neutral-200">
+          <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub={`Richt de camera van je telefoon op de code, of ga naar ${SITE_LABEL}. De scanner start meteen.`} />
+          <div className="mt-10 flex items-center gap-14">
+            <QrCode />
+            <ol className="flex flex-col gap-4 text-left text-[18px]">
+              {[
+                'Scan de QR-code met je camera',
+                'Sta cameratoegang toe',
+                'Optioneel: Deel → Zet op beginscherm',
+              ].map((t, i) => (
+                <li key={t} className="flex items-center gap-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-[17px] font-bold text-white">{i + 1}</span>
+                  {t}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <p className="mt-10 font-display text-[28px] font-bold text-accent">{SITE_LABEL}</p>
+        </div>
+      </section>
+
+      {/* Vragen */}
+      <section id="vragen" className="scroll-mt-28 bg-[#f3eee2] px-6 py-28">
+        <SectionTitle eyebrow="Vragen" title="Veelgestelde vragen" />
+        <Faq />
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-14">
+        <div className="mx-auto grid max-w-6xl grid-cols-[1.4fr_1fr_1fr] gap-10 text-[15px] text-neutral-600">
+          <div className="flex flex-col gap-4">
+            <Logo />
+            <p className="max-w-sm leading-relaxed">
+              Scan barcodes, etiketten en menukaarten op gluten. Gratis en onbeperkt, voor iedereen met coeliakie of
+              glutengevoeligheid.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#14130f]">Snel naar</p>
+            <a href={PHONE_HREF} className="hover:text-accent">Op je telefoon</a>
+            <a href="#hoe" className="hover:text-accent">Hoe het werkt</a>
+            <a href="#functies" className="hover:text-accent">Functies</a>
+            <a href="#gids" className="hover:text-accent">Glutengids</a>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#14130f]">Goed om te weten</p>
+            <p className="leading-relaxed">{DISCLAIMER_SHORT}</p>
+            <p>
+              Productdata:{' '}
+              <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
+                Open Food Facts
+              </a>{' '}
+              (ODbL)
+            </p>
+          </div>
+        </div>
+        <p className="mx-auto mt-12 flex max-w-6xl items-center justify-center gap-1.5 border-t border-neutral-200 pt-8 text-[14px] text-neutral-500">
+          © {YEAR} {SITE_LABEL} · Gemaakt met <Heart size={14} className="fill-[#ff5a4e] text-[#ff5a4e]" /> in Nederland
         </p>
       </footer>
     </div>
