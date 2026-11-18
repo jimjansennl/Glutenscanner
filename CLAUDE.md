@@ -105,7 +105,9 @@ barcode wordt naar Open Food Facts gestuurd.
 - Opzet "Mag ik dit eten?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
   Mag), één zin waarom, een tip en "Neem liever". Daaronder drie
   kleurvakken en de thema's (Supermarkt, Sinterklaas, School & feestjes, Etiket lezen,
-  Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), plus de "Kaart voor de bediening" (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
+  Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), dan "Per soort"
+  (de acht groepen met een kleurbalkje: Tarwe, Gerst, Rogge, Haver, Gemaakt van graan,
+  E-nummers, Via fabriek of keuken, Zit er stiekem in; geen woorden als "Derivaten"), plus de "Kaart voor de bediening" (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
 - **Niet doen:** dezelfde standaard-risicotekst bij elk ingrediënt, woorden als
   "Risiconiveau-informatie", "Hoog risico" of Engelse termen. De gebruiker liet een andere
   app zien die het zo doet; wij willen het mooier, slimmer en eenvoudiger. Neem nooit

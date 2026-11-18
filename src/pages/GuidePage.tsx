@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   AlertTriangle,
   Backpack,
@@ -53,6 +53,20 @@ const RISK_UI: Record<RiskLevel, { word: string; long: string; icon: LucideIcon;
 }
 
 const COLOR_ORDER: RiskLevel[] = ['hoog', 'middel', 'laag']
+const RISK_RANK: Record<RiskLevel, number> = { hoog: 0, middel: 1, laag: 2 }
+const BAR: Record<RiskLevel, string> = { hoog: 'bg-danger', middel: 'bg-warning', laag: 'bg-safe' }
+
+/** Kleurbalkje: in één oogopslag hoeveel er niet mag, oplet of mag. */
+function RiskBar({ items }: { items: Item[] }) {
+  return (
+    <span className="flex h-2 w-full overflow-hidden rounded-full bg-white/10" aria-hidden>
+      {COLOR_ORDER.map((r) => {
+        const n = items.filter((i) => i.risk === r).length
+        return n ? <span key={r} className={BAR[r]} style={{ width: `${(n / items.length) * 100}%` }} /> : null
+      })}
+    </span>
+  )
+}
 
 interface Item {
   key: string
@@ -114,6 +128,16 @@ const ALL_ITEMS: Item[] = (() => {
     return true
   })
 })()
+
+/** De acht groepen, met per groep de items: eerst wat niet mag, dan let op, dan mag. */
+const GROUPS = INGREDIENT_TABS.map((t) => ({
+  id: t.id,
+  label: t.label,
+  intro: t.intro,
+  items: t.entries
+    .map((e) => fromEntry(e, t.label))
+    .sort((a, b) => RISK_RANK[a.risk] - RISK_RANK[b.risk] || sortName(a, b)),
+}))
 
 /** Beste treffers eerst: precies de naam, dan begint ermee, dan ergens in de naam, dan in de uitleg. */
 function search(q: string): Item[] {
@@ -236,7 +260,7 @@ function ItemList({ items, showGroup }: { items: Item[]; showGroup?: boolean }) 
   )
 }
 
-type View = { kind: 'home' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string }
+type View = { kind: 'home' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
 
 function SubPage({ title, sub, onBack, children }: { title: string; sub?: string; onBack: () => void; children: ReactNode }) {
   return (
@@ -256,6 +280,10 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
   const [query, setQuery] = useState('')
   const q = normalize(query.trim())
   const results = useMemo(() => (q.length >= 2 ? search(q) : []), [q])
+  // Elk deel van de gids begint bovenaan.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
 
   if (view.kind === 'color') {
     const ui = RISK_UI[view.risk]
@@ -274,6 +302,17 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
       >
         <div className="mt-2">
           <ItemList items={items} showGroup />
+        </div>
+      </SubPage>
+    )
+  }
+
+  if (view.kind === 'group') {
+    const g = GROUPS.find((x) => x.id === view.id)!
+    return (
+      <SubPage title={g.label} sub={g.intro} onBack={() => setView({ kind: 'home' })}>
+        <div className="mt-2">
+          <ItemList items={g.items} />
         </div>
       </SubPage>
     )
@@ -372,6 +411,23 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
                 </button>
               )
             })}
+          </div>
+
+          <h3 className="mt-7 text-center text-[13px] font-bold uppercase tracking-wide text-muted">Per soort</h3>
+          <div className="mt-2 grid grid-cols-2 gap-2.5">
+            {GROUPS.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => setView({ kind: 'group', id: g.id })}
+                className="flex flex-col gap-2 rounded-[20px] bg-surface px-4 py-3.5 text-left active:bg-surface-raised"
+              >
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-[16px] font-semibold leading-tight">{g.label}</span>
+                  <span className="shrink-0 text-[13px] text-muted">{g.items.length}</span>
+                </span>
+                <RiskBar items={g.items} />
+              </button>
+            ))}
           </div>
 
           <button

@@ -25,7 +25,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   {
     id: 'tarwe',
     label: 'Tarwe',
-    intro: 'De belangrijkste glutenbron. Ook oude tarwesoorten en tarweproducten met een andere naam horen hierbij.',
+    intro: 'Hier zitten de meeste gluten in. Ook oude soorten tarwe en dingen met een andere naam, zoals couscous.',
     entries: [
       { name: 'Tarwe', summary: 'Het graan met de meeste gluten', risk: 'hoog', alternatives: ['Rijstmeel', 'Boekweitmeel', 'Maïsmeel'] },
       {
@@ -79,7 +79,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   {
     id: 'gerst',
     label: 'Gerst',
-    intro: 'Gerst zit vaak verstopt als mout: in chocolade, ontbijtgranen, bier en zoetmiddelen.',
+    intro: 'Gerst zit vaak verstopt als mout: in chocolade, cornflakes, bier en snoep.',
     entries: [
       { name: 'Gerst', summary: 'Graan met gluten (hordeïne)', risk: 'hoog', alternatives: ['Bruine rijst', 'Quinoa'] },
       { name: 'Parelgerst / gort', summary: 'Gepelde gerst in soep en stoofpot', risk: 'hoog', alternatives: ['Rijst', 'Gierst', 'Boekweit'] },
@@ -134,7 +134,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   {
     id: 'rogge',
     label: 'Rogge',
-    intro: 'Rogge bevat secaline, een vorm van gluten. Vooral in donker brood en ontbijtkoek.',
+    intro: 'Rogge heeft ook gluten. Vooral in donker brood en ontbijtkoek.',
     entries: [
       { name: 'Rogge', summary: 'Graan met gluten (secaline)', risk: 'hoog', alternatives: ['Boekweit', 'Teff'] },
       { name: 'Roggemeel', summary: 'Basis van ontbijtkoek en roggebrood', risk: 'hoog', alternatives: ['Boekweitmeel', 'Teffmeel'] },
@@ -149,7 +149,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
     id: 'haver',
     label: 'Haver',
     intro:
-      'Haver zelf bevat avenine. Gewone haver is bijna altijd besmet met tarwe. Alleen gecertificeerd glutenvrije haver is een optie, en niet voor iedereen.',
+      'Gewone haver zit bijna altijd vol tarwe-kruimels. Haver met "glutenvrij" erop mag vaak wel, maar niet iedereen kan er goed tegen.',
     entries: [
       { name: 'Haver', summary: 'Graan, bijna altijd besmet met tarwe', risk: 'hoog', alternatives: ['Haver met "glutenvrij" erop', 'Quinoa'] },
       { name: 'Havermout / havervlokken', summary: 'Ontbijtpap en bakken', risk: 'hoog', alternatives: ['Glutenvrije havervlokken', 'Quinoavlokken', 'Boekweitvlokken'] },
@@ -168,8 +168,8 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   },
   {
     id: 'derivaten',
-    label: 'Derivaten',
-    intro: 'Stoffen gemaakt van glutengranen. Sommige zijn zo bewerkt dat er geen gluten meer in zitten, andere juist niet.',
+    label: 'Gemaakt van graan',
+    intro: 'Dingen die van graan gemaakt zijn. Soms zijn ze zo schoongemaakt dat er geen gluten meer in zitten, soms niet.',
     entries: [
       {
         name: 'Glucosestroop (uit tarwe of gerst)',
@@ -228,8 +228,8 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   },
   {
     id: 'additieven',
-    label: 'Additieven',
-    intro: 'E-nummers en hulpstoffen. In de EU moet tarwe als bron altijd op het etiket staan, dus de meeste zijn veilig.',
+    label: 'E-nummers',
+    intro: 'Stofjes met een E-nummer. Komt er een van tarwe, dan moet dat op het etiket staan. De meeste mogen gewoon.',
     entries: [
       {
         name: 'Gemodificeerd zetmeel (E1404–E1452)',
@@ -269,8 +269,8 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   },
   {
     id: 'hulpstoffen',
-    label: 'Verwerkingshulpstoffen',
-    intro: 'Hulpmiddelen bij productie die niet altijd op het etiket staan, maar wel gluten kunnen achterlaten.',
+    label: 'Via fabriek of keuken',
+    intro: 'Gluten die erin komen door hoe iets gemaakt wordt, zoals bloem op de lopende band of gedeeld frituurvet.',
     entries: [
       {
         name: 'Bloem als strooimiddel',
@@ -315,8 +315,8 @@ export const INGREDIENT_TABS: IngredientTab[] = [
   },
   {
     id: 'verborgen',
-    label: 'Verborgen bronnen',
-    intro: 'Producten waar je geen gluten verwacht, maar die er vaak wel in zitten.',
+    label: 'Zit er stiekem in',
+    intro: 'Dingen waar je geen gluten verwacht, maar die er vaak wel in zitten.',
     entries: [
       { name: 'Sojasaus', summary: 'Gebrouwen met tarwe', risk: 'hoog', note: 'Ook in teriyaki-, hoisin- en oestersaus.', alternatives: ['Tamari met "glutenvrij" erop', 'Kokosaminos (saus van kokos)'] },
       { name: 'Teriyakisaus', summary: 'Zoete saus met sojasaus', risk: 'hoog', note: 'Ook in kip teriyaki en sushi-sausjes.', alternatives: ['Teriyakisaus met "glutenvrij" erop', 'Zelf maken met tamari'] },

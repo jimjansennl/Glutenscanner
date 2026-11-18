@@ -588,7 +588,7 @@ function GuidePage() {
               >
                 <h3 className="font-display text-[20px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
                 <p className="mt-1 text-[14px] text-white/55">
-                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
+                  {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} met gluten</span></>}
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-1.5">
                   {t.entries.slice(0, 4).map((e) => (

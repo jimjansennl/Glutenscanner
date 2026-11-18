@@ -166,7 +166,7 @@ function Gids({ onOpenGuide }: { onOpenGuide: () => void }) {
             <article key={t.id} className="flex flex-col items-center rounded-[24px] bg-white/[0.06] p-5 text-center ring-1 ring-white/10">
               <h3 className="font-display text-[18px] font-bold leading-tight [overflow-wrap:anywhere]">{t.label}</h3>
               <p className="mt-1 text-[13px] text-white/55">
-                {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} hoog</span></>}
+                {t.entries.length} ingrediënten{high > 0 && <> · <span className="text-[#ff8a80]">{high} met gluten</span></>}
               </p>
               <div className="mt-3 flex flex-wrap justify-center gap-1.5">
                 {t.entries.slice(0, 4).map((e) => (
