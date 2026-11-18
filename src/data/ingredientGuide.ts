@@ -21,12 +21,6 @@ export interface IngredientTab {
   entries: IngredientEntry[]
 }
 
-export const RISK_INFO: Record<RiskLevel, string> = {
-  hoog: 'HOOG RISICO: bevat gluten. Vermijd dit volledig in een glutenvrij dieet.',
-  middel: 'LET OP: kan gluten bevatten, afhankelijk van merk, herkomst of bereiding. Controleer altijd het etiket.',
-  laag: 'LAAG RISICO: van nature glutenvrij, of zo bewerkt dat het wettelijk glutenvrij is. Meestal veilig.',
-}
-
 export const INGREDIENT_TABS: IngredientTab[] = [
   {
     id: 'tarwe',
@@ -51,7 +45,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
       },
       { name: 'Tarwekiemen', summary: 'In ontbijtgranen en smoothies', risk: 'hoog', alternatives: ['Chiazaad', 'Lijnzaad', 'Hennepzaad'] },
       { name: 'Tarwezemelen', summary: 'Vezels in brood en muesli', risk: 'hoog', alternatives: ['Rijstzemelen', 'Psylliumvezels', 'Lijnzaad'] },
-      { name: 'Griesmeel', summary: 'Grove durumtarwe, voor pap en pasta', risk: 'hoog', alternatives: ['Maïsgries (polenta)', 'Rijstgries'] },
+      { name: 'Griesmeel', summary: 'Grof gemalen tarwe, voor pap en pasta', risk: 'hoog', alternatives: ['Maïsgries (polenta)', 'Rijstgries'] },
       { name: 'Durumtarwe', summary: 'Harde tarwe voor gewone pasta', risk: 'hoog', alternatives: ['Pasta van mais, rijst of peulvruchten'] },
       {
         name: 'Spelt',
@@ -65,7 +59,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
       { name: 'Emmer', summary: 'Oude tarwevariëteit', risk: 'hoog', alternatives: ['Sorghum', 'Teff'] },
       { name: 'Farro', summary: 'Italiaanse naam voor emmer of spelt', risk: 'hoog', alternatives: ['Bruine rijst', 'Wilde rijst'] },
       { name: 'Bulgur', summary: 'Voorgekookte, gebroken tarwe', risk: 'hoog', alternatives: ['Quinoa', 'Boekweit'] },
-      { name: 'Couscous', summary: 'Korrels van griesmeel', risk: 'hoog', alternatives: ['Quinoa', 'Gierst', 'Glutenvrije maïscouscous'] },
+      { name: 'Couscous', summary: 'Kleine korrels gemaakt van tarwe', risk: 'hoog', alternatives: ['Quinoa', 'Gierst', 'Glutenvrije maïscouscous'] },
       { name: 'Freekeh', summary: 'Jonge, geroosterde tarwe', risk: 'hoog', alternatives: ['Wilde rijst', 'Boekweit'] },
       { name: 'Seitan', summary: 'Vleesvervanger van puur tarwegluten', risk: 'hoog', alternatives: ['Tofu', 'Tempeh', 'Peulvruchten'] },
       { name: 'Triticale', summary: 'Kruising van tarwe en rogge', risk: 'hoog', alternatives: ['Teff', 'Amarant'] },
@@ -132,7 +126,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
     intro:
       'Haver zelf bevat avenine. Gewone haver is bijna altijd besmet met tarwe. Alleen gecertificeerd glutenvrije haver is een optie, en niet voor iedereen.',
     entries: [
-      { name: 'Haver', summary: 'Graan, bijna altijd besmet met tarwe', risk: 'hoog', alternatives: ['Gecertificeerd glutenvrije haver', 'Quinoa'] },
+      { name: 'Haver', summary: 'Graan, bijna altijd besmet met tarwe', risk: 'hoog', alternatives: ['Haver met "glutenvrij" erop', 'Quinoa'] },
       { name: 'Havermout / havervlokken', summary: 'Ontbijtpap en bakken', risk: 'hoog', alternatives: ['Glutenvrije havervlokken', 'Quinoavlokken', 'Boekweitvlokken'] },
       { name: 'Havermelk', summary: 'Plantaardige melk', risk: 'hoog', note: 'Alleen veilig als er "glutenvrij" op staat.', alternatives: ['Glutenvrije havermelk', 'Rijstmelk', 'Amandelmelk'] },
       { name: 'Havermeel', summary: 'Meel van gemalen haver', risk: 'hoog', alternatives: ['Glutenvrij havermeel', 'Rijstmeel'] },
@@ -293,6 +287,24 @@ export const INGREDIENT_TABS: IngredientTab[] = [
       { name: 'Speelklei', summary: 'Kinderklei op basis van bloem', risk: 'hoog', note: 'Risico via handen en mond.', alternatives: ['Glutenvrije speelklei'] },
     ],
   },
+]
+
+/** Wat je wél mag: van nature glutenvrij. Voor de groene "Mag"-lijst en de zoekfunctie. */
+export const NATURALLY_GLUTEN_FREE: IngredientEntry[] = [
+  { name: 'Rijst', summary: 'Wit, bruin, zilvervlies: allemaal glutenvrij', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Maïs', summary: 'Ook polenta, maïzena en popcorn', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Aardappel', summary: 'Gekookt, gebakken of als puree', risk: 'laag', note: 'Let op bij patat uit de snackbar: daar is het frituurvet vaak gedeeld.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Boekweit', summary: 'Ondanks de naam geen tarwe', risk: 'laag', note: 'Puur boekweitmeel is glutenvrij. Boekweitmix voor pannenkoeken heeft vaak óók tarwebloem.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Quinoa', summary: 'Zaadje dat je kookt als rijst', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Gierst', summary: 'Klein graan, glutenvrij', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Teff', summary: 'Klein graan uit Ethiopië, glutenvrij', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Amarant', summary: 'Zaadje, glutenvrij', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Tapioca', summary: 'Zetmeel uit cassave', risk: 'laag', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Bonen, linzen & kikkererwten', summary: 'Ook hummus en falafel van puur kikkererwt', risk: 'laag', note: 'Falafel uit een snackbar kan bloem bevatten.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Groente & fruit', summary: 'Vers, uit de diepvries of uit blik', risk: 'laag', note: 'Let op groente in een saus of met een krokant laagje.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Noten & zaden', summary: 'Naturel: glutenvrij', risk: 'laag', note: 'Borrelnoten met een jasje hebben vaak tarwebloem.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Vlees, vis & ei', summary: 'Vers en onbewerkt: glutenvrij', risk: 'laag', note: 'Let op gepaneerd vlees, worst, gehakt met paneermeel en marinades.', alternatives: ['Geen alternatief nodig'] },
+  { name: 'Melk, kaas & yoghurt', summary: 'Naturel: glutenvrij', risk: 'laag', note: 'Let op toetjes en yoghurt met koek, granola of muesli.', alternatives: ['Geen alternatief nodig'] },
 ]
 
 export const INGREDIENT_COUNT = INGREDIENT_TABS.reduce((n, t) => n + t.entries.length, 0)

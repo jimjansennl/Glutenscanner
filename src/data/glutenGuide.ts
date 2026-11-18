@@ -20,16 +20,244 @@ export interface GuideCategory {
   id: string
   title: string
   subtitle: string
-  icon: 'gift' | 'candy' | 'soup' | 'croissant' | 'wheat' | 'search'
+  icon: 'gift' | 'candy' | 'soup' | 'croissant' | 'wheat' | 'search' | 'cart' | 'tree' | 'school' | 'label'
   items: GuideItem[]
 }
 
 export const GUIDE: GuideCategory[] = [
   {
-    id: 'feestdagen',
-    title: 'Feestdagengerechten',
-    subtitle: 'Kerst, oud & nieuw en andere feesten',
+    id: 'supermarkt',
+    title: 'Supermarkt',
+    subtitle: 'Gewone dingen die je elke week koopt',
+    icon: 'cart',
+    items: [
+      {
+        name: 'Pasta',
+        risk: 'hoog',
+        where: 'Gewone pasta is gemaakt van durumtarwe. Ook verse pasta, lasagnebladen en mie.',
+        checklist: ['Kies pasta met "glutenvrij" op de verpakking', 'Kook glutenvrije pasta in een eigen pan met schoon water'],
+        alternatives: ['Glutenvrije pasta van rijst of maïs', 'Rijstnoedels', 'Pasta van linzen of kikkererwten'],
+      },
+      {
+        name: 'Brood & beschuit',
+        risk: 'hoog',
+        where: 'Brood, beschuit, krentenbollen en croissants zijn van tarwe of rogge.',
+        checklist: ['Gebruik een eigen broodrooster of rooster-zakjes', 'Eigen boter en pot, zonder kruimels'],
+        alternatives: ['Glutenvrij brood', 'Glutenvrije beschuit', 'Rijstwafels of maïswafels'],
+      },
+      {
+        name: 'Ontbijtgranen & cornflakes',
+        risk: 'middel',
+        where: 'Cornflakes zijn van maïs, maar er zit vaak moutextract (gerst) in. Muesli en granola bevatten haver of tarwe.',
+        checklist: ['Zoek "mout" of "gerst" in de ingrediënten', 'Kies een doos met "glutenvrij" erop'],
+        alternatives: ['Glutenvrije cornflakes', 'Glutenvrije muesli', 'Yoghurt met fruit en noten'],
+      },
+      {
+        name: 'Koekjes & crackers',
+        risk: 'hoog',
+        where: 'Bijna alle koekjes, biscuits en crackers zijn van tarwebloem.',
+        checklist: ['Alleen met "glutenvrij" op de verpakking', 'Ook "volkoren" en "spelt" bevatten gluten'],
+        alternatives: ['Glutenvrije koekjes', 'Rijstwafels of maïswafels', 'Glutenvrije crackers'],
+      },
+      {
+        name: 'Rijstwafels',
+        risk: 'middel',
+        where: 'Meestal alleen rijst en zout. Sommige soorten hebben spelt, gerst of een koeklaagje.',
+        checklist: ['Lees de ingrediënten', 'Let op "kan sporen van gluten bevatten"'],
+        alternatives: ['Rijstwafels met "glutenvrij" erop', 'Maïswafels'],
+      },
+      {
+        name: 'Pannenkoeken & poffertjes',
+        risk: 'hoog',
+        where: 'Het beslag is van tarwebloem. Boekweitmix heeft vaak óók tarwebloem erbij.',
+        checklist: ['Puur boekweitmeel is glutenvrij', 'Bak in een schone pan, niet na gewone pannenkoeken'],
+        alternatives: ['Glutenvrije pannenkoekenmix', 'Pannenkoeken van puur boekweitmeel'],
+      },
+      {
+        name: 'Pizza & wraps',
+        risk: 'hoog',
+        where: 'De bodem en de wraps zijn van tarwe.',
+        checklist: ['Bij de pizzeria: vraag naar een glutenvrije bodem én een schone oven', 'Maïstortilla’s zijn soms met tarwe gemengd'],
+        alternatives: ['Glutenvrije pizzabodem', 'Glutenvrije wraps', 'Tortilla’s van 100% maïs met "glutenvrij" erop'],
+      },
+      {
+        name: 'Stroopwafels',
+        risk: 'hoog',
+        where: 'De wafels zijn van tarwebloem.',
+        checklist: ['Alleen met "glutenvrij" op de verpakking'],
+        alternatives: ['Glutenvrije stroopwafels'],
+      },
+      {
+        name: 'Patat',
+        risk: 'middel',
+        where: 'Aardappel is glutenvrij. Maar in de snackbar gaat de patat vaak in hetzelfde vet als kroketten en frikandellen.',
+        checklist: ['Vraag of de patat een eigen frituurpan heeft', 'Thuis: kijk of er geen bloemlaagje om de friet zit'],
+        alternatives: ['Patat uit een eigen frituurpan', 'Ovenfriet met "glutenvrij" erop'],
+      },
+      {
+        name: 'Kroket, frikandel & bitterbal',
+        risk: 'hoog',
+        where: 'De vulling is gebonden met bloem en de korst is paneermeel. In frikandellen zit vaak ook tarwe of paneermeel.',
+        checklist: ['Gewone snacks uit de snackbar zijn niet glutenvrij', 'Glutenvrije snacks moeten in een eigen pan'],
+        alternatives: ['Glutenvrije kroketten en frikandellen (diepvries)'],
+      },
+      {
+        name: 'Hagelslag & pindakaas',
+        risk: 'laag',
+        where: 'Meestal glutenvrij. Soms staat er "kan sporen bevatten" op.',
+        checklist: ['Kijk even op het etiket', 'Gebruik een schoon mes, zonder broodkruimels'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+    ],
+  },
+  {
+    id: 'sinterklaas',
+    title: 'Sinterklaas',
+    subtitle: 'Pepernoten, letters en de zak van Sint',
     icon: 'gift',
+    items: [
+      {
+        name: 'Pepernoten & kruidnoten',
+        risk: 'hoog',
+        where: 'Gemaakt van tarwebloem. Ook kruidnoten met chocolade.',
+        checklist: ['Alleen met "glutenvrij" op de zak', 'Strooien in de klas? Neem een eigen zakje mee'],
+        alternatives: ['Glutenvrije kruidnoten'],
+      },
+      {
+        name: 'Speculaas',
+        risk: 'hoog',
+        where: 'Speculaas, speculaasbrokken en gevulde speculaas zijn van tarwebloem.',
+        checklist: ['Ook in speculaaspasta en toetjes met speculaas'],
+        alternatives: ['Glutenvrije speculaas'],
+      },
+      {
+        name: 'Banketstaaf & banketletter',
+        risk: 'hoog',
+        where: 'Het bladerdeeg is van tarwebloem. De amandelspijs zelf is meestal wel glutenvrij.',
+        checklist: ['Alleen gelabeld glutenvrij is veilig'],
+        alternatives: ['Glutenvrije banketstaaf', 'Een stukje amandelspijs of marsepein'],
+      },
+      {
+        name: 'Taaitaai',
+        risk: 'hoog',
+        where: 'Gemaakt van roggemeel en tarwebloem.',
+        checklist: ['Ook taaitaai-poppen en -figuren'],
+        alternatives: ['Glutenvrije kruidkoek'],
+      },
+      {
+        name: 'Chocoladeletter',
+        risk: 'middel',
+        where: 'Gewone melk- of pure chocolade is meestal glutenvrij. Letters met koek, krokant of "crispy" vaak niet.',
+        checklist: ['Lees de ingrediënten', 'Let op "kan sporen bevatten"'],
+        alternatives: ['Een letter van gewone chocolade zonder vulling'],
+      },
+      {
+        name: 'Marsepein & schuimpjes',
+        risk: 'laag',
+        where: 'Marsepein is van amandel en suiker, schuimpjes van eiwit en suiker. Meestal glutenvrij.',
+        checklist: ['Kijk toch even op het etiket'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+    ],
+  },
+  {
+    id: 'school',
+    title: 'School & feestjes',
+    subtitle: 'Traktaties, logeren en kamp',
+    icon: 'school',
+    items: [
+      {
+        name: 'Traktaties in de klas',
+        risk: 'hoog',
+        where: 'Veel traktaties zijn koekjes, cake, wafels of snoep met tarwe.',
+        checklist: ['Geef de juf of meester een doosje met eigen traktaties', 'Vraag ouders vooraf wat ze trakteren'],
+        alternatives: ['Eigen voorraad: glutenvrije koek, rozijntjes, fruit'],
+      },
+      {
+        name: 'Kinderfeestje',
+        risk: 'middel',
+        where: 'Taart, pizza, pannenkoeken en chips met smaak kunnen gluten bevatten.',
+        checklist: ['Vertel het vooraf aan de ouders', 'Neem een eigen taartje of snack mee'],
+        alternatives: ['Patat uit een eigen pan, fruit, naturel chips'],
+      },
+      {
+        name: 'Logeren',
+        risk: 'middel',
+        where: 'Bij het ontbijt en avondeten: brood, boter met kruimels, sauzen.',
+        checklist: ['Neem eigen brood en beleg mee', 'Vraag om een schoon mes en eigen boter'],
+        alternatives: ['Eigen glutenvrij brood en broodbeleg'],
+      },
+      {
+        name: 'Schoolreis & kamp',
+        risk: 'middel',
+        where: 'Lunchpakketjes, patat en pannenkoeken op locatie.',
+        checklist: ['Bel of mail de school ruim van tevoren', 'Geef een eigen lunchpakket en snacks mee'],
+        alternatives: ['Eigen lunchpakket', 'Laat de reiskaart zien in het buitenland'],
+      },
+      {
+        name: 'Kantine & sportclub',
+        risk: 'hoog',
+        where: 'Tosti’s, broodjes, kroketten. Patat gaat vaak in hetzelfde vet.',
+        checklist: ['Vraag of er glutenvrije dingen zijn', 'Patat alleen uit een eigen frituurpan'],
+        alternatives: ['Eigen snack in de sporttas', 'Fruit, rijstwafels, naturel chips'],
+      },
+    ],
+  },
+  {
+    id: 'etiket',
+    title: 'Etiket lezen',
+    subtitle: 'Wat staat er op de verpakking?',
+    icon: 'label',
+    items: [
+      {
+        name: '"Glutenvrij" op de verpakking',
+        risk: 'laag',
+        where: 'Dit mag alleen als er bijna geen gluten in zitten (minder dan 20 mg per kilo). Dat is veilig bij coeliakie.',
+        checklist: ['Dit is het beste teken dat je kunt vinden'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+      {
+        name: 'Logo met doorgestreepte graanaar',
+        risk: 'laag',
+        where: 'Een graanaar met een streep erdoor in een rondje. Het product is gecontroleerd glutenvrij.',
+        checklist: ['Staat vaak op de voorkant of achterkant'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+      {
+        name: 'Vetgedrukte woorden in de ingrediënten',
+        risk: 'hoog',
+        where: 'Allergenen staan dik gedrukt. Staat er tarwe, gerst, rogge, spelt of haver vetgedrukt? Dan zit er gluten in.',
+        checklist: ['Lees de hele lijst, ook de kleine letters', 'Uitzondering: "glutenvrij tarwezetmeel" mag wel'],
+        alternatives: ['Zoek een variant met "glutenvrij" erop'],
+      },
+      {
+        name: '"Kan sporen van gluten bevatten"',
+        risk: 'middel',
+        where: 'Er zit geen gluten in het recept, maar het is gemaakt in een fabriek waar ook gluten zijn. Er kan een klein beetje in komen.',
+        checklist: ['Strikte coeliakie? Liever niet eten', 'In Instellingen kies je of dit oranje of rood wordt'],
+        alternatives: ['Een variant met "glutenvrij" erop'],
+      },
+      {
+        name: 'Glucosestroop, dextrose & maltodextrine',
+        risk: 'laag',
+        where: 'Kan van tarwe gemaakt zijn, maar is zo gezuiverd dat het glutenvrij is.',
+        checklist: ['Dit mag gewoon'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+      {
+        name: 'Geen gluten-woorden, geen waarschuwing',
+        risk: 'laag',
+        where: 'Staat er geen tarwe, gerst, rogge, spelt, haver of mout in, en geen "kan sporen"? Dan is het meestal veilig.',
+        checklist: ['Twijfel je? Scan het etiket met de app'],
+        alternatives: ['Geen alternatief nodig'],
+      },
+    ],
+  },
+  {
+    id: 'feestdagen',
+    title: 'Kerst & feestdagen',
+    subtitle: 'Kerst, oud & nieuw en andere feesten',
+    icon: 'tree',
     items: [
       {
         name: 'Kerststol',
@@ -105,7 +333,7 @@ export const GUIDE: GuideCategory[] = [
   },
   {
     id: 'snoep-borrel',
-    title: 'Snoep & borrelhapjes',
+    title: 'Snoep & snacks',
     subtitle: 'Chocolade, snacks en borrelplanken',
     icon: 'candy',
     items: [
@@ -205,7 +433,7 @@ export const GUIDE: GuideCategory[] = [
   },
   {
     id: 'brood-desserts',
-    title: 'Brood, taarten & desserts',
+    title: 'Bakker & desserts',
     subtitle: 'Bakkerij, restaurant en toetjes',
     icon: 'croissant',
     items: [

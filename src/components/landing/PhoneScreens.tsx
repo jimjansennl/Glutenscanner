@@ -4,7 +4,6 @@ import {
   BookOpen,
   Camera,
   CheckCircle2,
-  ChevronDown,
   Clock3,
   Languages,
   MessageCircleQuestion,
@@ -229,31 +228,33 @@ export function ScreenGuide() {
     <>
       <StatusBar />
       <Title>Gids</Title>
-      <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3">
-        <div className="rounded-2xl bg-accent-soft p-2.5 text-center text-[9px] ring-1 ring-accent/40">
-          <b>Reiskaart voor restaurants</b>
-          <br />
-          <span className="text-white/70">in 10 talen</span>
-        </div>
-        <div className="rounded-2xl bg-neutral-900 p-3 text-center">
-          <p className="text-[11px] font-semibold">Graan & risiconiveaus</p>
-          {[
-            ['Tarwe', 'Hoog risico', 'bg-danger/15 text-danger'],
-            ['Gerst', 'Hoog risico', 'bg-danger/15 text-danger'],
-            ['Haver', 'Hoog risico', 'bg-danger/15 text-danger'],
-          ].map(([n, r, c]) => (
-            <div key={n} className="mt-2 flex flex-col items-center gap-0.5 border-t border-white/10 pt-2 text-[10px]">
-              {n}
-              <span className={`rounded-full px-2 text-[8px] font-semibold ${c}`}>{r}</span>
-            </div>
-          ))}
-          <div className="mt-2 rounded-xl bg-safe/10 p-2 text-[8.5px]">
-            <p className="font-semibold text-safe">Glutenvrij alternatief</p>
-            ✓ Quinoa · ✓ Boekweit · ✓ Bruine rijst
+      <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3 text-left">
+        <p className="text-[14px] font-extrabold leading-tight">Mag ik dit eten?</p>
+        <div className="rounded-xl bg-neutral-900 px-2.5 py-1.5 text-[9px] text-white/80 ring-1 ring-white/10">🔍 couscous</div>
+        <div className="rounded-2xl bg-danger/15 p-2.5 ring-1 ring-danger/40">
+          <p className="text-[13px] font-extrabold leading-none text-danger">Nee</p>
+          <p className="text-[8px] text-white/70">Bevat gluten</p>
+          <p className="mt-1.5 text-[11px] font-bold">Couscous</p>
+          <p className="text-[8.5px] leading-snug text-white/80">Kleine korrels gemaakt van tarwe.</p>
+          <p className="mt-1.5 text-[7px] font-bold uppercase text-safe">Neem liever</p>
+          <div className="mt-0.5 flex flex-wrap gap-1">
+            {['Quinoa', 'Gierst'].map((t) => (
+              <span key={t} className="rounded-full bg-safe/15 px-1.5 py-0.5 text-[8px]">
+                {t}
+              </span>
+            ))}
           </div>
         </div>
-        <div className="flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-2.5 text-[10px]">
-          Feestdagengerechten <ChevronDown size={12} />
+        <div className="grid grid-cols-3 gap-1">
+          {[
+            ['Nee', 'text-danger ring-danger/40 bg-danger/15'],
+            ['Let op', 'text-warning ring-warning/40 bg-warning/15'],
+            ['Mag', 'text-safe ring-safe/40 bg-safe/15'],
+          ].map(([w, c]) => (
+            <span key={w} className={`rounded-xl py-1.5 text-center text-[9px] font-extrabold ring-1 ${c}`}>
+              {w}
+            </span>
+          ))}
         </div>
       </div>
       <MiniNav active="guide" />

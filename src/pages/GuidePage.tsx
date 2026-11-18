@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
-  AlertCircle,
-  BookOpen,
-  Check,
+  AlertTriangle,
+  Backpack,
   CandyCane,
   CheckCircle2,
   ChevronDown,
@@ -10,345 +9,401 @@ import {
   Croissant,
   Gift,
   Languages,
+  Lightbulb,
   Search,
   SearchCheck,
+  ShoppingCart,
   Soup,
+  Tag,
+  TreePine,
   Wheat,
   X,
+  XCircle,
   type LucideIcon,
 } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
-import { GUIDE, type GuideCategory, type GuideItem, type RiskLevel } from '../data/glutenGuide'
-import { INGREDIENT_TABS, RISK_INFO, type IngredientEntry } from '../data/ingredientGuide'
+import { GUIDE, type GuideCategory, type RiskLevel } from '../data/glutenGuide'
+import { INGREDIENT_TABS, NATURALLY_GLUTEN_FREE, type IngredientEntry } from '../data/ingredientGuide'
 import { normalize } from '../services/glutenParser'
 
-const ICONS: Record<GuideCategory['icon'], LucideIcon> = {
+/**
+ * Glutengids als "Mag ik dit eten?": één zoekbalk met een groot, gekleurd antwoord,
+ * drie kleurvakken (Nee / Let op / Mag) en thema's. Geschreven voor een kind van 12:
+ * één woord als antwoord, één zin waarom, en wat je in plaats daarvan kunt nemen.
+ */
+
+const THEME_ICONS: Record<GuideCategory['icon'], LucideIcon> = {
   gift: Gift,
   candy: CandyCane,
   soup: Soup,
   croissant: Croissant,
   wheat: Wheat,
   search: SearchCheck,
+  cart: ShoppingCart,
+  tree: TreePine,
+  school: Backpack,
+  label: Tag,
 }
 
-const RISK: Record<RiskLevel, { label: string; badge: string }> = {
-  hoog: { label: 'Hoog risico', badge: 'bg-danger/15 text-danger' },
-  middel: { label: 'Middel risico', badge: 'bg-warning/15 text-warning' },
-  laag: { label: 'Laag risico', badge: 'bg-safe/15 text-safe' },
+const RISK_UI: Record<RiskLevel, { word: string; long: string; icon: LucideIcon; solid: string; soft: string; text: string }> = {
+  hoog: { word: 'Nee', long: 'Bevat gluten', icon: XCircle, solid: 'bg-danger text-white', soft: 'bg-danger/15 ring-danger/40', text: 'text-danger' },
+  middel: { word: 'Let op', long: 'Kan gluten bevatten', icon: AlertTriangle, solid: 'bg-warning text-black', soft: 'bg-warning/15 ring-warning/40', text: 'text-warning' },
+  laag: { word: 'Mag', long: 'Glutenvrij', icon: CheckCircle2, solid: 'bg-safe text-black', soft: 'bg-safe/15 ring-safe/40', text: 'text-safe' },
 }
 
-function RiskBadge({ risk }: { risk: RiskLevel }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${RISK[risk].badge}`}>{RISK[risk].label}</span>
+const COLOR_ORDER: RiskLevel[] = ['hoog', 'middel', 'laag']
+const SUGGESTIONS = ['Couscous', 'Haver', 'Sojasaus', 'Rijst', 'Pepernoten', 'Drop']
+
+interface Item {
+  key: string
+  name: string
+  risk: RiskLevel
+  /** Eén of twee zinnen: waarom deze kleur. */
+  why: string
+  tip?: string
+  instead: string[]
+  group: string
+  /** Hoort in de lijsten Nee / Let op / Mag (alleen eten, geen uitleg of situaties). */
+  food: boolean
 }
 
-function ItemDetails({ item }: { item: GuideItem }) {
+/** Thema's die over situaties of etiketten gaan, niet over eten: alleen zoeken en thema. */
+const NOT_FOOD_THEMES = ['etiket', 'school']
+const sortName = (a: Item, b: Item) => a.name.replace(/^\W+/, '').localeCompare(b.name.replace(/^\W+/, ''), 'nl')
+
+function fromEntry(e: IngredientEntry, group: string): Item {
+  return {
+    key: `${group}/${e.name}`,
+    name: e.name,
+    risk: e.risk,
+    why: e.note ? `${e.summary}. ${e.note}` : `${e.summary}.`,
+    instead: e.alternatives.filter((a) => a !== 'Geen alternatief nodig'),
+    group,
+    food: true,
+  }
+}
+
+const THEME_ITEMS: Record<string, Item[]> = Object.fromEntries(
+  GUIDE.map((c) => [
+    c.id,
+    c.items.map((i) => ({
+      key: `${c.id}/${i.name}`,
+      name: i.name,
+      risk: i.risk,
+      why: i.where,
+      tip: i.checklist[0],
+      instead: i.alternatives.filter((a) => a !== 'Geen alternatief nodig'),
+      group: c.title,
+      food: !NOT_FOOD_THEMES.includes(c.id),
+    })),
+  ]),
+)
+
+/** Alles wat je kunt opzoeken, zonder dubbele namen (ingrediënten gaan voor). */
+const ALL_ITEMS: Item[] = (() => {
+  const seen = new Set<string>()
+  const list = [
+    ...INGREDIENT_TABS.flatMap((t) => t.entries.map((e) => fromEntry(e, t.label))),
+    ...NATURALLY_GLUTEN_FREE.map((e) => fromEntry(e, 'Van nature glutenvrij')),
+    ...Object.values(THEME_ITEMS).flat(),
+  ]
+  return list.filter((i) => {
+    const k = normalize(i.name)
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+})()
+
+/** Beste treffers eerst: precies de naam, dan begint ermee, dan ergens in de naam, dan in de uitleg. */
+function search(q: string): Item[] {
+  const scored: [number, Item][] = []
+  for (const item of ALL_ITEMS) {
+    const name = normalize(item.name)
+    let score = -1
+    if (name === q) score = 0
+    else if (name.startsWith(q)) score = 1
+    else if (name.split(/[\s/&,()-]+/).some((w) => w.startsWith(q))) score = 2
+    else if (name.includes(q)) score = 3
+    else if (normalize(`${item.why} ${item.instead.join(' ')}`).includes(q)) score = 4
+    if (score >= 0) scored.push([score, item])
+  }
+  return scored.sort((a, b) => a[0] - b[0] || sortName(a[1], b[1])).map(([, i]) => i)
+}
+
+function RiskPill({ risk, size = 'sm' }: { risk: RiskLevel; size?: 'sm' | 'lg' }) {
+  const ui = RISK_UI[risk]
   return (
-    <div className="animate-slide-up flex flex-col gap-4 px-4 pb-4 text-center">
-      <section>
-        <h4 className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-muted">Waar gluten schuilen</h4>
-        <p className="text-[15px] leading-snug text-white/85">{item.where}</p>
-      </section>
-      <section>
-        <h4 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-muted">Waarop letten</h4>
-        <ul className="mx-auto flex w-fit max-w-full flex-col items-start gap-1.5">
-          {item.checklist.map((c) => (
-            <li key={c} className="flex max-w-full items-start gap-2 text-left text-[15px] leading-snug text-white/85">
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden />
-              {c}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="rounded-2xl bg-safe/10 p-3">
-        <h4 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-safe">Glutenvrij alternatief</h4>
-        <ul className="mx-auto flex w-fit max-w-full flex-col items-start gap-1.5">
-          {item.alternatives.map((a) => (
-            <li key={a} className="flex max-w-full items-start gap-2 text-left text-[15px] leading-snug text-white">
-              <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-safe" aria-hidden />
-              {a}
-            </li>
-          ))}
-        </ul>
-      </section>
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold ${ui.solid} ${
+        size === 'lg' ? 'px-4 py-1.5 text-[17px]' : 'min-w-[64px] px-2.5 py-1 text-[13px]'
+      }`}
+    >
+      {ui.word}
+    </span>
+  )
+}
+
+function Instead({ items }: { items: string[] }) {
+  if (items.length === 0) return null
+  return (
+    <div>
+      <p className="text-[13px] font-bold uppercase tracking-wide text-safe">Neem liever</p>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {items.map((a) => (
+          <span key={a} className="rounded-full bg-safe/15 px-3 py-1.5 text-[15px] font-medium text-white">
+            {a}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
 
-function ItemRow({ item, open, onToggle }: { item: GuideItem; open: boolean; onToggle: () => void }) {
+function Tip({ text }: { text?: string }) {
+  if (!text) return null
   return (
-    <li>
-      <button
-        onClick={onToggle}
-        aria-expanded={open}
-        className="relative flex w-full flex-col items-center gap-1 px-10 py-3 text-center active:bg-white/5"
-      >
-        <span className="text-[17px] font-medium">{item.name}</span>
-        <RiskBadge risk={item.risk} />
-        <ChevronDown
-          size={18}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
-      {open && <ItemDetails item={item} />}
-    </li>
+    <p className="flex items-start gap-2 text-[15px] leading-snug text-white/80">
+      <Lightbulb size={18} className="mt-0.5 shrink-0 text-[#ffd75e]" aria-hidden />
+      {text}
+    </p>
   )
 }
 
-function CategoryCard({
-  category,
-  items,
-  open,
-  onToggle,
-  openItem,
-  onToggleItem,
-}: {
-  category: GuideCategory
-  items: GuideItem[]
-  open: boolean
-  onToggle: () => void
-  openItem: string | null
-  onToggleItem: (key: string) => void
-}) {
-  const Icon = ICONS[category.icon]
-  const high = items.filter((i) => i.risk === 'hoog').length
+/** Het grote antwoord bovenaan bij zoeken. */
+function AnswerCard({ item }: { item: Item }) {
+  const ui = RISK_UI[item.risk]
+  const Icon = ui.icon
   return (
-    <section className="overflow-hidden rounded-[22px] bg-surface">
-      <button
-        onClick={onToggle}
-        aria-expanded={open}
-        className="relative flex w-full flex-col items-center gap-1.5 px-10 py-4 text-center active:bg-surface-raised"
-      >
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-safe/15">
-          <Icon size={22} className="text-safe" />
-        </span>
-        <span className="text-[19px] font-semibold leading-tight">{category.title}</span>
-        <span className="text-[13px] text-muted">
-          {category.subtitle} · {items.length} items{high > 0 && ` · ${high} hoog risico`}
-        </span>
-        <ChevronDown
-          size={20}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
-      {open && (
-        <ul className="divide-y divide-surface-line border-t border-surface-line">
-          {items.map((item) => {
-            const key = `${category.id}/${item.name}`
-            return <ItemRow key={key} item={item} open={openItem === key} onToggle={() => onToggleItem(key)} />
-          })}
-        </ul>
-      )}
-    </section>
+    <article className={`animate-slide-up flex flex-col gap-3 rounded-[28px] p-5 ring-2 ${ui.soft}`}>
+      <div className="flex items-center gap-3">
+        <Icon size={40} className={`shrink-0 ${ui.text}`} />
+        <div className="min-w-0">
+          <p className={`text-[28px] font-extrabold leading-none ${ui.text}`}>{ui.word}</p>
+          <p className="mt-1 text-[15px] font-semibold text-white/70">{ui.long}</p>
+        </div>
+      </div>
+      <h3 className="text-[24px] font-bold leading-tight">{item.name}</h3>
+      <p className="text-[17px] leading-snug text-white/85">{item.why}</p>
+      <Tip text={item.tip} />
+      <Instead items={item.instead} />
+    </article>
   )
 }
 
-const SHORT_RISK: Record<RiskLevel, { label: string; badge: string }> = {
-  hoog: { label: 'Hoog', badge: 'bg-danger text-white' },
-  middel: { label: 'Let op', badge: 'bg-warning text-black' },
-  laag: { label: 'Laag', badge: 'bg-safe text-black' },
-}
-
-/** Uitklapbare rij in de ingrediëntengids: naam, omschrijving en risicobadge. */
-function IngredientRow({ entry, open, onToggle, tab }: { entry: IngredientEntry; open: boolean; onToggle: () => void; tab?: string }) {
-  const risk = SHORT_RISK[entry.risk]
-  const alternativesNeeded = !(entry.alternatives.length === 1 && entry.alternatives[0] === 'Geen alternatief nodig')
+/** Compacte rij die openklapt: kleur, naam, één regel uitleg. */
+function ItemRow({ item, open, onToggle, showGroup }: { item: Item; open: boolean; onToggle: () => void; showGroup?: boolean }) {
   return (
     <li className="border-b border-surface-line last:border-0">
-      <button onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-3 py-4 text-left active:opacity-70">
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[19px] font-semibold leading-tight">{entry.name}</span>
-          <span className="text-[15px] text-muted">
-            {tab && <span className="text-accent">{tab} · </span>}
-            {entry.summary}
-          </span>
+      <button onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-3 py-3.5 text-left active:opacity-70">
+        <RiskPill risk={item.risk} />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[17px] font-semibold leading-tight">{item.name}</span>
+          {!open && (
+            <span className="truncate text-[14px] text-muted">
+              {showGroup && <span className="text-accent">{item.group} · </span>}
+              {item.why}
+            </span>
+          )}
         </span>
-        <span className="flex shrink-0 flex-col items-end gap-2">
-          <span className={`rounded-full px-2.5 py-0.5 text-[13px] font-bold ${risk.badge}`}>{risk.label}</span>
-          <ChevronDown size={20} className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
-        </span>
+        <ChevronDown size={20} className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
       </button>
       {open && (
-        <div className="animate-slide-up flex flex-col gap-3 pb-5">
-          {entry.note && <p className="text-[15px] leading-snug text-white/85">{entry.note}</p>}
-          {alternativesNeeded ? (
-            <section>
-              <h4 className="text-[17px] font-semibold text-accent">Veilige alternatieven</h4>
-              <ul className="mt-1.5 flex flex-col gap-1.5">
-                {entry.alternatives.map((a) => (
-                  <li key={a} className="flex items-center gap-3 text-[17px]">
-                    <Check size={20} className="shrink-0 text-accent" aria-hidden />
-                    {a}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : (
-            <p className="flex items-center gap-3 text-[17px]">
-              <Check size={20} className="shrink-0 text-accent" aria-hidden />
-              Geen alternatief nodig: dit is veilig
-            </p>
-          )}
-          <section>
-            <h4 className="text-[15px] font-semibold text-muted">Risiconiveau</h4>
-            <p className="mt-1.5 rounded-2xl bg-surface px-4 py-3 text-[15px] leading-snug text-white/70">{RISK_INFO[entry.risk]}</p>
-          </section>
+        <div className="animate-slide-up flex flex-col gap-3 pb-4 pl-[76px]">
+          <p className="text-[16px] leading-snug text-white/85">{item.why}</p>
+          <Tip text={item.tip} />
+          <Instead items={item.instead} />
         </div>
       )}
     </li>
   )
 }
 
-/** De thema's (feestdagen, snoep, jus, desserts) als aparte pagina met accordeons. */
-function ThemesView({ onBack }: { onBack: () => void }) {
-  const [openCategory, setOpenCategory] = useState<string | null>(GUIDE[0]?.id ?? null)
-  const [openItem, setOpenItem] = useState<string | null>(null)
+function ItemList({ items, showGroup }: { items: Item[]; showGroup?: boolean }) {
+  const [open, setOpen] = useState<string | null>(null)
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
-      <PageHeader title="Thema's" onBack={onBack} className="-mx-4" />
-      <p className="text-center text-[15px] text-muted">Waar gluten schuilen in feestgerechten, snacks, sauzen en desserts</p>
-      {GUIDE.map((category) => (
-        <CategoryCard
-          key={category.id}
-          category={category}
-          items={category.items}
-          open={openCategory === category.id}
-          onToggle={() => setOpenCategory((c) => (c === category.id ? null : category.id))}
-          openItem={openItem}
-          onToggleItem={(key) => setOpenItem((k) => (k === key ? null : key))}
+    <ul>
+      {items.map((item) => (
+        <ItemRow
+          key={item.key}
+          item={item}
+          showGroup={showGroup}
+          open={open === item.key}
+          onToggle={() => setOpen((k) => (k === item.key ? null : item.key))}
         />
       ))}
-      <p className="px-4 pt-2 text-center text-xs leading-relaxed text-muted/80">
-        Algemene informatie; samenstellingen verschillen per merk en land. {DISCLAIMER_SHORT}
+    </ul>
+  )
+}
+
+type View = { kind: 'home' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string }
+
+function SubPage({ title, sub, onBack, children }: { title: string; sub?: string; onBack: () => void; children: ReactNode }) {
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-6">
+      <PageHeader title={title} onBack={onBack} className="-mx-4" />
+      {sub && <p className="pt-4 text-[15px] leading-snug text-muted">{sub}</p>}
+      {children}
+      <p className="px-4 pt-6 text-center text-xs leading-relaxed text-muted/80">
+        Merken en recepten verschillen. {DISCLAIMER_SHORT}
       </p>
     </main>
   )
 }
 
-function LinkRow({ icon: Icon, title, sub, onClick }: { icon: LucideIcon; title: string; sub: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className="flex w-full items-center gap-4 py-3 text-left active:opacity-70">
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent">
-        <Icon size={28} />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-[19px] font-semibold leading-tight">{title}</span>
-        <span className="text-[15px] leading-snug text-muted">{sub}</span>
-      </span>
-      <ChevronRight size={22} className="shrink-0 text-muted" />
-    </button>
-  )
-}
-
 export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
-  const [view, setView] = useState<'main' | 'themes'>('main')
-  const [tabId, setTabId] = useState(INGREDIENT_TABS[0].id)
+  const [view, setView] = useState<View>({ kind: 'home' })
   const [query, setQuery] = useState('')
-  const [openEntry, setOpenEntry] = useState<string | null>(null)
+  const q = normalize(query.trim())
+  const results = useMemo(() => (q.length >= 2 ? search(q) : []), [q])
 
-  const q = normalize(query)
-  const results = useMemo(
-    () =>
-      q
-        ? INGREDIENT_TABS.flatMap((t) =>
-            t.entries
-              .filter((e) => normalize([e.name, e.summary, e.note ?? '', ...e.alternatives].join(' ')).includes(q))
-              .map((e) => ({ tab: t, entry: e })),
-          )
-        : [],
-    [q],
-  )
-  const themeHits = useMemo(
-    () => (q ? GUIDE.flatMap((c) => c.items.filter((i) => normalize(`${i.name} ${i.where}`).includes(q))).length : 0),
-    [q],
-  )
+  if (view.kind === 'color') {
+    const ui = RISK_UI[view.risk]
+    const items = ALL_ITEMS.filter((i) => i.food && i.risk === view.risk).sort(sortName)
+    return (
+      <SubPage
+        title={`${ui.word}: ${ui.long.toLowerCase()}`}
+        sub={
+          view.risk === 'laag'
+            ? 'Dit mag je eten. Let wel op hoe het klaargemaakt is.'
+            : view.risk === 'middel'
+              ? 'Hangt af van het merk of hoe het gemaakt is. Kijk op het etiket of vraag het na.'
+              : 'Hier zit gluten in. Niet eten, behalve als er "glutenvrij" op staat.'
+        }
+        onBack={() => setView({ kind: 'home' })}
+      >
+        <div className="mt-2">
+          <ItemList items={items} showGroup />
+        </div>
+      </SubPage>
+    )
+  }
 
-  if (view === 'themes') return <ThemesView onBack={() => setView('main')} />
-
-  const tab = INGREDIENT_TABS.find((t) => t.id === tabId)!
-  const toggle = (key: string) => setOpenEntry((k) => (k === key ? null : key))
+  if (view.kind === 'theme') {
+    const cat = GUIDE.find((c) => c.id === view.id)!
+    return (
+      <SubPage title={cat.title} sub={cat.subtitle} onBack={() => setView({ kind: 'home' })}>
+        <div className="mt-2">
+          <ItemList items={THEME_ITEMS[cat.id]} />
+        </div>
+      </SubPage>
+    )
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-6">
       <PageHeader title="Gids" className="-mx-4" />
-      <h2 className="pb-2 pt-5 text-[34px] font-bold leading-tight tracking-tight">Glutengids</h2>
 
-      <LinkRow icon={BookOpen} title="Feestdagen & thema's" sub="Waar gluten schuilen in feestgerechten, snacks en sauzen" onClick={() => setView('themes')} />
-      <LinkRow icon={Languages} title="Restaurantkaarten" sub="Laat de bediening in hun eigen taal zien wat je nodig hebt" onClick={onTravelCard} />
-
-      <label className="mt-4 flex items-center gap-2 rounded-full bg-surface px-4 py-3 focus-within:ring-2 focus-within:ring-accent">
-        <Search size={18} className="shrink-0 text-muted" />
+      <h2 className="pt-5 text-[32px] font-extrabold leading-tight tracking-tight">Mag ik dit eten?</h2>
+      <label className="mt-3 flex items-center gap-2 rounded-2xl bg-surface px-4 py-3.5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-accent">
+        <Search size={20} className="shrink-0 text-muted" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Zoek een ingrediënt, bijv. mout"
-          className="min-w-0 flex-1 bg-transparent text-[17px] placeholder:text-muted focus:outline-none"
-          aria-label="Zoek in de glutengids"
+          placeholder="Typ een product, bijv. couscous"
+          enterKeyHint="search"
+          className="min-w-0 flex-1 bg-transparent text-[18px] placeholder:text-muted focus:outline-none"
+          aria-label="Zoek een product of ingrediënt"
         />
         {query && (
-          <button onClick={() => setQuery('')} className="text-muted" aria-label="Zoekopdracht wissen">
-            <X size={18} />
+          <button onClick={() => setQuery('')} className="rounded-full p-1 text-muted active:bg-white/10" aria-label="Wissen">
+            <X size={20} />
           </button>
         )}
       </label>
 
-      {q ? (
-        <section className="mt-4">
-          <p className="text-[15px] text-muted">
-            {results.length} {results.length === 1 ? 'ingrediënt' : 'ingrediënten'} gevonden
-            {themeHits > 0 && (
-              <>
-                {' '}·{' '}
-                <button onClick={() => setView('themes')} className="text-accent">
-                  {themeHits} in thema&apos;s
-                </button>
-              </>
-            )}
-          </p>
-          <ul>
-            {results.map(({ tab: t, entry }) => {
-              const key = `${t.id}/${entry.name}`
-              return <IngredientRow key={key} entry={entry} tab={t.label} open={openEntry === key} onToggle={() => toggle(key)} />
-            })}
-          </ul>
+      {q.length >= 2 ? (
+        <section className="mt-4 flex flex-col gap-4">
+          {results.length === 0 ? (
+            <div className="rounded-[28px] bg-surface p-5 text-center">
+              <p className="text-[18px] font-bold">Niet gevonden</p>
+              <p className="mt-1 text-[15px] leading-snug text-muted">
+                Probeer een ander woord. Of scan het etiket: de app leest dan zelf de ingrediënten.
+              </p>
+            </div>
+          ) : (
+            <>
+              <AnswerCard item={results[0]} />
+              {results.length > 1 && (
+                <div>
+                  <p className="text-[13px] font-bold uppercase tracking-wide text-muted">Ook gevonden</p>
+                  <ItemList items={results.slice(1, 12)} showGroup />
+                </div>
+              )}
+            </>
+          )}
         </section>
       ) : (
         <>
-          <div className="sticky top-14 z-10 -mx-4 mt-4 bg-black/85 py-2 backdrop-blur-xl">
-            <div className="flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]" role="tablist" aria-label="Categorie">
-              {INGREDIENT_TABS.map((t) => (
-                <button
-                  key={t.id}
-                  role="tab"
-                  aria-selected={t.id === tabId}
-                  onClick={() => {
-                    setTabId(t.id)
-                    setOpenEntry(null)
-                  }}
-                  className={`shrink-0 rounded-full px-5 py-2.5 text-[17px] font-semibold transition-colors ${
-                    t.id === tabId ? 'bg-accent text-white' : 'bg-accent-soft text-accent'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setQuery(s)}
+                className="rounded-full bg-surface px-3.5 py-1.5 text-[15px] text-white/80 ring-1 ring-white/10 active:bg-surface-raised"
+              >
+                {s}
+              </button>
+            ))}
           </div>
-          <p className="mt-3 text-[15px] leading-snug text-muted">{tab.intro}</p>
-          <ul className="mt-1">
-            {tab.entries.map((entry) => {
-              const key = `${tab.id}/${entry.name}`
-              return <IngredientRow key={key} entry={entry} open={openEntry === key} onToggle={() => toggle(key)} />
+
+          <div className="mt-6 grid grid-cols-3 gap-2.5">
+            {COLOR_ORDER.map((risk) => {
+              const ui = RISK_UI[risk]
+              const Icon = ui.icon
+              const count = ALL_ITEMS.filter((i) => i.food && i.risk === risk).length
+              return (
+                <button
+                  key={risk}
+                  onClick={() => setView({ kind: 'color', risk })}
+                  className={`flex flex-col items-center gap-1 rounded-[22px] px-2 py-4 text-center ring-2 active:scale-95 ${ui.soft}`}
+                >
+                  <Icon size={30} className={ui.text} />
+                  <span className={`text-[20px] font-extrabold leading-none ${ui.text}`}>{ui.word}</span>
+                  <span className="text-[12px] leading-tight text-white/70">{ui.long}</span>
+                  <span className="mt-1 text-[12px] font-semibold text-white/50">{count} dingen</span>
+                </button>
+              )
             })}
-          </ul>
+          </div>
+
+          <h3 className="mt-7 text-[13px] font-bold uppercase tracking-wide text-muted">Thema&apos;s</h3>
+          <div className="mt-2 grid grid-cols-2 gap-2.5">
+            {GUIDE.map((c) => {
+              const Icon = THEME_ICONS[c.icon]
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setView({ kind: 'theme', id: c.id })}
+                  className="flex items-center gap-3 rounded-[20px] bg-surface p-3.5 text-left active:bg-surface-raised"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent">
+                    <Icon size={22} />
+                  </span>
+                  <span className="min-w-0 text-[16px] font-semibold leading-tight">{c.title}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            onClick={onTravelCard}
+            className="mt-6 flex items-center gap-4 rounded-[22px] bg-surface p-4 text-left active:bg-surface-raised"
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#3b6fd8]">
+              <Languages size={24} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[17px] font-semibold leading-tight">Reiskaart in 10 talen</span>
+              <span className="text-[14px] leading-snug text-muted">Laat in het buitenland zien dat je geen gluten mag</span>
+            </span>
+            <ChevronRight size={22} className="shrink-0 text-muted" />
+          </button>
         </>
       )}
 
-      <p className="px-4 pt-6 text-center text-xs leading-relaxed text-muted/80">
-        Algemene informatie; samenstellingen verschillen per merk en land. {DISCLAIMER_SHORT}
-      </p>
+      <p className="px-4 pt-6 text-center text-xs leading-relaxed text-muted/80">Merken en recepten verschillen. {DISCLAIMER_SHORT}</p>
     </main>
   )
 }

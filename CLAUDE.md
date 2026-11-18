@@ -101,6 +101,18 @@ barcode wordt naar Open Food Facts gestuurd.
 - Zo min mogelijk tikken. De uitslag moet in één oogopslag te lezen zijn: groen =
   glutenvrij, oranje = twijfel, rood = bevat gluten.
 
+**Glutengids (tabblad Gids, `src/pages/GuidePage.tsx`)**
+- Opzet "Mag ik dit eten?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
+  Mag), één zin waarom, een tip en "Neem liever". Daaronder snelle zoekwoorden, drie
+  kleurvakken en de thema's (Supermarkt, Sinterklaas, School & feestjes, Etiket lezen,
+  Kerst & feestdagen, Snoep & snacks, Sauzen & bouillon, Bakker & desserts), plus de reiskaart.
+- **Niet doen:** dezelfde standaard-risicotekst bij elk ingrediënt, woorden als
+  "Risiconiveau-informatie", "Hoog risico" of Engelse termen. De gebruiker liet een andere
+  app zien die het zo doet; wij willen het mooier, slimmer en eenvoudiger. Neem nooit
+  teksten of beelden over uit andere apps.
+- Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
+  Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
+
 ## Scanner testen zonder telefoon
 
 Chrome kan een nepcamera gebruiken:
