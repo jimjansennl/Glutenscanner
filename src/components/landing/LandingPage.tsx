@@ -1,17 +1,67 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
-import { AlertTriangle, CheckCircle2, FileText, ScanBarcode, UtensilsCrossed, XCircle, type LucideIcon } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Heart,
+  Infinity as InfinityIcon,
+  ScanBarcode,
+  ScanText,
+  Smartphone,
+  Sparkles,
+  UtensilsCrossed,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
+import { Phone, ScreenDanger, ScreenSafe, ScreenScanner } from './PhoneScreens'
 
 /**
- * Informatiesite voor de desktop: alles op één scherm, zonder scrollen.
- * De scanner zelf heeft een telefooncamera nodig; daarom staat de QR-code centraal.
+ * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
+ * Alle knoppen wijzen daarom naar de QR-code; op de telefoon opent dezelfde site als scanner.
  */
+const PHONE_HREF = '#telefoon'
 const SITE_URL = 'https://www.glutenscanner.nl'
 const SITE_LABEL = 'glutenscanner.nl'
+const YEAR = new Date().getFullYear()
 
-function QrCode({ size }: { size: number }) {
+/** Laat elementen met data-reveal zacht invliegen zodra ze in beeld komen. */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>('[data-reveal]')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible')
+            observer.unobserve(e.target)
+          }
+        }
+      },
+      { threshold: 0.12 },
+    )
+    els.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+}
+
+function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <span className="flex items-center gap-2.5">
+      <span className="flex h-10 w-10 rotate-[-6deg] items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
+        <ScanBarcode size={21} />
+      </span>
+      <span className={`font-display text-[21px] font-bold tracking-tight ${light ? 'text-white' : 'text-[#14130f]'}`}>
+        glutenscanner
+      </span>
+    </span>
+  )
+}
+
+function QrCode({ size = 176 }: { size?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const svg = new BrowserQRCodeSvgWriter().write(SITE_URL, size, size)
@@ -19,95 +69,197 @@ function QrCode({ size }: { size: number }) {
     svg.setAttribute('aria-label', `QR-code naar ${SITE_LABEL}`)
     ref.current?.replaceChildren(svg)
   }, [size])
-  return <div ref={ref} style={{ width: size, height: size }} />
+  return <div ref={ref} className="rounded-3xl bg-white p-3 shadow-xl" style={{ width: size + 24, height: size + 24 }} />
+}
+
+function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; href?: string }) {
+  return (
+    <a
+      href={href}
+      className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-display text-[18px] font-semibold text-white shadow-xl shadow-accent/30 transition hover:-translate-y-0.5 hover:bg-[#1a9258] hover:shadow-2xl hover:shadow-accent/40"
+    >
+      {children}
+      <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+    </a>
+  )
+}
+
+/** Zwevend labeltje rond de telefoons in de hero. */
+function FloatChip({ className, children, tone = 'light' }: { className: string; children: ReactNode; tone?: 'light' | 'red' | 'green' }) {
+  const toneCls = {
+    light: 'bg-white text-[#14130f]',
+    red: 'bg-[#ff5a4e] text-white',
+    green: 'bg-accent text-white',
+  }[tone]
+  return (
+    <span className={`absolute z-20 flex items-center gap-2 whitespace-nowrap rounded-2xl px-4 py-2.5 text-[15px] font-semibold shadow-2xl ${toneCls} ${className}`}>
+      {children}
+    </span>
+  )
 }
 
 const WAYS: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: ScanBarcode, title: 'Barcode', text: 'Richt de camera op de streepjescode. Hij leest hem vanzelf.' },
-  { icon: FileText, title: 'Etiket', text: 'Maak een foto van de ingrediënten. Ook buitenlandse etiketten.' },
-  { icon: UtensilsCrossed, title: 'Menukaart', text: 'Maak een foto van het menu en krijg vragen voor de bediening.' },
+  { icon: ScanBarcode, title: 'Barcode', text: 'Kies Barcode en richt de camera op de streepjescode. Hij leest hem vanzelf.' },
+  { icon: ScanText, title: 'Etiket', text: 'Kies Foto en fotografeer de ingrediënten. Ook buitenlandse etiketten.' },
+  { icon: UtensilsCrossed, title: 'Menukaart', text: 'Kies Foto en fotografeer het menu. Je krijgt vragen voor de bediening.' },
 ]
 
 const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] = [
-  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Mag je eten', cls: 'bg-[#e3f6ea] text-[#137a46]' },
-  { icon: AlertTriangle, label: 'Twijfel', text: 'Lees het etiket of vraag het na', cls: 'bg-[#fff1d6] text-[#a35f00]' },
-  { icon: XCircle, label: 'Bevat gluten', text: 'Niet eten', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
+  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Mag je eten', cls: 'bg-[#7ee2a8]/15 text-[#7ee2a8] ring-1 ring-[#7ee2a8]/25' },
+  { icon: AlertTriangle, label: 'Twijfel', text: 'Lees het etiket of vraag het na', cls: 'bg-[#ffd75e]/15 text-[#ffd75e] ring-1 ring-[#ffd75e]/25' },
+  { icon: XCircle, label: 'Bevat gluten', text: 'Niet eten', cls: 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-1 ring-[#ff5a4e]/25' },
 ]
 
 export function LandingPage() {
+  useReveal()
   return (
-    <div className="flex min-h-full flex-col bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-8 pt-6">
-        <span className="flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-white">
-            <ScanBarcode size={21} />
-          </span>
-          <span className="font-display text-[21px] font-bold tracking-tight">glutenscanner</span>
-        </span>
-        <span className="text-[15px] text-neutral-500">Gratis · geen account · geen app nodig</span>
+    <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
+      {/* Navigatie */}
+      <header className="fixed inset-x-0 top-4 z-40 px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
+          <Logo light />
+          <a href="#hoe" className="text-[15px] font-medium text-white/75 hover:text-white">
+            Hoe het werkt
+          </a>
+          <a href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a9258]">
+            <Smartphone size={17} />
+            Op je telefoon
+          </a>
+        </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-[1fr_360px] items-center gap-14 px-8 py-6">
-        <div>
-          <h1 className="font-display text-[clamp(38px,3.9vw,58px)] font-extrabold leading-[1.04] tracking-tight">
-            Zit er gluten in?
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-accent/25 blur-[140px]" />
+        <div className="pointer-events-none absolute -bottom-40 right-[-10%] h-[500px] w-[600px] rounded-full bg-[#ffd75e]/15 blur-[140px]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px]" />
+
+        <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[14px] font-medium text-white/85 backdrop-blur">
+            <Heart size={15} className="fill-[#ff5a4e] text-[#ff5a4e]" />
+            Gratis, voor iedereen met coeliakie of glutenintolerantie
+          </span>
+          <h1 className="mt-7 font-display text-[76px] font-extrabold leading-[0.98] tracking-tight">
+            Eet met een
             <br />
-            <span className="text-accent">Scan het en je weet het.</span>
+            <span className="relative inline-block text-[#7ee2a8]">
+              gerust hart
+              <svg className="absolute -bottom-3 left-0 w-full" viewBox="0 0 300 18" fill="none" aria-hidden>
+                <path d="M3 13C60 4 140 2 297 9" stroke="#ffd75e" strokeWidth="6" strokeLinecap="round" />
+              </svg>
+            </span>
+            .
           </h1>
-          <p className="mt-3 max-w-xl text-[19px] leading-relaxed text-neutral-600">
-            In de supermarkt, thuis of in een restaurant. Open de scanner op je telefoon en richt de camera op:
+          <p className="mt-7 max-w-2xl text-[20px] leading-relaxed text-white/70">
+            Scan een barcode, etiket of menukaart en zie binnen seconden of er gluten in zitten. Onbeperkt, zonder
+            account, gewoon in je browser op <b className="text-white">{SITE_LABEL}</b>.
           </p>
-
-          <ul className="mt-5 grid grid-cols-3 gap-4">
-            {WAYS.map(({ icon: Icon, title, text }) => (
-              <li key={title} className="rounded-3xl bg-white px-5 py-4 ring-1 ring-neutral-200">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#14130f] text-white">
-                  <Icon size={22} />
-                </span>
-                <h2 className="mt-3 font-display text-[21px] font-bold">{title}</h2>
-                <p className="mt-1 text-[15px] leading-snug text-neutral-600">{text}</p>
-              </li>
+          <div className="mt-9 flex items-center gap-4">
+            <PrimaryButton>Open op je telefoon</PrimaryButton>
+          </div>
+          <p className="mt-6 flex gap-6 text-[15px] text-white/55">
+            {['Altijd gratis', 'Onbeperkt scannen', 'Geen account', 'Foto’s blijven op je toestel'].map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <Check size={15} className="text-[#7ee2a8]" />
+                {t}
+              </span>
             ))}
-          </ul>
-
-          <h2 className="mt-6 text-[14px] font-bold uppercase tracking-[0.12em] text-neutral-500">Wat betekent de kleur?</h2>
-          <ul className="mt-3 grid grid-cols-3 gap-4">
-            {COLORS.map(({ icon: Icon, label, text, cls }) => (
-              <li key={label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${cls}`}>
-                <Icon size={28} className="shrink-0" />
-                <span className="leading-tight">
-                  <b className="block text-[17px]">{label}</b>
-                  <span className="text-[14px] opacity-90">{text}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          </p>
         </div>
 
-        <aside className="flex flex-col items-center rounded-[32px] bg-white p-8 text-center shadow-sm ring-1 ring-neutral-200">
-          <h2 className="font-display text-[26px] font-bold">Open op je telefoon</h2>
-          <p className="mt-1 text-[16px] text-neutral-600">Richt de camera van je telefoon op deze code.</p>
-          <div className="mt-5 rounded-2xl p-2 ring-1 ring-neutral-200">
-            <QrCode size={180} />
+        {/* Drie telefoons in een waaier, met zwevende labels */}
+        <div className="relative mx-auto mt-12 flex h-[470px] max-w-5xl items-start justify-center">
+          <div className="absolute left-[14%] top-14 -rotate-[9deg] opacity-95">
+            <Phone>
+              <ScreenSafe />
+            </Phone>
           </div>
-          <p className="mt-4 text-[16px] text-neutral-600">
-            of ga naar <b className="text-accent">{SITE_LABEL}</b>
-          </p>
-          <p className="mt-5 border-t border-neutral-200 pt-5 text-[14px] leading-relaxed text-neutral-500">
-            Tip: tik in je browser op <b>Deel</b> en dan <b>Zet op beginscherm</b>. Dan staat hij tussen je apps.
-          </p>
-        </aside>
-      </main>
+          <div className="absolute right-[14%] top-14 rotate-[9deg] opacity-95">
+            <Phone>
+              <ScreenDanger />
+            </Phone>
+          </div>
+          <div className="relative z-10 scale-[1.08]">
+            <Phone className="shadow-[0_40px_120px_-20px_rgba(31,164,99,0.55)]">
+              <ScreenScanner />
+            </Phone>
+          </div>
+          <FloatChip className="left-[6%] top-6 animate-float" tone="green">
+            <Check size={18} strokeWidth={3} /> Glutenvrij
+          </FloatChip>
+          <FloatChip className="right-[5%] top-2 animate-float-slow" tone="red">
+            trigo → tarwe
+          </FloatChip>
+          <FloatChip className="left-[24%] top-[62%] animate-float-slow">
+            <Sparkles size={16} className="text-accent" /> gerstemoutextract gevonden
+          </FloatChip>
+          <FloatChip className="right-[22%] top-[58%] animate-float">
+            <InfinityIcon size={18} className="text-accent" /> onbeperkt gratis
+          </FloatChip>
+        </div>
+      </section>
 
-      <footer className="mx-auto w-full max-w-6xl px-8 pb-5 text-center text-[13px] leading-relaxed text-neutral-500">
-        Ook in de app: een glutengids, je eerdere scans en een reiskaart voor restaurants in het buitenland. Foto&apos;s
-        blijven op je telefoon.
-        <br />
-        {DISCLAIMER_SHORT} Productgegevens:{' '}
-        <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
-          Open Food Facts
-        </a>
-        .
+      {/* Hoe het werkt + naar je telefoon: alles wat je moet weten in één blok */}
+      <section id="hoe" className="scroll-mt-24 border-t border-white/10 bg-[#10140f] px-6 py-20 text-white">
+        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_360px] items-center gap-12">
+          <div data-reveal>
+            <span className="rounded-full bg-white/10 px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.14em] text-[#7ee2a8]">
+              Hoe het werkt
+            </span>
+            <h2 className="mt-5 font-display text-[44px] font-bold leading-[1.05] tracking-tight">Richt, tik, klaar.</h2>
+            <ul className="mt-7 grid grid-cols-3 gap-4">
+              {WAYS.map(({ icon: Icon, title, text }) => (
+                <li key={title} className="rounded-[28px] bg-white/[0.06] p-6 ring-1 ring-white/10">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
+                    <Icon size={24} />
+                  </span>
+                  <h3 className="mt-4 font-display text-[22px] font-bold">{title}</h3>
+                  <p className="mt-1 text-[15px] leading-snug text-white/65">{text}</p>
+                </li>
+              ))}
+            </ul>
+            <ul className="mt-4 grid grid-cols-3 gap-4">
+              {COLORS.map(({ icon: Icon, label, text, cls }) => (
+                <li key={label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${cls}`}>
+                  <Icon size={28} className="shrink-0" />
+                  <span className="leading-tight">
+                    <b className="block font-display text-[17px]">{label}</b>
+                    <span className="text-[14px] opacity-90">{text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <aside
+            id="telefoon"
+            data-reveal
+            className="flex scroll-mt-24 flex-col items-center rounded-[36px] bg-accent p-8 text-center text-white shadow-2xl shadow-accent/30"
+          >
+            <h2 className="font-display text-[26px] font-bold">Open op je telefoon</h2>
+            <p className="mt-1 text-[16px] text-white/85">Richt je camera op de code. Geen app, geen account.</p>
+            <div className="mt-6">
+              <QrCode size={168} />
+            </div>
+            <p className="mt-5 font-display text-[22px] font-bold">{SITE_LABEL}</p>
+            <p className="mt-4 border-t border-white/20 pt-4 text-[14px] leading-relaxed text-white/80">
+              Tip: tik op <b className="text-white">Deel</b> en dan <b className="text-white">Zet op beginscherm</b>.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 bg-[#10140f] px-6 py-8 text-center text-[14px] leading-relaxed text-white/45">
+        <p>
+          Ook in de app: glutengids, je eerdere scans en een reiskaart in 10 talen. Foto&apos;s blijven op je telefoon.
+        </p>
+        <p className="mt-1">
+          {DISCLAIMER_SHORT} Productdata:{' '}
+          <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-[#7ee2a8]">
+            Open Food Facts
+          </a>
+          . © {YEAR} {SITE_LABEL}
+        </p>
       </footer>
     </div>
   )

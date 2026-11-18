@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from 'react'
-import { Barcode, Camera, Images, Zap, ZapOff } from 'lucide-react'
+import { Barcode, Camera, Images, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
 import { useBarcodeScanner, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
+
+export type ScanMode = 'barcode' | 'photo'
 
 const CORNERS = [
   'left-3 top-3 border-l-4 border-t-4 rounded-tl-md',
@@ -11,6 +13,8 @@ const CORNERS = [
 ]
 
 interface Props {
+  mode: ScanMode
+  onModeChange: (mode: ScanMode) => void
   onNavigate: (tab: NavTab) => void
   onCode: (code: DecodedCode) => void
   onPhoto: (image: Blob) => void
@@ -52,10 +56,10 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
   return { supported, on, toggle }
 }
 
-export function ScannerView({ onNavigate, onCode, onPhoto }: Props) {
+export function ScannerView({ mode, onModeChange, onNavigate, onCode, onPhoto }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  // Eén scherm voor alles: barcodes worden altijd vanzelf gelezen, de sluiterknop is voor etiket of menu.
+  // Ook in fotomodus blijft barcode/QR-herkenning actief: een code in beeld wint altijd.
   const { error, ready } = useBarcodeScanner(videoRef, onCode)
   const torch = useTorch(videoRef, ready)
 
@@ -98,54 +102,89 @@ export function ScannerView({ onNavigate, onCode, onPhoto }: Props) {
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover" playsInline muted />
 
-        {/* Kader in het midden van het beeld, waar ook de barcodelezer kijkt; de schaduw dimt de rest. */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="relative aspect-[3/2] w-[76%] max-w-md rounded-3xl border-[3px] border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.3)]">
-            {CORNERS.map((pos) => (
-              <span key={pos} className={`absolute h-7 w-7 border-accent ${pos}`} />
+        {/* Kader; de grote box-shadow dimt alles eromheen. */}
+        <div className={`pointer-events-none absolute inset-0 flex items-center justify-center pt-16 ${mode === 'photo' ? 'pb-56' : 'pb-28'}`}>
+          {mode === 'barcode' ? (
+            <div className="relative aspect-[3/2] w-[76%] rounded-3xl border-[3px] border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]">
+              {CORNERS.map((pos) => (
+                <span key={pos} className={`absolute h-7 w-7 border-accent ${pos}`} />
+              ))}
+              {ready && (
+                <span className="absolute inset-x-6 h-0.5 animate-scanline rounded-full bg-accent shadow-[0_0_12px_2px] shadow-accent" />
+              )}
+            </div>
+          ) : (
+            <div className="aspect-[6/5] max-h-full w-[86%] rounded-[32px] border-2 border-accent/80 shadow-[0_0_24px_2px_rgba(31,164,99,0.45),0_0_0_9999px_rgba(0,0,0,0.2)]" />
+          )}
+        </div>
+
+        <div className="absolute inset-x-0 top-4 flex justify-center">
+          <div className="flex rounded-full bg-neutral-700/75 p-1 backdrop-blur-xl" role="tablist" aria-label="Scanmodus">
+            {(
+              [
+                ['photo', 'Foto', Camera],
+                ['barcode', 'Barcode', ScanBarcode],
+              ] as const
+            ).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={mode === id}
+                onClick={() => onModeChange(id)}
+                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-[17px] font-semibold transition-colors ${
+                  mode === id ? 'bg-accent text-white' : 'text-white/80'
+                }`}
+              >
+                <Icon size={20} />
+                {label}
+              </button>
             ))}
-            {ready && (
-              <span className="absolute inset-x-6 h-0.5 animate-scanline rounded-full bg-accent shadow-[0_0_12px_2px] shadow-accent" />
-            )}
           </div>
         </div>
 
         <div className="absolute inset-x-0 bottom-5 flex flex-col items-center gap-3 px-4">
           {error ? (
             <Pill className="bg-danger/90">{error}</Pill>
-          ) : !ready ? (
-            <Pill>Camera starten…</Pill>
+          ) : mode === 'barcode' ? (
+            <>
+              <Pill>
+                <Barcode size={18} className="text-accent" />
+                {ready ? 'Richt de camera op de barcode.' : 'Camera starten…'}
+              </Pill>
+            </>
           ) : (
-            <p className="flex flex-col items-start gap-1 rounded-2xl bg-neutral-700/75 px-4 py-2.5 text-[15px] leading-snug backdrop-blur-xl">
-              <span className="flex items-center gap-2">
-                <Barcode size={18} className="shrink-0 text-accent" />
-                Barcode: richt de camera erop.
-              </span>
-              <span className="flex items-center gap-2">
-                <Camera size={18} className="shrink-0 text-accent" />
-                Etiket of menu: maak een foto.
-              </span>
-            </p>
+            <>
+              <Pill>Richt op de ingrediëntenlijst of menukaart en tik op de sluiterknop</Pill>
+              <Pill className="text-[15px]">
+                <Sparkles size={18} />
+                Tekstherkenning
+                <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide">Gratis</span>
+              </Pill>
+            </>
           )}
 
-          <div className="mt-1 grid w-full max-w-xs grid-cols-3 items-center">
-            <span className="justify-self-start">{torchButton}</span>
-            <button
-              onClick={snapshot}
-              disabled={!ready}
-              className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
-              aria-label="Foto maken van etiket of menukaart"
-            >
-              <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
-            </button>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="flex h-14 w-14 items-center justify-center justify-self-end rounded-full bg-neutral-800/80 backdrop-blur-xl active:bg-neutral-700"
-              aria-label="Foto uit galerij kiezen"
-            >
-              <Images size={24} />
-            </button>
-          </div>
+          {mode === 'photo' ? (
+            <div className="mt-2 grid w-full max-w-xs grid-cols-3 items-center">
+              <span className="justify-self-start">{torchButton}</span>
+              <button
+                onClick={snapshot}
+                disabled={!ready}
+                className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
+                aria-label="Foto maken"
+              >
+                <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="flex h-14 w-14 items-center justify-center justify-self-end rounded-full bg-neutral-800/80 backdrop-blur-xl active:bg-neutral-700"
+                aria-label="Foto uit galerij kiezen"
+              >
+                <Images size={24} />
+              </button>
+            </div>
+          ) : (
+            torchButton && <div className="mt-1">{torchButton}</div>
+          )}
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
         </div>
       </div>
