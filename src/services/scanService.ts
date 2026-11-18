@@ -28,11 +28,35 @@ export async function analyzeBarcode(barcode: string, signal?: AbortSignal): Pro
   }
 }
 
-/** Barcode → productlookup; overige QR-inhoud wordt als tekst geanalyseerd. */
+/**
+ * Nieuwe QR-codes op verpakkingen (GS1 Digital Link) hebben de barcode in de link,
+ * bijvoorbeeld https://merk.nl/01/08712345678906. Die halen we eruit.
+ */
+function barcodeFromLink(text: string): string | null {
+  const gtin = text.match(/\/01\/(\d{8,14})(?=[/?#]|$)/)?.[1]
+  if (!gtin) return null
+  return gtin.length === 14 && gtin.startsWith('0') ? gtin.slice(1) : gtin
+}
+
+/** Barcode → productlookup; een gewone link is nooit "glutenvrij"; overige QR-tekst wordt geanalyseerd. */
 export async function analyzeCode(code: DecodedCode, signal?: AbortSignal): Promise<ScanResult> {
-  if (isProductBarcode(code.text)) {
-    const result = await analyzeBarcode(code.text, signal)
+  const barcode = isProductBarcode(code.text) ? code.text.trim() : barcodeFromLink(code.text)
+  if (barcode) {
+    const result = await analyzeBarcode(barcode, signal)
     return { ...result, source: code.format }
+  }
+  if (/^(https?:\/\/|www\.)/i.test(code.text.trim())) {
+    return {
+      source: code.format,
+      rawValue: code.text,
+      analysis: {
+        status: 'warning',
+        matches: [],
+        warnings: [],
+        reasons: ['Deze QR-code is een link. Er staan geen ingrediënten in. Scan de streepjescode of maak een foto van de ingrediënten.'],
+        tips: [],
+      },
+    }
   }
   return { source: code.format, rawValue: code.text, analysis: analyzeText(code.text) }
 }

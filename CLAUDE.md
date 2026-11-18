@@ -79,8 +79,7 @@ barcode wordt naar Open Food Facts gestuurd.
   `/functies`, `/in-actie`, `/glutengids` en `/vragen`. Elke pagina begint met een
   donkere band in de stijl van het bovenstuk. De router zit in `LandingPage.tsx`
   (History API, geen extra pakket). `vercel.json` stuurt alle adressen naar `index.html`.
-- De **startpagina** (`/`) heeft: het donkere bovenstuk, de drie stappen ("Drie seconden.
-  Drie stappen."), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
+- De **startpagina** (`/`) heeft: het donkere bovenstuk, de drie stappen ("Drie stappen. Zo gedaan."), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
   Scrollen mag. Een pagina van één scherm vond de gebruiker te kaal en "wit en saai".
 - **Niet terugzetten op de startpagina:** de cijferblokken (€ 0, ∞, 11, 106), het
   functieblok, het glutengidsblok, de carrousel en de vragen. Die staan op hun eigen

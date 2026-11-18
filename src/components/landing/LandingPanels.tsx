@@ -28,33 +28,33 @@ import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, 
 
 const WAYS: [LucideIcon, string, string][] = [
   [ScanBarcode, 'Barcode', 'Kies Barcode en richt de camera op de streepjescode. Hij leest hem vanzelf.'],
-  [ScanText, 'Etiket', 'Kies Foto en fotografeer de ingrediënten. Ook buitenlandse etiketten.'],
-  [Camera, 'Menukaart', 'Kies Foto en fotografeer het menu. Je krijgt vragen voor de bediening.'],
+  [ScanText, 'Etiket', 'Kies Foto en fotografeer de ingrediënten. Ook buitenlandse woorden, zoals trigo en Weizen.'],
+  [Camera, 'Menukaart', 'Kies Foto en fotografeer het menu. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.'],
 ]
 
 const COLORS: [LucideIcon, string, string, string][] = [
-  [CheckCircle2, 'Glutenvrij', 'Mag je eten', 'bg-[#7ee2a8]/15 text-[#7ee2a8] ring-[#7ee2a8]/25'],
-  [AlertTriangle, 'Twijfel', 'Lees het etiket of vraag het na', 'bg-[#ffd75e]/15 text-[#ffd75e] ring-[#ffd75e]/25'],
-  [XCircle, 'Bevat gluten', 'Niet eten', 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-[#ff5a4e]/25'],
+  [CheckCircle2, 'Glutenvrij', 'Geen gluten gevonden', 'bg-[#7ee2a8]/15 text-[#7ee2a8] ring-[#7ee2a8]/25'],
+  [AlertTriangle, 'Twijfel', 'Misschien gluten. Lees het etiket of vraag het na', 'bg-[#ffd75e]/15 text-[#ffd75e] ring-[#ffd75e]/25'],
+  [XCircle, 'Bevat gluten', 'Gluten gevonden. Niet eten', 'bg-[#ff5a4e]/15 text-[#ff8a80] ring-[#ff5a4e]/25'],
 ]
 
 const FEATURES: [LucideIcon, string, string][] = [
   [UtensilsCrossed, 'Menukaart', 'Herkent sauzen, croutons, paneermeel, sojasaus en frituur, en geeft je vragen voor de bediening.'],
-  [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.'],
+  [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: de scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.'],
   [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.'],
   [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.'],
   [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien onder Geschiedenis. Filter op glutenvrij, twijfel of bevat gluten.'],
-  [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.'],
+  [Lock, 'Privé', 'Geen account en geen reclame. Je foto’s en geschiedenis blijven op je telefoon.'],
 ]
 
 const CAROUSEL: { word: string; line: string; dark: boolean; bg: string; screen: ReactNode }[] = [
-  { word: 'Scan', line: 'elk product in seconden', dark: false, bg: 'bg-accent', screen: <ScreenScanner /> },
+  { word: 'Scan', line: 'de barcode in seconden', dark: false, bg: 'bg-accent', screen: <ScreenScanner /> },
   { word: 'Spot', line: 'verborgen gluten', dark: false, bg: 'bg-[#14130f] ring-1 ring-white/10', screen: <ScreenPhoto /> },
-  { word: 'Weet', line: 'of het veilig is', dark: true, bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
+  { word: 'Weet', line: 'of er gluten in zit', dark: true, bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
   { word: 'Zie', line: 'wat er wél in zit', dark: false, bg: 'bg-[#ff5a4e]', screen: <ScreenDanger /> },
   { word: 'Vraag', line: 'het restaurant', dark: true, bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
   { word: 'Leer', line: 'waar gluten schuilen', dark: false, bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
-  { word: 'Reis', line: 'zonder zorgen', dark: false, bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
+  { word: 'Reis', line: 'met een kaart in 10 talen', dark: false, bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
 
 const FAQ = [
@@ -64,7 +64,7 @@ const FAQ = [
   },
   {
     q: 'Moet ik een app downloaden?',
-    a: 'Nee. Open glutenscanner.nl op je telefoon en de scanner start direct. Wil je een icoon? Tik op "Deel" en dan "Zet op beginscherm".',
+    a: 'Nee, je gebruikt hem gewoon in je browser. Wil je een icoon tussen je apps? iPhone: tik op "Deel" en dan "Zet op beginscherm". Android: tik op ⋮ en dan "Toevoegen aan startscherm".',
   },
   {
     q: 'Worden mijn foto’s geüpload?',
@@ -76,7 +76,7 @@ const FAQ = [
   },
   {
     q: 'Kan ik er blind op vertrouwen?',
-    a: 'Nee, het is een tweede blik, geen medisch advies. Bij twijfel kiest de scanner altijd de voorzichtige uitslag. Kijk altijd ook zelf op de verpakking.',
+    a: 'Nee. Het is een tweede paar ogen, geen medisch advies. Vindt de app een product niet, dan krijg je twijfel, niet glutenvrij. Maar een foto kan een woord verkeerd lezen, en de database kan fouten bevatten. Kijk dus altijd zelf op de verpakking.',
   },
 ]
 

@@ -45,8 +45,9 @@ import {
  * De knoppen "Op je telefoon" wijzen naar de QR-code op de startpagina.
  */
 const PHONE_HREF = '/#telefoon'
-const SITE_URL = 'https://www.glutenscanner.nl'
-const SITE_LABEL = 'glutenscanner.nl'
+/** Altijd het adres waarop de site nu open staat, zodat de QR-code en de tekst kloppen. */
+const SITE_URL = window.location.origin
+const SITE_LABEL = window.location.host.replace(/^www\./, '')
 const YEAR = new Date().getFullYear()
 
 const PAGES = [
@@ -184,19 +185,19 @@ function FloatChip({ className, children, tone = 'light' }: { className: string;
 }
 
 const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: ScanBarcode, title: 'Richt je camera', text: 'Op een barcode, ingrediëntenlijst of menukaart. Geen typen, geen account.' },
-  { icon: Sparkles, title: 'Zie het direct', text: 'Glutenvrij, twijfelgeval of bevat gluten: groot, kleurrijk en met uitleg.' },
-  { icon: ShieldCheck, title: 'Dubbelcheck', text: 'Je scan is een tweede blik. Kijk daarna nog even op de verpakking, en klaar.' },
+  { icon: ScanBarcode, title: 'Richt je camera', text: 'Op een barcode, of maak een foto van de ingrediënten of de menukaart. Geen account nodig.' },
+  { icon: Sparkles, title: 'Zie de uitslag', text: 'Glutenvrij, twijfel of bevat gluten: groot, in kleur en met uitleg waarom.' },
+  { icon: ShieldCheck, title: 'Kijk zelf mee', text: 'De scanner is een tweede paar ogen. Kijk daarna altijd nog zelf op de verpakking.' },
 ]
 
 const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen: ReactNode }[] = [
-  { word: 'Scan', line: 'elk product in seconden', accent: 'text-[#ffd75e]', bg: 'bg-accent', screen: <ScreenScanner /> },
+  { word: 'Scan', line: 'de barcode in seconden', accent: 'text-[#ffd75e]', bg: 'bg-accent', screen: <ScreenScanner /> },
   { word: 'Spot', line: 'verborgen gluten', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenPhoto /> },
-  { word: 'Weet', line: 'of het veilig is', accent: 'text-[#14130f]', bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
+  { word: 'Weet', line: 'of er gluten in zit', accent: 'text-[#14130f]', bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
   { word: 'Zie', line: 'wat er wél in zit', accent: 'text-white', bg: 'bg-[#ff5a4e]', screen: <ScreenDanger /> },
   { word: 'Vraag', line: 'het restaurant', accent: 'text-[#14130f]', bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
   { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
-  { word: 'Reis', line: 'zonder zorgen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
+  { word: 'Reis', line: 'met een kaart in 10 talen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
 
 const WAYS: { icon: LucideIcon; title: string; text: string; tip: string }[] = [
@@ -204,35 +205,35 @@ const WAYS: { icon: LucideIcon; title: string; text: string; tip: string }[] = [
     icon: ScanBarcode,
     title: 'Barcode',
     text: 'Kies Barcode en richt de camera op de streepjescode. Je hoeft niets te tikken: hij leest hem vanzelf.',
-    tip: 'Werkt het snelst in de supermarkt.',
+    tip: 'Niet elk product staat in de database. Dan krijg je twijfel.',
   },
   {
     icon: ScanText,
     title: 'Etiket',
     text: 'Kies Foto en fotografeer de lijst met ingrediënten. De scanner zoekt woorden als tarwe, gerst en mout.',
-    tip: 'Ook voor buitenlandse etiketten.',
+    tip: 'Ook buitenlandse woorden, zoals trigo en Weizen.',
   },
   {
     icon: Camera,
     title: 'Menukaart',
-    text: 'Kies Foto en fotografeer het menu. Je ziet welke gerechten twijfel geven en wat je kunt vragen.',
+    text: 'Kies Foto en fotografeer het menu. Je ziet waar gluten in kunnen zitten, zoals saus of paneermeel, en wat je kunt vragen.',
     tip: 'Handig in een restaurant.',
   },
 ]
 
 const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] = [
-  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Mag je eten.', cls: 'bg-[#e3f6ea] text-[#137a46]' },
-  { icon: AlertTriangle, label: 'Twijfel', text: 'Lees het etiket nog eens of vraag het na.', cls: 'bg-[#fff1d6] text-[#a35f00]' },
-  { icon: XCircle, label: 'Bevat gluten', text: 'Niet eten.', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
+  { icon: CheckCircle2, label: 'Glutenvrij', text: 'Geen gluten gevonden.', cls: 'bg-[#e3f6ea] text-[#137a46]' },
+  { icon: AlertTriangle, label: 'Twijfel', text: 'Misschien gluten. Lees het etiket of vraag het na.', cls: 'bg-[#fff1d6] text-[#a35f00]' },
+  { icon: XCircle, label: 'Bevat gluten', text: 'Gluten gevonden. Niet eten.', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
 ]
 
 const FEATURES = [
   [UtensilsCrossed, 'Menukaart-analyse', 'Herkent gebonden sauzen, croutons, paneermeel, sojasaus en gedeelde frituur, en geeft je vragen voor de bediening.', 'bg-white'],
-  [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: buitenlandse etiketten worden vertaald naar wat het is.', 'bg-[#ffd75e]'],
+  [Languages, '11 talen herkend', 'Trigo, frumento, Weizen of hvete: de scanner herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.', 'bg-[#ffd75e]'],
   [ShieldCheck, 'Veiligheidsprofiel', 'Strikte coeliakie of gevoelig: jij bepaalt of sporen rood of oranje zijn.', 'bg-white'],
   [BookOpen, 'Glutengids', 'Waar gluten schuilen, van kerststol tot bouillonblokje, met glutenvrije alternatieven.', 'bg-white'],
   [Clock3, 'Scangeschiedenis', 'Je laatste 15 scans terugzien onder Geschiedenis. Filter op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
-  [Lock, 'Privé', 'Geen account, geen tracking. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
+  [Lock, 'Privé', 'Geen account en geen reclame. Je foto’s en geschiedenis blijven op je telefoon.', 'bg-white'],
 ] as const
 
 const FAQ = [
@@ -242,7 +243,7 @@ const FAQ = [
   },
   {
     q: 'Moet ik een app downloaden?',
-    a: `Nee. Open ${SITE_LABEL} op je telefoon en de scanner start direct. Wil je een app-icoon? Kies in je browser "Deel" en dan "Zet op beginscherm".`,
+    a: `Nee. Open ${SITE_LABEL} op je telefoon en de scanner start direct. Wil je een icoon tussen je apps? iPhone: tik op "Deel" en dan "Zet op beginscherm". Android: tik op ⋮ en dan "Toevoegen aan startscherm".`,
   },
   {
     q: 'Worden mijn foto’s geüpload?',
@@ -253,8 +254,8 @@ const FAQ = [
     a: 'Zeker. De scanner herkent glutentermen in 11 Europese talen en meldt ze in het Nederlands. Met de reiskaart leg je coeliakie uit aan de bediening, in 10 talen.',
   },
   {
-    q: 'Is het veilig voor mensen met coeliakie?',
-    a: 'Glutenscanner is een hulpmiddel voor een snelle tweede blik, geen medisch advies. Bij twijfel kiest de app altijd voor de voorzichtige uitslag. Controleer altijd de fysieke verpakking.',
+    q: 'Kan ik er blind op vertrouwen?',
+    a: 'Nee. Glutenscanner is een tweede paar ogen, geen medisch advies. Vindt de app een product niet, dan krijg je twijfel, niet glutenvrij. Maar een foto kan een woord verkeerd lezen, en de database kan fouten bevatten. Kijk dus altijd zelf op de verpakking.',
   },
 ]
 
@@ -416,7 +417,7 @@ function HomePage() {
 
       {/* Hoe het werkt */}
       <section className="px-6 py-28">
-        <SectionTitle eyebrow="Hoe het werkt" title="Drie seconden. Drie stappen." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
+        <SectionTitle eyebrow="Hoe het werkt" title="Drie stappen. Zo gedaan." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
         <div className="relative mx-auto mt-16 grid max-w-5xl grid-cols-3 gap-8">
           <div className="absolute left-[16%] right-[16%] top-12 border-t-2 border-dashed border-accent/40" />
           {STEPS.map(({ icon: Icon, title, text }, i) => (
@@ -458,7 +459,7 @@ function HomePage() {
               {[
                 'Scan de QR-code met je camera',
                 'Sta cameratoegang toe',
-                'Optioneel: Deel → Zet op beginscherm',
+                'Handig: zet hem op je beginscherm',
               ].map((t, i) => (
                 <li key={t} className="flex items-center gap-4">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-[17px] font-bold text-white">{i + 1}</span>
@@ -526,11 +527,11 @@ function FeaturesPage() {
             <ScanText size={40} className="text-[#7ee2a8]" />
             <h3 className="mt-5 font-display text-[32px] font-bold">Ingrediënten- én barcodescanner</h3>
             <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/70">
-              Fotografeer een etiket of scan een EAN, UPC of QR-code. Productdata komt uit Open Food Facts, de tekst wordt
-              op je eigen telefoon gelezen.
+              Scan de streepjescode of fotografeer het etiket. Productgegevens komen uit Open Food Facts. De tekst op een
+              foto wordt op je eigen telefoon gelezen.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {['EAN', 'UPC', 'QR', 'Etiket', 'Menukaart'].map((t) => (
+              {['Barcode', 'Etiket', 'Menukaart'].map((t) => (
                 <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-[14px] font-semibold">
                   {t}
                 </span>
@@ -579,7 +580,7 @@ function GuidePage() {
       <PageBand
         eyebrow="Glutengids"
         title="Weet waar gluten schuilen"
-        sub="Van tarwe en mout tot E-nummers: per ingrediënt het risico en een veilig alternatief."
+        sub="Van tarwe en mout tot E-nummers: per ingrediënt hoe groot de kans op gluten is, en wat je in plaats daarvan kunt nemen."
       />
       <section className="bg-[#10140f] px-6 pb-24 text-white">
         <div className="mx-auto grid max-w-6xl grid-cols-4 gap-5">
