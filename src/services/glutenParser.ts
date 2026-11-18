@@ -338,7 +338,7 @@ function conclude(
       matches: [],
       warnings: [],
       reasons: [
-        `Gecertificeerd glutenvrij product (claim gevonden in: ${claimSources.join(', ')}).`,
+        `Er staat "glutenvrij" op (gevonden in: ${claimSources.join(', ')}).`,
         ...starchNote,
       ],
       conflicts,

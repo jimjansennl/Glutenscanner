@@ -647,18 +647,21 @@ export function LandingPage() {
       </main>
 
       {/* Footer: één platte regel; de navigatie staat al in de kop. */}
-      <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 text-[14px] text-neutral-500">
-          <Logo />
-          <p className="text-center leading-relaxed">
-            {DISCLAIMER_SHORT} Productdata:{' '}
-            <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
-              Open Food Facts
-            </a>
+      <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 text-[12.5px] text-neutral-500">
+          <span className="origin-left scale-[0.8]">
+            <Logo />
+          </span>
+          <p className="text-center leading-snug">
+            {DISCLAIMER_SHORT}{' '}
+            <span className="whitespace-nowrap">
+              Productdata:{' '}
+              <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer" className="underline hover:text-accent">
+                Open Food Facts
+              </a>
+            </span>
           </p>
-          <p className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-            © {YEAR} · Gemaakt met <Heart size={14} className="fill-[#ff5a4e] text-[#ff5a4e]" /> in Nederland
-          </p>
+          <p className="shrink-0 whitespace-nowrap">© {YEAR} · Nederland</p>
         </div>
       </footer>
     </div>

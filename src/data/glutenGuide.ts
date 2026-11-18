@@ -306,7 +306,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'De kruimellaag bestaat uit tarwebloem en vaak gewone havermout.',
         checklist: ['Vraag of er bloem én havermout in zit', 'Gewone havervlokken zijn vrijwel altijd besmet'],
-        alternatives: ['Kruimellaag van amandelmeel en boter', 'Gecertificeerd glutenvrije havervlokken of boekweitvlokken'],
+        alternatives: ['Kruimellaag van amandelmeel en boter', 'Havervlokken met "glutenvrij" erop of boekweitvlokken'],
       },
       {
         name: 'Geglazuurde ham',

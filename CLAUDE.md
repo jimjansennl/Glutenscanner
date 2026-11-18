@@ -94,7 +94,7 @@ barcode wordt naar Open Food Facts gestuurd.
   (€ 0, ∞, 11, 106), het functieblok, het glutengidsblok, de carrousel en de vragen. Die staan op hun eigen
   pagina, of zijn weg (de cijferblokken).
 - De **footer** is plat, één regel: logo, disclaimer met Open Food Facts en
-  "© jaar · Gemaakt met ♥ in Nederland". Herhaal er niets uit de kop.
+  "© jaar · Nederland" (geen hartje), dun (py-3). Herhaal er niets uit de kop.
 - De carrousel "Bekijk het zelf" (pagina In actie) laat precies 4 kaarten zien en niets half buiten beeld.
 
 **Scanner (telefoon)**

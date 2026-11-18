@@ -158,7 +158,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
       { name: 'Haverzemelen', summary: 'Vezels in ontbijt en brood', risk: 'hoog', alternatives: ['Rijstzemelen', 'Psylliumvezels'] },
       { name: 'Muesli & granola', summary: 'Mix van vlokken, vaak met haver en mout', risk: 'hoog', alternatives: ['Glutenvrije granola', 'Zelfgemaakt met boekweit en noten'] },
       {
-        name: 'Gecertificeerd glutenvrije haver',
+        name: 'Haver met "glutenvrij" erop',
         summary: 'Apart geteeld en verwerkt',
         risk: 'middel',
         note: 'Een deel van de mensen met coeliakie reageert ook op pure haver. Overleg met je arts of diëtist.',
@@ -296,7 +296,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
         name: 'Enzymen in brood',
         summary: 'Bakhulpmiddel, soms van gerstemout',
         risk: 'middel',
-        alternatives: ['Gecertificeerd glutenvrij brood'],
+        alternatives: ['Glutenvrij brood'],
       },
       {
         name: 'Losmiddel op snoep',

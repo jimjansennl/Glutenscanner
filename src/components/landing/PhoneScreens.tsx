@@ -168,7 +168,7 @@ export function ScreenSafe() {
           <CheckCircle2 size={44} />
         </Circle>
         <span className="text-[22px] font-bold text-safe">Glutenvrij</span>
-        <span className="rounded-full bg-safe/15 px-2 py-0.5 text-[8px] font-semibold text-safe">Gecertificeerd glutenvrij</span>
+        <span className="rounded-full bg-safe/15 px-2 py-0.5 text-[8px] font-semibold text-safe">Met glutenvrij-logo</span>
         <span className="text-[9px] text-white/60">Geen glutenbronnen in ingrediënten en allergenen.</span>
       </div>
       <div className="rounded-2xl bg-neutral-900 p-3 text-center text-[9px] text-white/80">
@@ -186,9 +186,9 @@ export function ScreenDanger() {
         <Circle tone="danger">
           <XCircle size={44} />
         </Circle>
-        <span className="text-[22px] font-bold text-danger">Bevat Gluten!</span>
+        <span className="text-[22px] font-bold text-danger">Bevat gluten</span>
         <span className="text-[9px]">
-          Getraceerde glutenbron: <b>tarwe (trigo)</b>
+          Gevonden: <b>tarwe (trigo)</b>
         </span>
       </div>
       <div className="flex flex-col gap-1.5 rounded-2xl bg-neutral-900 p-2.5 text-center text-[9px]">
@@ -208,7 +208,7 @@ export function ScreenMenu() {
         <Circle tone="warning">
           <AlertTriangle size={40} />
         </Circle>
-        <span className="text-[20px] font-bold text-warning">Twijfelgeval</span>
+        <span className="text-[20px] font-bold text-warning">Twijfel</span>
         <span className="text-[9px] text-white/60">Croutons en dressing op de kaart</span>
       </div>
       <p className="text-center text-[8px] uppercase tracking-wide text-white/50">Vraag in het restaurant</p>
@@ -228,8 +228,8 @@ export function ScreenGuide() {
       <StatusBar />
       <Title>Gids</Title>
       <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3 text-left">
-        <p className="text-[14px] font-extrabold leading-tight">Mag ik dit eten?</p>
-        <div className="rounded-xl bg-neutral-900 px-2.5 py-1.5 text-[9px] text-white/80 ring-1 ring-white/10">🔍 couscous</div>
+        <p className="text-center text-[14px] font-extrabold leading-tight">Mag ik dit eten?</p>
+        <div className="flex items-center justify-between rounded-full bg-white py-0.5 pl-2.5 pr-0.5 text-[9px] text-black">🔍 couscous<span className="rounded-full bg-accent px-2 py-0.5 text-[8px] font-semibold text-white">Zoek</span></div>
         <div className="rounded-2xl bg-danger/15 p-2.5 ring-1 ring-danger/40">
           <p className="text-[13px] font-extrabold leading-none text-danger">Nee</p>
           <p className="text-[8px] text-white/70">Bevat gluten</p>
@@ -246,9 +246,9 @@ export function ScreenGuide() {
         </div>
         <div className="grid grid-cols-3 gap-1">
           {[
-            ['Nee', 'text-danger ring-danger/40 bg-danger/15'],
-            ['Let op', 'text-warning ring-warning/40 bg-warning/15'],
-            ['Mag', 'text-safe ring-safe/40 bg-safe/15'],
+            ['Nee', 'text-danger ring-white/10 bg-neutral-900'],
+            ['Let op', 'text-warning ring-white/10 bg-neutral-900'],
+            ['Mag', 'text-safe ring-white/10 bg-neutral-900'],
           ].map(([w, c]) => (
             <span key={w} className={`rounded-xl py-1.5 text-center text-[9px] font-extrabold ring-1 ${c}`}>
               {w}

@@ -22,14 +22,14 @@ const STATUS: Record<GlutenStatus, StatusStyle> = {
   },
   danger: {
     icon: XCircle,
-    title: 'Bevat Gluten!',
+    title: 'Bevat gluten',
     text: 'text-danger',
     circle: 'bg-danger/15 ring-danger shadow-[0_0_60px_-4px] shadow-danger/60',
     chip: 'bg-danger/10 text-danger',
   },
   warning: {
     icon: AlertTriangle,
-    title: 'Twijfelgeval',
+    title: 'Twijfel',
     text: 'text-warning',
     circle: 'bg-warning/15 ring-warning shadow-[0_0_60px_-4px] shadow-warning/60',
     chip: 'bg-warning/10 text-warning',
@@ -119,12 +119,12 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
           {analysis.certified && (
             <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-safe/15 px-3 py-1 text-[13px] font-semibold text-safe">
               <BadgeCheck size={16} />
-              Gecertificeerd glutenvrij
+              Met glutenvrij-logo
             </span>
           )}
           {analysis.status === 'danger' && sources.length > 0 && (
             <p className="text-[17px] text-white">
-              Getraceerde glutenbron: <span className="font-semibold">{sources.join(', ')}</span>
+              Gevonden: <span className="font-semibold">{sources.join(', ')}</span>
             </p>
           )}
         </div>
