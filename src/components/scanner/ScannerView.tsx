@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from 'react'
 import { Barcode, Camera, Images, Menu, ScanBarcode, Sparkles, Zap, ZapOff } from 'lucide-react'
+import { SECURE_URL } from '../../services/secureContext'
 import { useBarcodeScanner, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
 
@@ -151,7 +152,17 @@ export function ScannerView({ mode, onModeChange, onNavigate, onMenu, onCode, on
         </div>
 
         <div className="absolute inset-x-0 bottom-5 flex flex-col items-center gap-3 px-4">
-          {error ? (
+          {error && !window.isSecureContext ? (
+            // Geen beveiligde verbinding: geen techtaal, maar één knop naar de scanner die wél werkt.
+            <a
+              href={SECURE_URL}
+              target="_top"
+              className="flex items-center gap-2 rounded-full bg-accent px-7 py-4 text-[18px] font-semibold text-white shadow-xl shadow-accent/30 active:scale-95"
+            >
+              <ScanBarcode size={22} />
+              Open de scanner
+            </a>
+          ) : error ? (
             <Pill className="bg-danger/90">{error}</Pill>
           ) : mode === 'barcode' ? (
             <>

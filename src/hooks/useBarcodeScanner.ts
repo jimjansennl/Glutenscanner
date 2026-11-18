@@ -64,7 +64,7 @@ function cameraErrorMessage(err: unknown): string {
   const name = err instanceof Error ? err.name : ''
   if (name === 'NotAllowedError') return 'Geen toegang tot de camera. Sta cameratoegang toe in je browser.'
   if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'Geen camera gevonden op dit apparaat.'
-  if (!window.isSecureContext) return 'De camera werkt alleen via HTTPS of localhost.'
+  if (!window.isSecureContext) return 'Tik op de knop om de scanner te openen.'
   return 'De camera kon niet gestart worden.'
 }
 

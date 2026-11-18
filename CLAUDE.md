@@ -55,6 +55,7 @@ Belangrijke bestanden:
 | Bestand | Wat |
 |---|---|
 | `src/hooks/useBarcodeScanner.ts` | Camera en barcodelezer. Gebruikt zxing-cpp (WebAssembly, via `barcode-detector`) en op Android de ingebouwde `BarcodeDetector` van Chrome. Leest elke ~120 ms een uitsnede in het midden van het beeld, met af en toe het hele beeld als vangnet. Een code telt pas na 2 gelijke lezingen. |
+| `src/services/secureContext.ts` | De camera werkt alleen via https. Wordt de site onbeveiligd geopend, dan stuurt hij door naar https://glutenscanner.vercel.app. Zit hij in een frame (domein doorgestuurd met maskering), dan toont de scanner een knop "Open de scanner". Nooit techtaal zoals "HTTPS" aan de gebruiker tonen. |
 | `src/components/scanner/ScannerView.tsx` | Camerascherm met de keuze **Foto / Barcode**, het kader, de zaklamp en de ☰-knop. |
 | `src/components/scanner/PhotoAnalysis.tsx` | Na een foto zoekt hij eerst een barcode, daarna leest OCR (Tesseract, `nld`+`eng`) de tekst. Of het een etiket of menukaart is, raadt `src/services/textKind.ts`. De gebruiker kan dat nog omzetten. |
 | `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen, met restaurantrisico's voor menukaarten. |
