@@ -1,3 +1,4 @@
+import { originalWords } from '../lib/fold'
 import type { AnalysisContext, GlutenAnalysis, GlutenMatch, MatchSource } from '../types/product'
 
 interface Trigger {
@@ -290,7 +291,10 @@ function scan(inputs: ScanInput[], context: AnalysisContext): Pick<GlutenAnalysi
     warnings.push(...findMatches(clean, suspicious, input.source))
   }
 
-  return { matches: dedupe(matches), warnings: dedupe(warnings) }
+  // Toon het woord zoals het er staat ("blé"), niet zonder accent ("ble").
+  const words = originalWords(inputs.map((i) => i.text))
+  const restore = (m: GlutenMatch): GlutenMatch => ({ ...m, term: words.get(m.term) ?? m.term })
+  return { matches: dedupe(matches.map(restore)), warnings: dedupe(warnings.map(restore)) }
 }
 
 function hasGlutenFreeClaim(text: string | undefined): boolean {
