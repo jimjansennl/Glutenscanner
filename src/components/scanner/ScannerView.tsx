@@ -3,6 +3,7 @@ import { Camera, Images, Menu, ScanBarcode, Zap, ZapOff } from 'lucide-react'
 import { SECURE_URL } from '../../services/secureContext'
 import { useBarcodeScanner, type DecodedCode, type SeenBox } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
+import { captureArea } from '../../services/capture'
 
 const CORNERS = [
   'left-3 top-3 border-l-4 border-t-4 rounded-tl-xl',
@@ -57,10 +58,16 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
 /** Hoe lang een gezien barcodekader blijft staan als de code even uit beeld is. */
 const SEEN_HOLD_MS = 700
 
+/** Het grote kader op het scherm (fracties van het camerabeeld). */
+const FRAME = { left: 0.06, top: 0.04, width: 0.88, height: 0.72 }
+/** De foto pakt iets ruimer dan het kader, zodat er geen letters afvallen. */
+const MARGIN = 0.03
+
 export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [seen, setSeen] = useState<SeenBox | null>(null)
+  const [capturing, setCapturing] = useState(false)
   const hold = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   // Eén scherm: barcodes worden altijd vanzelf gelezen; de sluiterknop is voor etiket en menukaart.
   const { error, ready } = useBarcodeScanner(videoRef, onCode, true, (box) => {
@@ -72,15 +79,24 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
   useEffect(() => () => clearTimeout(hold.current), [])
   const torch = useTorch(videoRef, ready)
 
-  function snapshot() {
+  async function snapshot() {
     const video = videoRef.current
-    if (!video || !video.videoWidth) return
-    const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    canvas.getContext('2d')!.drawImage(video, 0, 0)
+    if (!video || !video.videoWidth || capturing) return
+    setCapturing(true)
     navigator.vibrate?.(30)
-    canvas.toBlob((blob) => blob && onPhoto(blob), 'image/jpeg', 0.92)
+    try {
+      const left = Math.max(0, FRAME.left - MARGIN)
+      const top = Math.max(0, FRAME.top - MARGIN)
+      const blob = await captureArea(video, {
+        left,
+        top,
+        width: Math.min(1 - left, FRAME.width + MARGIN * 2),
+        height: Math.min(1 - top, FRAME.height + MARGIN * 2),
+      })
+      onPhoto(blob)
+    } catch {
+      setCapturing(false)
+    }
   }
 
   function onFile(e: ChangeEvent<HTMLInputElement>) {
@@ -113,7 +129,12 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
         width: `${Math.min(1, seen.width + PAD * 2) * 100}%`,
         height: `${Math.min(1, seen.height + PAD * 2) * 100}%`,
       }
-    : { left: '6%', top: '4%', width: '88%', height: '72%' }
+    : {
+        left: `${FRAME.left * 100}%`,
+        top: `${FRAME.top * 100}%`,
+        width: `${FRAME.width * 100}%`,
+        height: `${FRAME.height * 100}%`,
+      }
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
@@ -161,6 +182,11 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
             <Pill className="!bg-danger/90">{error}</Pill>
           ) : !ready ? (
             <Pill>Camera starten…</Pill>
+          ) : capturing ? (
+            <Pill className="!bg-accent/90">
+              <Camera size={18} />
+              Foto maken, even stilhouden…
+            </Pill>
           ) : seen ? (
             <Pill className="!bg-accent/90">
               <ScanBarcode size={18} />
@@ -183,7 +209,7 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
             <span className="justify-self-start">{torchButton}</span>
             <button
               onClick={snapshot}
-              disabled={!ready}
+              disabled={!ready || capturing}
               className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
               aria-label="Foto maken van etiket of menukaart"
             >

@@ -184,7 +184,11 @@ export function useBarcodeScanner(
           audio: false,
           video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
         })
-        if (cancelled) return
+        if (cancelled) {
+          // Scherm al weer dicht terwijl de camera opstartte: camera meteen uitzetten.
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
         // Doorlopend scherpstellen waar het toestel dat ondersteunt (Android).
         const track = stream.getVideoTracks()[0]
         const caps = track.getCapabilities?.() as (MediaTrackCapabilities & { focusMode?: string[] }) | undefined
