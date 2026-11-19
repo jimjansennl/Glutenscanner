@@ -12,6 +12,8 @@ export interface GuideItem {
   where: string
   /** Waarop letten. */
   checklist: string[]
+  /** Slimme tip; zonder tip wordt de eerste regel van de checklist gebruikt. */
+  tip?: string
   /** Glutenvrije alternatieven. */
   alternatives: string[]
 }
@@ -36,6 +38,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Gewone pasta is gemaakt van durumtarwe. Ook verse pasta, lasagnebladen en mie.',
         checklist: ['Kies pasta met "glutenvrij" op de verpakking', 'Kook glutenvrije pasta in een eigen pan met schoon water'],
+        tip: 'Kook glutenvrije pasta in een eigen pan met vers water, niet in het water van gewone pasta.',
         alternatives: ['Glutenvrije pasta van rijst of maïs', 'Rijstnoedels', 'Pasta van linzen of kikkererwten'],
       },
       {
@@ -57,14 +60,16 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Bijna alle koekjes, biscuits en crackers zijn van tarwebloem.',
         checklist: ['Alleen met "glutenvrij" op de verpakking', 'Ook "volkoren" en "spelt" bevatten gluten'],
-        alternatives: ['Glutenvrije koekjes', 'Rijstwafels of maïswafels', 'Glutenvrije crackers'],
+        tip: 'Kokosmakronen en schuimpjes zijn vaak al glutenvrij. Kijk wel even op de zak.',
+        alternatives: ['Rijstwafels of maïswafels', 'Glutenvrije crackers'],
       },
       {
         name: 'Rijstwafels',
         risk: 'middel',
         where: 'Meestal alleen rijst en zout. Sommige soorten hebben spelt, gerst of een koeklaagje.',
         checklist: ['Lees de ingrediënten', 'Let op "kan sporen van gluten bevatten"'],
-        alternatives: ['Rijstwafels met "glutenvrij" erop', 'Maïswafels'],
+        tip: 'Rijstwafels met spelt of meergranen zien er hetzelfde uit. Kijk goed op de zak.',
+        alternatives: ['Maïswafels'],
       },
       {
         name: 'Pannenkoeken & poffertjes',
@@ -85,7 +90,8 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'De wafels zijn van tarwebloem.',
         checklist: ['Alleen met "glutenvrij" op de verpakking'],
-        alternatives: ['Glutenvrije stroopwafels'],
+        tip: 'Ook in ijs, toetjes en bij de koffie in een café zit vaak een stukje stroopwafel.',
+        alternatives: [],
       },
       {
         name: 'Patat',
@@ -99,6 +105,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'De vulling is gebonden met bloem en de korst is paneermeel. In frikandellen zit vaak ook tarwe of paneermeel.',
         checklist: ['Gewone snacks uit de snackbar zijn niet glutenvrij', 'Glutenvrije snacks moeten in een eigen pan'],
+        tip: 'Ook een glutenvrije snack gaat in de snackbar in hetzelfde vet. Bak hem thuis.',
         alternatives: ['Glutenvrije kroketten en frikandellen (diepvries)'],
       },
       {
@@ -121,34 +128,39 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Gemaakt van tarwebloem. Ook kruidnoten met chocolade.',
         checklist: ['Alleen met "glutenvrij" op de zak', 'Strooien in de klas? Neem een eigen zakje mee'],
-        alternatives: ['Glutenvrije kruidnoten'],
+        tip: 'Chocoladepepernoten hebben een kruidnoot van tarwe in het midden.',
+        alternatives: ['Schuimpjes', 'Marsepein'],
       },
       {
         name: 'Speculaas',
         risk: 'hoog',
         where: 'Speculaas, speculaasbrokken en gevulde speculaas zijn van tarwebloem.',
         checklist: ['Ook in speculaaspasta en toetjes met speculaas'],
-        alternatives: ['Glutenvrije speculaas'],
+        tip: 'Ook in speculaaspasta en toetjes met speculaas.',
+        alternatives: ['Speculaaskruiden door je yoghurt'],
       },
       {
         name: 'Banketstaaf & banketletter',
         risk: 'hoog',
         where: 'Het bladerdeeg is van tarwebloem. De amandelspijs zelf is meestal wel glutenvrij.',
         checklist: ['Alleen gelabeld glutenvrij is veilig'],
-        alternatives: ['Glutenvrije banketstaaf', 'Een stukje amandelspijs of marsepein'],
+        tip: 'Amandelspijs zelf is meestal glutenvrij, het deeg eromheen niet.',
+        alternatives: ['Een stukje amandelspijs of marsepein'],
       },
       {
         name: 'Taaitaai',
         risk: 'hoog',
         where: 'Gemaakt van roggemeel en tarwebloem.',
         checklist: ['Ook taaitaai-poppen en -figuren'],
-        alternatives: ['Glutenvrije kruidkoek'],
+        tip: 'Taaitaai is gemaakt met roggemeel. Dat is ook gluten.',
+        alternatives: ['Een marsepeinfiguurtje'],
       },
       {
         name: 'Chocoladeletter',
         risk: 'middel',
         where: 'Gewone melk- of pure chocolade is meestal glutenvrij. Letters met koek, krokant of "crispy" vaak niet.',
         checklist: ['Lees de ingrediënten', 'Let op "kan sporen bevatten"'],
+        tip: 'Melk en puur zijn vaak goed. Letters met krokant, koek of "crispy" niet.',
         alternatives: ['Een letter van gewone chocolade zonder vulling'],
       },
       {
@@ -228,14 +240,16 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Allergenen staan dik gedrukt. Staat er tarwe, gerst, rogge, spelt of haver vetgedrukt? Dan zit er gluten in.',
         checklist: ['Lees de hele lijst, ook de kleine letters', 'Uitzondering: "glutenvrij tarwezetmeel" mag wel'],
-        alternatives: ['Een variant met "glutenvrij" erop'],
+        tip: 'Gluten staat er vaak niet als "gluten", maar als tarwe, gerst, rogge, haver of spelt.',
+        alternatives: [],
       },
       {
         name: '"Kan sporen van gluten bevatten"',
         risk: 'middel',
         where: 'Er zit geen gluten in het recept, maar het is gemaakt in een fabriek waar ook gluten zijn. Er kan een klein beetje in komen.',
         checklist: ['Strikte coeliakie? Liever niet eten', 'In Instellingen kies je of dit oranje of rood wordt'],
-        alternatives: ['Een variant met "glutenvrij" erop'],
+        tip: 'Strikte coeliakie? Liever niet eten.',
+        alternatives: [],
       },
       {
         name: 'Glucosestroop, dextrose & maltodextrine',
@@ -264,28 +278,30 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Het deeg is van tarwebloem; ook de amandelspijs wordt soms aangelengd met bloem of paneermeel.',
         checklist: ['Alleen gelabeld glutenvrij is veilig', 'Let bij de bakker op gedeelde ovens en snijmachines'],
-        alternatives: ['Glutenvrije kerststol (supermarkt of glutenvrije bakker)', 'Zelf bakken met een glutenvrije broodmix'],
+        tip: 'Bestel op tijd bij een glutenvrije bakker: in december zijn ze snel uitverkocht.',
+        alternatives: ['Zelf bakken met een glutenvrije broodmix'],
       },
       {
         name: 'Panettone & pandoro',
         risk: 'hoog',
         where: 'Rijk gistdeeg van tarwebloem, vaak met tarwegluten toegevoegd voor de luchtige structuur.',
         checklist: ['Zoek naar "senza glutine" op Italiaanse verpakkingen', 'Let op "frumento" en "glutine" in de ingrediënten'],
-        alternatives: ['Glutenvrije panettone (senza glutine)', 'Vruchtenbrood op basis van rijst- en maismeel'],
+        tip: 'Zoek naar "senza glutine" op Italiaanse verpakkingen.',
+        alternatives: ['Vruchtenbrood op basis van rijst- en maïsmeel'],
       },
       {
         name: 'Christmas pudding',
         risk: 'hoog',
         where: 'Bevat broodkruim en bloem; vaak ook stout of bier (gerst) en niervet (suet) dat met tarwebloem is bestoven.',
         checklist: ['Controleer het niervet: "suet" bevat vaak tarwebloem', 'Let op stout, ale of "malt" in het recept'],
-        alternatives: ['Glutenvrije christmas pudding', 'Zelf maken met glutenvrij broodkruim en plantaardig vet'],
+        alternatives: ['Zelf maken met glutenvrij broodkruim en plantaardig vet'],
       },
       {
         name: 'Mince pies',
         risk: 'hoog',
         where: 'Kruimeldeeg van tarwebloem; de vulling (mincemeat) bevat vaak niervet met bloem.',
         checklist: ['Zowel deeg als vulling controleren', 'Mincemeat uit een pot kan "suet (wheat flour)" bevatten'],
-        alternatives: ['Glutenvrije mince pies', 'Deeg van glutenvrije bloemmix met plantaardig vet'],
+        alternatives: ['Deeg van glutenvrije bloemmix met plantaardig vet'],
       },
       {
         name: 'Kerststronk (bûche de Noël)',
@@ -313,6 +329,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Het glazuur bevat soms sojasaus, bier of mosterd met tarwe; kant-en-klare ham kan bindmiddelen bevatten.',
         checklist: ['Lees de ingrediënten van het glazuur', 'Let op sojasaus, bier en "zetmeel (tarwe)"'],
+        tip: 'Het glazuur wordt soms gemaakt met bier of sojasaus.',
         alternatives: ['Ahornsiroop-glazuur', 'Honing met glutenvrije mosterd'],
       },
       {
@@ -348,7 +365,8 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'In worstjes zit vaak paneermeel of beschuit. Saucijzenbroodjes en worstenbroodjes zitten in deeg van tarwe.',
         checklist: ['Alleen met "glutenvrij" op de verpakking'],
-        alternatives: ['Glutenvrije worstjes', 'Glutenvrije saucijzenbroodjes'],
+        tip: 'In worst zit vaak paneermeel of beschuit. Een saucijzenbroodje is dus dubbel gluten.',
+        alternatives: [],
       },
       {
         name: 'Ovenschotel met roomsaus',
@@ -369,6 +387,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Soms gebonden met bloem of paneermeel.',
         checklist: ['Lees het etiket of vraag het na'],
+        tip: 'Kant-en-klare rösti is soms bestrooid met bloem tegen het plakken.',
         alternatives: ['Rösti van alleen aardappel en ei'],
       },
     ],
@@ -384,7 +403,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Melkchocolade, repen en "crispy" chocolade bevatten vaak gerstemoutextract of gepofte rijst met mout.',
         checklist: ['Let op "gerstemout", "moutextract" en "malt"', 'Krokante vulling = extra controleren'],
-        alternatives: ['Pure chocolade zonder mout', 'Chocolade met een glutenvrij-logo'],
+        alternatives: ['Pure chocolade zonder mout'],
       },
       {
         name: 'Snacks in bierbeslag',
@@ -412,7 +431,8 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Nederlandse drop bevat bijna altijd tarwebloem als basis.',
         checklist: ['Controleer elk merk en elke soort apart', 'Ook in snoepmixen en dropveters'],
-        alternatives: ['Glutenvrije drop (gelabeld)', 'Winegums zonder tarwe (label controleren)'],
+        tip: 'Let ook op dropijsjes, Engelse drop en snoepmixen met drop erin.',
+        alternatives: ['Winegums (kijk op de zak)'],
       },
       {
         name: 'Borrelnoten & chips met smaak',
@@ -448,7 +468,8 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Kunnen tarwebloem, tarwe-eiwit of gistextract op basis van gerst bevatten.',
         checklist: ['Lees de ingrediënten per smaak', 'Let op "gehydrolyseerd tarwe-eiwit" en "gistextract"'],
-        alternatives: ['Glutenvrije bouillon (gelabeld)', 'Zelf getrokken bouillon'],
+        tip: 'Elke smaak is anders: kip kan glutenvrij zijn en rund van hetzelfde merk niet.',
+        alternatives: ['Zelf getrokken bouillon'],
       },
       {
         name: 'Marinades met sojasaus',
@@ -462,14 +483,15 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Tarwebloem of tarwezetmeel wordt soms als drager of antiklontermiddel gebruikt.',
         checklist: ['Controleer mixen voor gehakt, kip en wok', '"Zetmeel" zonder bron is meestal mais of aardappel'],
-        alternatives: ['Losse kruiden en specerijen', 'Mixen met glutenvrij-logo'],
+        alternatives: ['Losse kruiden en specerijen'],
       },
       {
         name: 'Worcestershiresaus',
         risk: 'middel',
         where: 'Sommige merken gebruiken moutazijn (gerst).',
         checklist: ['Merk per merk controleren', 'Ook in Caesar-dressing en Bloody Mary'],
-        alternatives: ['Glutenvrije worcestershiresaus', 'Tamari met een scheutje azijn'],
+        tip: 'De Engelse versie wordt vaak gemaakt met moutazijn (van gerst).',
+        alternatives: ['Tamari met een scheutje azijn'],
       },
     ],
   },
@@ -498,7 +520,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Ontbijtkoek en kruidkoek worden gemaakt met roggemeel, soms ook tarwe.',
         checklist: ['"Rogge" is net zo goed gluten', 'Ook in speculaas en kruidnoten (tarwe)'],
-        alternatives: ['Glutenvrije ontbijtkoek', 'Kruidkoek van glutenvrije bloemmix'],
+        alternatives: ['Kruidkoek van glutenvrije bloemmix'],
       },
       {
         name: 'Tiramisu',
@@ -512,7 +534,8 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Koekjesdeeg, brownie-stukjes, wafels en hoorntjes bevatten tarwe; het ijs zelf vaak niet.',
         checklist: ['Smaken met koek of cookie overslaan', 'Bij de ijsboer: schep wordt gedeeld tussen bakken'],
-        alternatives: ['IJs in een bekertje i.p.v. hoorntje', 'Sorbet of ijs met glutenvrij-logo'],
+        tip: 'Vraag in de ijssalon om een schone schep. Die gaat ook door de smaak met koek.',
+        alternatives: ['IJs in een bekertje i.p.v. hoorntje', 'Sorbet'],
       },
     ],
   },

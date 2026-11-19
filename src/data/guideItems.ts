@@ -50,7 +50,7 @@ export const THEME_ITEMS: Record<string, Item[]> = Object.fromEntries(
       name: i.name,
       risk: i.risk,
       why: i.where,
-      tip: i.checklist[0],
+      tip: i.tip ?? i.checklist[0],
       instead: i.alternatives.filter((a) => a !== 'Geen alternatief nodig'),
       group: c.title,
       food: !NOT_FOOD_THEMES.includes(c.id),

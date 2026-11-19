@@ -221,7 +221,7 @@ export function SiteGuide() {
                 <p className="mt-1 text-[16px] text-white/60">Probeer een ander woord, of scan het etiket met de app.</p>
               </div>
             ) : (
-              <div className={results.length > 1 ? 'grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.1fr_1fr]' : 'mx-auto max-w-xl'}>
+              <div className={results.length > 1 ? 'grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]' : 'mx-auto max-w-xl'}>
                 <AnswerCard item={results[0]} center />
                 {results.length > 1 && (
                   <div>

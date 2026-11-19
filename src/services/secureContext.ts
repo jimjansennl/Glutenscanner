@@ -3,7 +3,7 @@
  * frame van een onbeveiligde pagina zit. Dat gebeurt bij "doorsturen met maskering" van
  * een domeinnaam. Dan sturen we door naar het beveiligde adres.
  */
-export const SECURE_URL = 'https://glutenscanner.vercel.app'
+export const SECURE_URL = 'https://www.glutenscanner.nl'
 
 const LOCAL = ['localhost', '127.0.0.1', '[::1]']
 
