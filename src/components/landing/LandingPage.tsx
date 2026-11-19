@@ -201,7 +201,7 @@ const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: 
   {
     icon: ScanBarcode,
     title: 'Barcode',
-    mode: 'Kies Barcode',
+    mode: 'Vanzelf',
     text: 'Richt de camera op de streepjescode. Hij leest hem vanzelf.',
     tip: 'Niet gevonden? Dan krijg je twijfel.',
     tile: 'bg-[#14130f] text-white',
@@ -212,7 +212,7 @@ const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: 
   {
     icon: ScanText,
     title: 'Etiket',
-    mode: 'Kies Foto',
+    mode: 'Tik op de knop',
     text: 'Fotografeer de ingrediënten. Hij zoekt woorden als tarwe, gerst en mout.',
     tip: 'Ook trigo, Weizen en meer',
     tile: 'bg-accent text-white',
@@ -223,8 +223,8 @@ const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: 
   {
     icon: Camera,
     title: 'Menukaart',
-    mode: 'Kies Foto',
-    text: 'Fotografeer het menu. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.',
+    mode: 'Tik op de knop',
+    text: 'Fotografeer het hele menu, het kader is groot genoeg. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.',
     tip: 'Handig in een restaurant',
     tile: 'bg-[#ffd75e] text-[#14130f]',
     iconCls: 'bg-[#14130f] text-[#ffd75e] shadow-black/20',

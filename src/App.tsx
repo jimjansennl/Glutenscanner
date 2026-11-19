@@ -4,7 +4,7 @@ import { InfoMenu, InfoPanel } from './components/landing/LandingPanels'
 import { LandingPage } from './components/landing/LandingPage'
 import type { PanelId } from './components/landing/panels'
 import { PhotoAnalysis } from './components/scanner/PhotoAnalysis'
-import { ScannerView, type ScanMode } from './components/scanner/ScannerView'
+import { ScannerView } from './components/scanner/ScannerView'
 import { BottomNav, type NavTab } from './components/ui/BottomNav'
 import { DisclaimerModal } from './components/ui/DisclaimerModal'
 import type { DecodedCode } from './hooks/useBarcodeScanner'
@@ -57,7 +57,6 @@ function WithNav({
 /** De scanner-app zoals op de telefoon: opent direct op de camera. */
 function ScannerApp() {
   const [view, setView] = useState<View>({ name: 'scanner' })
-  const [scanMode, setScanMode] = useState<ScanMode>('barcode')
   /** Hamburgermenu met de onderdelen van de website: dicht, het menu, of één onderdeel. */
   const [info, setInfo] = useState<null | 'menu' | PanelId>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -133,8 +132,6 @@ function ScannerApp() {
       return (
         <>
           <ScannerView
-            mode={scanMode}
-            onModeChange={setScanMode}
             onNavigate={navigate}
             onMenu={() => setInfo('menu')}
             // Achter het menu draait de camera door; een barcode mag dan niets doen.
@@ -229,10 +226,7 @@ function ScannerApp() {
           <ResultPage
             result={{ ...view.result, analysis: profiled(view.result) }}
             onHome={() => navigate(view.back)}
-            onPhotoScan={() => {
-              setScanMode('photo')
-              go({ name: 'scanner' })
-            }}
+            onPhotoScan={() => go({ name: 'scanner' })}
           />
         </WithNav>
       )

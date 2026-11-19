@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Clock3,
   MessageCircleQuestion,
-  ScanBarcode,
   Settings,
   XCircle,
 } from 'lucide-react'
@@ -65,17 +64,14 @@ function MiniNav({ active }: { active: 'scan' | 'history' | 'guide' | 'settings'
   )
 }
 
-function Segmented({ mode }: { mode: 'photo' | 'barcode' }) {
+/** Groot kader met groene hoeken, zoals in de echte scanner. */
+function BigFrame({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
-    <div className="absolute inset-x-0 top-3 flex justify-center">
-      <div className="flex rounded-full bg-neutral-700/80 p-0.5 text-[9px] font-semibold backdrop-blur">
-        <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${mode === 'photo' ? 'bg-accent' : 'text-white/80'}`}>
-          <Camera size={10} /> Foto
-        </span>
-        <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${mode === 'barcode' ? 'bg-accent' : 'text-white/80'}`}>
-          <ScanBarcode size={10} /> Barcode
-        </span>
-      </div>
+    <div className={`absolute rounded-2xl shadow-[0_0_0_999px_rgba(0,0,0,0.3)] ${className}`}>
+      {['left-1.5 top-1.5 border-l-2 border-t-2 rounded-tl-md', 'right-1.5 top-1.5 border-r-2 border-t-2 rounded-tr-md', 'bottom-1.5 left-1.5 border-b-2 border-l-2 rounded-bl-md', 'bottom-1.5 right-1.5 border-b-2 border-r-2 rounded-br-md'].map((c) => (
+        <span key={c} className={`absolute h-4 w-4 border-accent ${c}`} />
+      ))}
+      {children}
     </div>
   )
 }
@@ -88,8 +84,7 @@ export function ScreenScanner() {
       <Title>Glutenscanner</Title>
       <div className="relative flex-1 overflow-hidden bg-[linear-gradient(160deg,#e9c46a_0%,#d9a441_45%,#b07a2a_100%)]">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(115deg,transparent_0_18px,rgba(255,255,255,0.08)_18px_20px)]" />
-        <Segmented mode="barcode" />
-        <div className="absolute left-1/2 top-[30%] flex aspect-[3/2] w-[74%] -translate-x-1/2 items-center justify-center rounded-2xl border-2 border-white bg-white/90">
+        <div className="absolute left-1/2 top-[30%] flex aspect-[3/2] w-[74%] -translate-x-1/2 items-center justify-center rounded-2xl border-2 border-accent bg-white/90 shadow-[0_0_0_999px_rgba(0,0,0,0.4)]">
           <div className="flex h-[55%] items-stretch gap-[2px]">
             {[2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 3, 1, 1, 2, 1, 3, 1, 2, 2, 1, 3].map((w, i) => (
               <span key={i} className="bg-neutral-900" style={{ width: w }} />
@@ -98,7 +93,7 @@ export function ScreenScanner() {
           <span className="absolute inset-x-3 top-1/2 h-0.5 bg-accent shadow-[0_0_8px_1px] shadow-accent" />
         </div>
         <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-1.5 text-[9px]">
-          <span className="rounded-full bg-neutral-800/80 px-3 py-1">Richt de camera op de barcode.</span>
+          <span className="rounded-full bg-accent/90 px-3 py-1">Barcode gevonden, even stilhouden…</span>
         </div>
       </div>
       <MiniNav active="scan" />
@@ -113,8 +108,8 @@ export function ScreenPhoto() {
       <StatusBar />
       <Title>Glutenscanner</Title>
       <div className="relative flex-1 overflow-hidden bg-[linear-gradient(170deg,#f4efe4,#e2d7c0)]">
-        <Segmented mode="photo" />
-        <div className="absolute inset-x-5 top-14 rounded-2xl border-2 border-accent/80 p-3 text-[8.5px] leading-relaxed text-neutral-800 shadow-[0_0_18px_rgba(31,164,99,0.45)]">
+        <BigFrame className="inset-x-3 bottom-20 top-3" />
+        <div className="absolute inset-x-5 top-10 rounded-xl bg-white/60 p-3 text-[8.5px] leading-relaxed text-neutral-800 shadow-[0_0_18px_rgba(31,164,99,0.45)]">
           <p className="mb-1 font-bold">Ingrediënten:</p>
           <p>
             Rijstmeel, suiker, cacaoboter, <mark className="rounded bg-danger/25 px-0.5 font-bold text-red-800">gerstemoutextract</mark>,

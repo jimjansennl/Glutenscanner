@@ -29,7 +29,25 @@ prepareZXingModule({
 })
 
 interface Detector {
-  detect(source: ImageBitmapSource): Promise<{ rawValue: string; format: string }[]>
+  detect(source: ImageBitmapSource): Promise<{ rawValue: string; format: string; boundingBox?: DOMRectReadOnly }[]>
+}
+
+/** Waar de barcode in beeld staat, als fractie (0–1) van het zichtbare camerabeeld. */
+export interface SeenBox {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+interface CropInfo {
+  sx: number
+  sy: number
+  down: number
+  offX: number
+  offY: number
+  visW: number
+  visH: number
 }
 
 let detectorPromise: Promise<Detector> | null = null
@@ -72,7 +90,7 @@ function cameraErrorMessage(err: unknown): string {
  * Tekent het deel van het videobeeld dat de gebruiker in het kader ziet.
  * De video staat op object-cover, dus eerst het zichtbare deel bepalen.
  */
-function drawCrop(video: HTMLVideoElement, canvas: HTMLCanvasElement, full: boolean) {
+function drawCrop(video: HTMLVideoElement, canvas: HTMLCanvasElement, full: boolean): CropInfo {
   const vw = video.videoWidth
   const vh = video.videoHeight
   const ew = video.clientWidth || vw
@@ -89,6 +107,20 @@ function drawCrop(video: HTMLVideoElement, canvas: HTMLCanvasElement, full: bool
   canvas.width = Math.round(w * down)
   canvas.height = Math.round(h * down)
   canvas.getContext('2d', { willReadFrequently: true })!.drawImage(video, sx, sy, w, h, 0, 0, canvas.width, canvas.height)
+  return { sx, sy, down, offX: (vw - visW) / 2, offY: (vh - visH) / 2, visW, visH }
+}
+
+/** Van een vak in de uitsnede terug naar een fractie van het zichtbare beeld. */
+function toSeen(box: DOMRectReadOnly, c: CropInfo): SeenBox {
+  const x = box.x / c.down + c.sx - c.offX
+  const y = box.y / c.down + c.sy - c.offY
+  const clamp = (v: number) => Math.min(1, Math.max(0, v))
+  return {
+    left: clamp(x / c.visW),
+    top: clamp(y / c.visH),
+    width: clamp(box.width / c.down / c.visW),
+    height: clamp(box.height / c.down / c.visH),
+  }
 }
 
 /** Start de achtercamera op `videoRef` en meldt de eerste zeker gelezen barcode of QR-code. */
@@ -96,13 +128,17 @@ export function useBarcodeScanner(
   videoRef: RefObject<HTMLVideoElement | null>,
   onDecode: (code: DecodedCode) => void,
   enabled = true,
+  /** Wordt aangeroepen zodra er een barcode in beeld is (nog vóór de bevestiging), met de plek. */
+  onSeen?: (box: SeenBox | null) => void,
 ) {
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
   const onDecodeRef = useRef(onDecode)
+  const onSeenRef = useRef(onSeen)
   useEffect(() => {
     onDecodeRef.current = onDecode
-  }, [onDecode])
+    onSeenRef.current = onSeen
+  }, [onDecode, onSeen])
 
   useEffect(() => {
     const video = videoRef.current
@@ -121,9 +157,10 @@ export function useBarcodeScanner(
       try {
         if (video.readyState >= 2 && video.videoWidth) {
           const detector = await getDetector()
-          // Meestal alleen het kader; elke 4e keer het hele beeld als vangnet.
-          drawCrop(video, canvas, ++tick % 4 === 0)
+          // Om en om het midden en het hele beeld: het kader is groot, een barcode kan overal staan.
+          const crop = drawCrop(video, canvas, ++tick % 2 === 0)
           const [hit] = await detector.detect(canvas)
+          if (hit?.boundingBox) onSeenRef.current?.(toSeen(hit.boundingBox, crop))
           if (hit?.rawValue && !cancelled) {
             const now = Date.now()
             if (last && last.text === hit.rawValue && now - last.at < CONFIRM_WINDOW_MS) {

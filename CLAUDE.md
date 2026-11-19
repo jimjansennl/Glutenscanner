@@ -56,7 +56,7 @@ Belangrijke bestanden:
 |---|---|
 | `src/hooks/useBarcodeScanner.ts` | Camera en barcodelezer. Gebruikt zxing-cpp (WebAssembly, via `barcode-detector`) en op Android de ingebouwde `BarcodeDetector` van Chrome. Leest elke ~120 ms een uitsnede in het midden van het beeld, met af en toe het hele beeld als vangnet. Een code telt pas na 2 gelijke lezingen. |
 | `src/services/secureContext.ts` | De camera werkt alleen via https. Wordt de site onbeveiligd geopend, dan stuurt hij door naar https://glutenscanner.vercel.app. Zit hij in een frame (domein doorgestuurd met maskering), dan toont de scanner een knop "Open de scanner". Nooit techtaal zoals "HTTPS" aan de gebruiker tonen. |
-| `src/components/scanner/ScannerView.tsx` | Camerascherm met de keuze **Foto / Barcode**, het kader, de zaklamp en de ☰-knop. |
+| `src/components/scanner/ScannerView.tsx` | Eén slim camerascherm (geen keuze Foto/Barcode): groot kader waar een menukaart in past; een barcode wordt vanzelf gelezen en het kader springt eromheen (`onSeen` in de hook geeft de plek). Sluiterknop voor etiket of menukaart, zaklamp, galerij en ☰-knop. |
 | `src/components/scanner/PhotoAnalysis.tsx` | Na een foto zoekt hij eerst een barcode, daarna leest OCR (Tesseract, `nld`+`eng`) de tekst. Of het een etiket of menukaart is, raadt `src/services/textKind.ts`. De gebruiker kan dat nog omzetten. |
 | `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen, met restaurantrisico's voor menukaarten. |
 | `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode. |
@@ -99,8 +99,10 @@ barcode wordt naar Open Food Facts gestuurd.
 
 **Scanner (telefoon)**
 - Hij moet eruitzien als een **echte scanner**: zwart scherm, camerabeeld, een duidelijk
-  kader met groene hoeken en een scanlijn, en de keuze **Foto / Barcode** bovenin. Een
-  versie met één scherm zonder die keuze vond de gebruiker niet mooi.
+  kader met groene hoeken en een scanlijn. **Geen keuze Foto/Barcode** (op verzoek van de
+  gebruiker weggehaald): de scanner herkent zelf een barcode; na een foto raadt de app zelf
+  etiket of menukaart. Het kader is groot zoals een documentscanner op de iPhone.
+- Geen "Tekstherkenning GRATIS"-labeltje of andere gratis-reclame in de scanner.
 - Gebruik niet de zin "Onbeperkt gratis scannen" in de scanner of in de nagebouwde
   telefoonschermen.
 - Zo min mogelijk tikken. De uitslag moet in één oogopslag te lezen zijn: groen =
