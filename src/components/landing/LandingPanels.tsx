@@ -13,7 +13,7 @@ import {
   Minus,
   Plus,
   ScanBarcode,
-  ScanText,
+  FileText,
   ShieldCheck,
   X,
   XCircle,
@@ -24,7 +24,7 @@ import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, 
 
 const WAYS: [LucideIcon, string, string][] = [
   [ScanBarcode, 'Barcode', 'Kies onderin het barcode-icoontje en richt de camera op de streepjescode. Hij leest hem vanzelf, je hoeft niet te tikken.'],
-  [ScanText, 'Etiket', 'Kies het etiket-icoontje, houd de ingrediënten in het kader en tik op de knop. Ook buitenlandse woorden, zoals trigo en Weizen.'],
+  [FileText, 'Etiket', 'Kies het etiket-icoontje, houd de ingrediënten in het kader en tik op de knop. Ook buitenlandse woorden, zoals trigo en Weizen.'],
   [Camera, 'Menukaart', 'Ook met het etiket-icoontje. Het grote kader past een hele kaart. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.'],
 ]
 

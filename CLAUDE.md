@@ -110,7 +110,10 @@ barcode wordt naar Open Food Facts gestuurd.
   kader met groene hoeken en een scanlijn. **Twee standen met alleen een icoon** (gebruiker
   koos dit na het slimme scherm zonder keuze): barcode (leest vanzelf, geen sluiterknop,
   want die vond hij zinloos) en etiket of menukaart (groot kader zoals de documentscanner
-  van de iPhone, met sluiterknop). Na een foto raadt de app zelf etiket of menukaart.
+  van de iPhone, met sluiterknop). Icoontjes: alleen streepjes (`Barcode`) en een blaadje
+  met regels (`FileText`), niet twee iconen met scanhoekjes. Alle knoppen zo laag mogelijk:
+  barcode = [zaklamp] [keuze] [galerij]; etiket = keuze net boven [zaklamp] [sluiterknop, iets
+  kleiner, in het midden] [galerij]. Na een foto raadt de app zelf etiket of menukaart.
 - Geen uitlegzinnen in het camerabeeld (zoals "Barcode? Die lees ik vanzelf."): die vond
   de gebruiker storend. Alleen korte meldingen als er iets gebeurt.
 - Geen "Tekstherkenning GRATIS"-labeltje of andere gratis-reclame in de scanner.

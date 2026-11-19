@@ -3,12 +3,13 @@ import {
   AlertTriangle,
   BookOpen,
   Camera,
+  Barcode,
   CheckCircle2,
   Clock3,
+  FileText,
   Menu,
   MessageCircleQuestion,
   ScanBarcode,
-  ScanText,
   Settings,
   XCircle,
 } from 'lucide-react'
@@ -64,8 +65,8 @@ function ModeSwitch({ active }: { active: 'barcode' | 'text' }) {
     <span className="flex rounded-full bg-neutral-800/90 p-0.5">
       {(
         [
-          ['barcode', ScanBarcode],
-          ['text', ScanText],
+          ['barcode', Barcode],
+          ['text', FileText],
         ] as const
       ).map(([m, Icon]) => (
         <span key={m} className={`flex h-6 w-9 items-center justify-center rounded-full ${m === active ? 'bg-accent text-black' : 'text-white/70'}`}>

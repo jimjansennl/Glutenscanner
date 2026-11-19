@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode, type RefObject } from 'react'
-import { Camera, Images, Menu, ScanBarcode, ScanText, Zap, ZapOff } from 'lucide-react'
+import { Barcode, Camera, FileText, Images, Menu, ScanBarcode, Zap, ZapOff } from 'lucide-react'
 import { SECURE_URL } from '../../services/secureContext'
 import { useBarcodeScanner, type DecodedCode, type SeenBox } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
@@ -63,7 +63,7 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
 const SEEN_HOLD_MS = 700
 
 /** Ruimte (px) die de knoppen onderin innemen: het etiketkader eindigt daarboven. */
-const CONTROLS_SPACE = 204
+const CONTROLS_SPACE = 164
 
 /** Barcodekader: breed en laag in het midden (fracties van het camerabeeld). */
 const BARCODE_FRAME = { left: 0.08, top: 0.2, width: 0.84, height: 0.3 }
@@ -148,6 +148,31 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
     <span className="block h-14 w-14" />
   )
 
+  // Keuze met alleen icoontjes: streepjes = barcode (vanzelf), blaadje = etiket of menukaart.
+  const modeSwitch = (
+    <div role="radiogroup" aria-label="Wat wil je scannen?" className="flex rounded-full bg-neutral-800/80 p-1 backdrop-blur-xl">
+      {(
+        [
+          ['barcode', Barcode, 'Barcode'],
+          ['text', FileText, 'Etiket of menukaart'],
+        ] as const
+      ).map(([m, Icon, label]) => (
+        <button
+          key={m}
+          role="radio"
+          aria-checked={mode === m}
+          aria-label={label}
+          onClick={() => choose(m)}
+          className={`flex h-11 w-14 items-center justify-center rounded-full transition-colors ${
+            mode === m ? 'bg-accent text-black' : 'text-white/70 active:bg-white/10'
+          }`}
+        >
+          <Icon size={23} />
+        </button>
+      ))}
+    </div>
+  )
+
   // Kader: groot voor etiket of menukaart (tot net boven de knoppen), breed en laag voor een
   // barcode, en strak om een gevonden barcode heen.
   const PAD = 0.04
@@ -203,7 +228,7 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-9 flex flex-col items-center gap-3 px-4">
+        <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-2 px-4">
           {error && !window.isSecureContext ? (
             // Geen beveiligde verbinding: geen techtaal, maar één knop naar de scanner die wél werkt.
             <a
@@ -230,28 +255,8 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
             </Pill>
           ) : null}
 
-          {/* Keuze met alleen icoontjes: barcode (vanzelf) of etiket/menukaart (met knop). */}
-          <div role="radiogroup" aria-label="Wat wil je scannen?" className="flex rounded-full bg-neutral-800/80 p-1 backdrop-blur-xl">
-            {(
-              [
-                ['barcode', ScanBarcode, 'Barcode'],
-                ['text', ScanText, 'Etiket of menukaart'],
-              ] as const
-            ).map(([m, Icon, label]) => (
-              <button
-                key={m}
-                role="radio"
-                aria-checked={mode === m}
-                aria-label={label}
-                onClick={() => choose(m)}
-                className={`flex h-11 w-16 items-center justify-center rounded-full transition-colors ${
-                  mode === m ? 'bg-accent text-black' : 'text-white/70 active:bg-white/10'
-                }`}
-              >
-                <Icon size={24} />
-              </button>
-            ))}
-          </div>
+          {/* Etiket/menu: de keuze staat net boven de sluiterknop. Barcode: in de rij zelf. */}
+          {mode === 'text' && modeSwitch}
 
           <div className="grid w-full max-w-xs grid-cols-3 items-center">
             <span className="justify-self-start">{torchButton}</span>
@@ -259,14 +264,13 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
               <button
                 onClick={snapshot}
                 disabled={!ready || capturing}
-                className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
+                className="justify-self-center rounded-full border-4 border-white p-1 disabled:opacity-40"
                 aria-label="Foto maken van etiket of menukaart"
               >
-                <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
+                <span className="block h-[60px] w-[60px] rounded-full bg-white transition-transform active:scale-90" />
               </button>
             ) : (
-              // Barcode leest vanzelf: geen sluiterknop, wel dezelfde ruimte zodat niets verspringt.
-              <span className="block h-[88px] w-[88px] justify-self-center" />
+              <span className="justify-self-center">{modeSwitch}</span>
             )}
             <button
               onClick={() => fileRef.current?.click()}
