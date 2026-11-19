@@ -167,7 +167,7 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-5 flex flex-col items-center gap-3 px-4">
+        <div className="absolute inset-x-0 bottom-9 flex flex-col items-center gap-3 px-4">
           {error && !window.isSecureContext ? (
             // Geen beveiligde verbinding: geen techtaal, maar één knop naar de scanner die wél werkt.
             <a
@@ -192,29 +192,24 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
               <ScanBarcode size={18} />
               Barcode gevonden, even stilhouden…
             </Pill>
-          ) : (
-            <p className="flex flex-col items-center gap-1 rounded-2xl bg-neutral-800/75 px-4 py-2.5 text-center text-[15px] leading-snug backdrop-blur-xl">
-              <span className="flex items-center gap-2">
-                <ScanBarcode size={18} className="shrink-0 text-accent" />
-                Barcode? Die lees ik vanzelf.
-              </span>
-              <span className="flex items-center gap-2">
-                <Camera size={18} className="shrink-0 text-accent" />
-                Etiket of menu? Tik op de knop.
-              </span>
-            </p>
-          )}
+          ) : null}
 
           <div className="mt-1 grid w-full max-w-xs grid-cols-3 items-center">
             <span className="justify-self-start">{torchButton}</span>
-            <button
-              onClick={snapshot}
-              disabled={!ready || capturing}
-              className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
-              aria-label="Foto maken van etiket of menukaart"
-            >
-              <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
-            </button>
+            <div className="relative justify-self-center">
+              <button
+                onClick={snapshot}
+                disabled={!ready || capturing}
+                className="block rounded-full border-[5px] border-white p-1 disabled:opacity-40"
+                aria-label="Foto maken van etiket of menukaart"
+              >
+                <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
+              </button>
+              {/* Klein woordje zoals 'FOTO' in de iPhone-camera; een barcode gaat vanzelf. */}
+              <span className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold uppercase tracking-wider text-white/70">
+                Etiket of menu
+              </span>
+            </div>
             <button
               onClick={() => fileRef.current?.click()}
               className="flex h-14 w-14 items-center justify-center justify-self-end rounded-full bg-neutral-800/80 backdrop-blur-xl active:bg-neutral-700"
