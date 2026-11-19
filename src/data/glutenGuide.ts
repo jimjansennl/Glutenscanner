@@ -192,7 +192,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'middel',
         where: 'Lunchpakketjes, patat en pannenkoeken op locatie.',
         checklist: ['Bel of mail de school ruim van tevoren', 'Geef een eigen lunchpakket en snacks mee'],
-        alternatives: ['Eigen lunchpakket', 'Laat de kaart voor de bediening zien'],
+        alternatives: ['Eigen lunchpakket', 'Eigen snacks en traktaties'],
       },
       {
         name: 'Kantine & sportclub',
@@ -228,7 +228,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Allergenen staan dik gedrukt. Staat er tarwe, gerst, rogge, spelt of haver vetgedrukt? Dan zit er gluten in.',
         checklist: ['Lees de hele lijst, ook de kleine letters', 'Uitzondering: "glutenvrij tarwezetmeel" mag wel'],
-        alternatives: ['Zoek een variant met "glutenvrij" erop'],
+        alternatives: ['Een variant met "glutenvrij" erop'],
       },
       {
         name: '"Kan sporen van gluten bevatten"',
@@ -484,7 +484,7 @@ export const GUIDE: GuideCategory[] = [
         risk: 'hoog',
         where: 'Het brood zelf, maar ook kruimels op tafel, in boter en in dipsauzen.',
         checklist: ['Vraag het mandje niet op tafel te zetten', 'Gebruik eigen boter en dip, niet de gedeelde'],
-        alternatives: ['Glutenvrij brood vragen (soms los verpakt)', 'Eigen glutenvrij brood meenemen'],
+        alternatives: ['Glutenvrij brood, los verpakt', 'Eigen glutenvrij brood'],
       },
       {
         name: 'Taartbodems',

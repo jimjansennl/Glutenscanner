@@ -184,11 +184,16 @@ const TRACE_PHRASES = new RegExp(
       'kan sporen(?: bevatten)?(?: van)?',
       'sporen van',
       'bevat mogelijk',
+      // "Kan glutenbevattende granen bevatten", ook als de foto het woord afsnijdt.
+      'kan (?=.{0,50}?bevatten)',
+      'kan (?=\\w*glut)',
       'may contain',
       'traces? of',
       'peut contenir(?: des traces de)?',
       'kann spuren(?: von)?',
-      'kann .{0,30}?enthalten',
+      // "kann Gluten enthalten": de tekst tussen "kann" en "enthalten" hoort bij de sporen.
+      'kann (?=.{0,40}?enthalten)',
+      'kann (?=\\w*glut)',
       'puede contener(?: trazas de)?',
       'trazas de',
       'puo contenere(?: tracce di)?',
@@ -392,7 +397,7 @@ function conclude(
       status: 'warning',
       matches,
       warnings,
-      reasons: ['Productdata ontbreekt: ingrediënten konden niet gecontroleerd worden.'],
+      reasons: ['De ingrediënten van dit product zijn nog niet bekend.'],
       tips,
     }
   }
@@ -463,9 +468,32 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
   )
 }
 
+/** Regel uit een recept: "200 g volkoren meel", "• 1 tl bakpoeder". */
+const RECIPE_AMOUNT =
+  /^[\s•·\-+*–]*(?:\d+(?:[.,/]\d+)?|½|¼|¾)\s*(?:g|gr|gram|kg|ml|cl|dl|l|el|tl|eetlepels?|theelepels?|scoops?|snufjes?|stuks?|plakjes?|tbsp|tsp|cups?|oz|EL|TL)\b/i
+/** Bereidingsstap uit een recept: "3 Meng in een andere kom het meel". */
+const RECIPE_STEP =
+  /^[\s•·\-+*–]*\d{1,2}\s*[.)]?\s*(?:verwarm|meng|prak|voeg|roer|giet|laat|bak|snijd|kook|klop|verdeel|bestrooi|preheat|mix|stir|add|bake|pour|heizen|mischen|vermengen|backen|prechauff|melang|ajout|verse[rz])/i
+const RECIPE_MARKER = /\b(?:recept|recipe|rezept|recette|receta|ricetta|bereiding|zubereitung|preparation|bereidingswijze)\b/i
+
+/**
+ * Haalt een recept van de verpakking uit de tekst. Op veel zakken staat een recept
+ * ("200 g speltmeel"): dat zit niet in het product zelf en mag geen alarm geven.
+ */
+export function stripRecipe(text: string): { text: string; hadRecipe: boolean } {
+  const lines = text.split(/\n/)
+  const isRecipe = (l: string) => RECIPE_AMOUNT.test(l) || RECIPE_STEP.test(l)
+  const count = lines.filter(isRecipe).length
+  if (count === 0 || (count < 2 && !RECIPE_MARKER.test(text))) return { text, hadRecipe: false }
+  return { text: lines.filter((l) => !isRecipe(l)).join('\n'), hadRecipe: true }
+}
+
 /** Vrije tekst analyseren: OCR van een etiket of menukaart, of QR-inhoud. */
-export function analyzeText(text: string, context: AnalysisContext = 'label'): GlutenAnalysis {
+export function analyzeText(rawText: string, context: AnalysisContext = 'label'): GlutenAnalysis {
+  const { text, hadRecipe } = context === 'label' ? stripRecipe(rawText) : { text: rawText, hadRecipe: false }
   const result = scan([{ text, source: 'text' }], context)
+  // Met een recept op de zak gaat "brood" bijna altijd over het recept ("bananenbrood").
+  if (hadRecipe) result.warnings = result.warnings.filter((w) => w.label !== 'Brood')
   return conclude(
     result,
     {

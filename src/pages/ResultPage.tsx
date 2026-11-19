@@ -90,14 +90,17 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
 
       <ResultCard analysis={analysis} />
 
-      {!product && isCodeScan && (
+      {/* Product onbekend, of wel bekend maar zonder ingrediënten: dan zelf het etiket lezen. */}
+      {isCodeScan && result.source !== 'qr' && !product?.ingredientsText && analysis.matches.length === 0 && (
         <button
           onClick={onPhotoScan}
-          className="flex flex-col items-center gap-1 rounded-[22px] bg-surface p-4 text-center active:bg-surface-raised"
+          className="flex items-center justify-center gap-3 rounded-[22px] bg-accent p-4 text-left text-black active:opacity-80"
         >
-          <Camera size={22} className="text-warning" />
-          <span className="text-[17px] font-semibold">Fotografeer de ingrediënten</span>
-          <span className="text-[13px] text-muted">Dan analyseren we het etiket zelf</span>
+          <Camera size={26} className="shrink-0" />
+          <span className="flex flex-col">
+            <span className="text-[17px] font-bold">Fotografeer de ingrediënten</span>
+            <span className="text-[14px] font-medium text-black/70">Dan lees ik het etiket zelf</span>
+          </span>
         </button>
       )}
 

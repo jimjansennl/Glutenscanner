@@ -5,7 +5,7 @@
  * Tesseract en het taalmodel worden pas bij de eerste foto geladen (dynamic import),
  * zodat de app zelf snel blijft. Het model wordt daarna door de browser bewaard.
  */
-import type { Worker as TesseractWorker } from 'tesseract.js'
+import type { PSM, Worker as TesseractWorker } from 'tesseract.js'
 import { enhanceForOcr } from './enhance'
 
 export interface OcrResult {
@@ -37,22 +37,36 @@ const LANGS = ['nld', 'eng']
 
 /** Langste zijde voor de gewone (niet opgeknapte) versie. */
 const MAX_SIDE = 2000
-/** Onder deze zekerheid lezen we ook de gewone foto en nemen we de beste. */
-const RETRY_BELOW = 75
+/** Vanaf deze zekerheid en hoeveelheid tekst is de eerste poging goed genoeg. */
+const GOOD_CONFIDENCE = 65
+const ENOUGH_LETTERS = 40
+
+const letters = (t: string) => (t.match(/\p{L}/gu) ?? []).length
+/** Zekerheid telt pas mee als er ook echt tekst gelezen is ("95% zeker" van niets zegt niets). */
+const score = (t: string, conf: number) => conf * Math.min(1, letters(t) / ENOUGH_LETTERS)
+
+/** Wordt gevuld zodra Tesseract geladen is (het pakket laden we pas bij de eerste foto). */
+let psm: typeof import('tesseract.js').PSM
 
 let workerPromise: Promise<TesseractWorker> | null = null
 let reportProgress: ((p: OcrProgress) => void) | null = null
 
 function getWorker(): Promise<TesseractWorker> {
   workerPromise ??= import('tesseract.js')
-    .then(({ createWorker }) =>
-      createWorker(LANGS, 1, {
+    .then(async (mod) => {
+      psm = mod.PSM
+      const { createWorker } = mod
+      const worker = await createWorker(LANGS, 1, {
         logger: (m) => {
           const stage: OcrStage = m.status === 'recognizing text' ? 'recognizing' : 'loading'
           reportProgress?.({ stage, progress: m.progress })
         },
-      }),
-    )
+      })
+      // Standaard leest Tesseract alles als één blok. Verpakkingen en menukaarten hebben
+      // kolommen: met automatische indeling raken de regels niet door elkaar.
+      await worker.setParameters({ tessedit_pageseg_mode: psm.AUTO })
+      return worker
+    })
     .catch((err) => {
       workerPromise = null // volgende poging opnieuw proberen (bijv. na netwerkfout)
       throw new OcrUnavailableError(err)
@@ -90,14 +104,25 @@ export async function recognizeText(image: Blob, onProgress?: (p: OcrProgress) =
       const { data } = await worker.recognize(image)
       return { text: data.text.trim(), confidence: data.confidence }
     }
-    // Opgeknapte foto: schaduw en glans weg, scherper, zwart op wit.
-    const { data } = await worker.recognize(enhanceForOcr(bitmap))
-    let best: OcrResult = { text: data.text.trim(), confidence: data.confidence }
-    if (best.confidence < RETRY_BELOW) {
-      const plain = await worker.recognize(plainImage(bitmap))
-      if (plain.data.confidence > best.confidence) best = { text: plain.data.text.trim(), confidence: plain.data.confidence }
+    // Eerst de opgeknapte foto met kolom-indeling; is dat zwak, dan als één blok en daarna
+    // de gewone foto. We nemen de uitkomst met de meeste goed gelezen tekst.
+    const enhanced = enhanceForOcr(bitmap)
+    const attempts: [HTMLCanvasElement | (() => HTMLCanvasElement), PSM][] = [
+      [enhanced, psm.AUTO],
+      [enhanced, psm.SINGLE_BLOCK],
+      [() => plainImage(bitmap!), psm.AUTO],
+    ]
+    let best: OcrResult & { score: number } = { text: '', confidence: 0, score: -1 }
+    for (const [img, mode] of attempts) {
+      await worker.setParameters({ tessedit_pageseg_mode: mode })
+      const { data } = await worker.recognize(typeof img === 'function' ? img() : img)
+      const text = data.text.trim()
+      const s = score(text, data.confidence)
+      if (s > best.score) best = { text, confidence: data.confidence, score: s }
+      if (best.confidence >= GOOD_CONFIDENCE && letters(best.text) >= ENOUGH_LETTERS) break
     }
-    return best
+    await worker.setParameters({ tessedit_pageseg_mode: psm.AUTO })
+    return { text: best.text, confidence: best.confidence }
   } finally {
     bitmap?.close()
     reportProgress = null
