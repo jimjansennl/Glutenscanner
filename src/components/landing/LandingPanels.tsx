@@ -23,9 +23,9 @@ import { PANELS, type PanelId } from './panels'
 import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, ScreenScanner, ScreenTravel } from './PhoneScreens'
 
 const WAYS: [LucideIcon, string, string][] = [
-  [ScanBarcode, 'Barcode', 'Richt de camera op de streepjescode. Hij leest hem vanzelf, je hoeft niets te tikken.'],
-  [ScanText, 'Etiket', 'Tik op de knop en fotografeer de ingrediënten. Ook buitenlandse woorden, zoals trigo en Weizen.'],
-  [Camera, 'Menukaart', 'Tik op de knop en fotografeer het menu. Het grote kader past een hele kaart. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.'],
+  [ScanBarcode, 'Barcode', 'Kies onderin het barcode-icoontje en richt de camera op de streepjescode. Hij leest hem vanzelf, je hoeft niet te tikken.'],
+  [ScanText, 'Etiket', 'Kies het etiket-icoontje, houd de ingrediënten in het kader en tik op de knop. Ook buitenlandse woorden, zoals trigo en Weizen.'],
+  [Camera, 'Menukaart', 'Ook met het etiket-icoontje. Het grote kader past een hele kaart. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.'],
 ]
 
 const COLORS: [LucideIcon, string, string, string][] = [

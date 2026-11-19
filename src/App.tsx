@@ -11,6 +11,7 @@ import type { DecodedCode } from './hooks/useBarcodeScanner'
 import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { ResultPage } from './pages/ResultPage'
+import { DESKTOP_QUERY, openWebsite, showWebsite } from './services/siteNav'
 import { SettingsPage } from './pages/SettingsPage'
 import { TravelCardPage } from './pages/TravelCardPage'
 import { analyzeText } from './services/glutenParser'
@@ -133,6 +134,7 @@ function ScannerApp() {
         <>
           <ScannerView
             onNavigate={navigate}
+            onHome={() => openWebsite('/')}
             onMenu={() => setInfo('menu')}
             // Achter het menu draait de camera door; een barcode mag dan niets doen.
             onCode={info ? () => {} : handleCode}
@@ -240,25 +242,20 @@ function ScannerApp() {
   }
 }
 
-/** Desktop met muis = informatiesite; telefoon/tablet = scanner. "#app" opent de scanner altijd. */
-const DESKTOP_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)'
-
 function subscribe(onChange: () => void) {
   const media = window.matchMedia(DESKTOP_QUERY)
   media.addEventListener('change', onChange)
   window.addEventListener('hashchange', onChange)
+  window.addEventListener('popstate', onChange)
   return () => {
     media.removeEventListener('change', onChange)
     window.removeEventListener('hashchange', onChange)
+    window.removeEventListener('popstate', onChange)
   }
 }
 
-function showLandingPage() {
-  return window.matchMedia(DESKTOP_QUERY).matches && window.location.hash !== '#app'
-}
-
 function App() {
-  const landing = useSyncExternalStore(subscribe, showLandingPage)
+  const landing = useSyncExternalStore(subscribe, showWebsite)
   if (landing) return <LandingPage />
   return (
     <>

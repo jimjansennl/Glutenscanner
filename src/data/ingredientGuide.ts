@@ -11,6 +11,8 @@ export interface IngredientEntry {
   risk: RiskLevel
   /** Extra uitleg: waar je het tegenkomt of waarom het risico zo is. */
   note?: string
+  /** Slimme tip waar je zelf niet zo snel aan denkt. */
+  tip?: string
   alternatives: string[]
 }
 
@@ -357,7 +359,14 @@ export const INGREDIENT_TABS: IngredientTab[] = [
       { name: 'Borrelnoten', summary: 'Jasje van tarwebloem', risk: 'hoog', alternatives: ['Naturel of gezouten noten'] },
       { name: 'IJs met koek', summary: 'Cookie dough, brownie, hoorntje', risk: 'middel', alternatives: ['Sorbet', 'IJs in een bakje'] },
       { name: 'Hosties', summary: 'Gemaakt van tarwebloem', risk: 'hoog', alternatives: ['Glutenvrije hosties'] },
-      { name: 'Medicijnen & supplementen', summary: 'Soms tarwezetmeel als vulmiddel', risk: 'middel', note: 'De apotheek kan het voor je opzoeken.', alternatives: ['Een versie zonder tarwezetmeel'] },
+      {
+        name: 'Medicijnen & supplementen',
+        summary: 'Soms tarwezetmeel als vulmiddel',
+        risk: 'middel',
+        note: 'Het staat in de bijsluiter bij "hulpstoffen".',
+        tip: 'Laat de apotheek "coeliakie" in je dossier zetten. Dan let de apotheek er bij elk nieuw medicijn vanzelf op.',
+        alternatives: [],
+      },
       { name: 'Speelklei', summary: 'Kinderklei op basis van bloem', risk: 'hoog', note: 'Risico via handen en mond.', alternatives: ['Glutenvrije speelklei'] },
     ],
   },

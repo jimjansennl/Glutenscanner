@@ -35,6 +35,7 @@ function fromEntry(e: IngredientEntry, group: string): Item {
     name: e.name,
     risk: e.risk,
     why: e.note ? `${e.summary}. ${e.note}` : `${e.summary}.`,
+    tip: e.tip,
     instead: e.alternatives.filter((a) => a !== 'Geen alternatief nodig'),
     group,
     food: true,

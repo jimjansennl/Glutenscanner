@@ -15,6 +15,8 @@ const CORNERS = [
 
 interface Props {
   onNavigate: (tab: NavTab) => void
+  /** Logo: naar de website. */
+  onHome: () => void
   onMenu: () => void
   onCode: (code: DecodedCode) => void
   /** textOnly: foto gemaakt in de stand etiket/menu, dan niet eerst naar een barcode zoeken. */
@@ -69,7 +71,7 @@ const BARCODE_FRAME = { left: 0.08, top: 0.2, width: 0.84, height: 0.3 }
 /** De foto pakt iets ruimer dan het kader, zodat er geen letters afvallen. */
 const MARGIN = 0.03
 
-export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
+export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [seen, setSeen] = useState<SeenBox | null>(null)
@@ -169,15 +171,17 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
-      <header className="relative flex h-14 shrink-0 items-end justify-center pb-2 pt-[env(safe-area-inset-top)]">
-        <button
-          onClick={onMenu}
-          className="absolute bottom-1 left-2 rounded-full p-2 active:bg-white/10"
-          aria-label="Menu openen"
-        >
+      {/* Kop: logo links (naar de website), menu rechts. */}
+      <header className="flex h-14 shrink-0 items-end justify-between px-3 pb-1.5 pt-[env(safe-area-inset-top)]">
+        <button onClick={onHome} className="flex items-center gap-2 rounded-xl p-1 active:opacity-70" aria-label="Naar de website van Glutenscanner">
+          <span className="flex h-8 w-8 rotate-[-6deg] items-center justify-center rounded-[10px] bg-accent text-white shadow-lg shadow-accent/30">
+            <ScanBarcode size={17} />
+          </span>
+          <span className="font-display text-[19px] font-bold tracking-tight">glutenscanner</span>
+        </button>
+        <button onClick={onMenu} className="rounded-full p-2 active:bg-white/10" aria-label="Menu openen">
           <Menu size={26} />
         </button>
-        <h1 className="text-[19px] font-semibold">Glutenscanner</h1>
       </header>
 
       <div className="relative min-h-0 flex-1 overflow-hidden">

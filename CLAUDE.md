@@ -44,7 +44,14 @@ npx vite preview --port 4173   # gebouwde versie bekijken
   `#app` in de URL opent de scanner ook op de desktop.
 - **Telefoon of tablet:** de app opent direct de **scanner** (`ScannerApp` in `src/App.tsx`).
   Onderin staat een tabbalk: Scan, Geschiedenis, Gids en Instellingen.
-- **Hamburgermenu (☰)** linksboven in de scanner: dezelfde onderdelen als de kop van
+  Kop van de scanner: **logo links** (tik = de website), **☰ rechts**.
+- **Website op de telefoon:** dezelfde site, maar alles onder elkaar (basis = telefoon,
+  `lg:` = desktop; de desktop moet er precies hetzelfde uit blijven zien). Wie welke kant
+  ziet, regelt `src/services/siteNav.ts`: op de telefoon is `/` de scanner; het logo opent
+  `/` met een vlaggetje in de geschiedenis (terugknop = scanner); `/glutengids`, `/vragen`
+  enz. zijn altijd de site. Op de telefoon worden de groene knoppen "Open de scanner"
+  (geen QR-code, je bent er al) en staat rechts in de kop een knop "Scan" en ☰.
+- **Hamburgermenu (☰)** rechtsboven in de scanner: dezelfde onderdelen als de kop van
   de website (Hoe het werkt, In actie, Glutengids, Vragen), elk als eigen
   scherm. De code staat in `src/components/landing/LandingPanels.tsx` en
   `src/components/landing/panels.ts`. Zolang het menu open is, reageert de camera niet
@@ -129,6 +136,10 @@ barcode wordt naar Open Food Facts gestuurd.
   telefoon (label "Hier"), anders de laatst gekozen taal. "Lees mee in het Nederlands" toont
   de vertaling. Pas bij een tekstwijziging alle 10 talen aan.
   De kaart staat alleen in de Gids, niet (nog eens) bij Instellingen.
+- **"Neem liever" alleen als het echt iets toevoegt.** Niet "Een versie zonder X" of
+  "Navragen bij…": dat vond de gebruiker te logisch en dommig. Liever een slimme `tip`
+  waar je zelf niet aan denkt (bijv. bij medicijnen: laat de apotheek "coeliakie" in je
+  dossier zetten). De antwoordkaart op de website staat in het midden (`AnswerCard center`).
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 

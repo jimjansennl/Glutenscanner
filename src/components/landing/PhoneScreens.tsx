@@ -5,7 +5,10 @@ import {
   Camera,
   CheckCircle2,
   Clock3,
+  Menu,
   MessageCircleQuestion,
+  ScanBarcode,
+  ScanText,
   Settings,
   XCircle,
 } from 'lucide-react'
@@ -38,6 +41,39 @@ function StatusBar() {
 
 function Title({ children }: { children: ReactNode }) {
   return <div className="shrink-0 pb-2 text-center text-[12px] font-semibold">{children}</div>
+}
+
+/** Kop van de scanner: logo links, menu rechts (zoals in de echte app). */
+function ScanHeader() {
+  return (
+    <div className="flex shrink-0 items-center justify-between px-3.5 pb-2">
+      <span className="flex items-center gap-1.5">
+        <span className="flex h-5 w-5 rotate-[-6deg] items-center justify-center rounded-md bg-accent">
+          <ScanBarcode size={11} />
+        </span>
+        <span className="font-display text-[12px] font-bold tracking-tight">glutenscanner</span>
+      </span>
+      <Menu size={15} />
+    </div>
+  )
+}
+
+/** Keuze met twee icoontjes: barcode of etiket/menukaart. */
+function ModeSwitch({ active }: { active: 'barcode' | 'text' }) {
+  return (
+    <span className="flex rounded-full bg-neutral-800/90 p-0.5">
+      {(
+        [
+          ['barcode', ScanBarcode],
+          ['text', ScanText],
+        ] as const
+      ).map(([m, Icon]) => (
+        <span key={m} className={`flex h-6 w-9 items-center justify-center rounded-full ${m === active ? 'bg-accent text-black' : 'text-white/70'}`}>
+          <Icon size={13} />
+        </span>
+      ))}
+    </span>
+  )
 }
 
 function MiniNav({ active }: { active: 'scan' | 'history' | 'guide' | 'settings' }) {
@@ -81,7 +117,7 @@ export function ScreenScanner() {
   return (
     <>
       <StatusBar />
-      <Title>Glutenscanner</Title>
+      <ScanHeader />
       <div className="relative flex-1 overflow-hidden bg-[linear-gradient(160deg,#e9c46a_0%,#d9a441_45%,#b07a2a_100%)]">
         <div className="absolute inset-0 bg-[repeating-linear-gradient(115deg,transparent_0_18px,rgba(255,255,255,0.08)_18px_20px)]" />
         <div className="absolute left-1/2 top-[30%] flex aspect-[3/2] w-[74%] -translate-x-1/2 items-center justify-center rounded-2xl border-2 border-accent bg-white/90 shadow-[0_0_0_999px_rgba(0,0,0,0.4)]">
@@ -92,8 +128,9 @@ export function ScreenScanner() {
           </div>
           <span className="absolute inset-x-3 top-1/2 h-0.5 bg-accent shadow-[0_0_8px_1px] shadow-accent" />
         </div>
-        <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-1.5 text-[9px]">
+        <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-2 text-[9px]">
           <span className="rounded-full bg-accent/90 px-3 py-1">Barcode gevonden, even stilhouden…</span>
+          <ModeSwitch active="barcode" />
         </div>
       </div>
       <MiniNav active="scan" />
@@ -106,9 +143,9 @@ export function ScreenPhoto() {
   return (
     <>
       <StatusBar />
-      <Title>Glutenscanner</Title>
+      <ScanHeader />
       <div className="relative flex-1 overflow-hidden bg-[linear-gradient(170deg,#f4efe4,#e2d7c0)]">
-        <BigFrame className="inset-x-3 bottom-20 top-3" />
+        <BigFrame className="inset-x-3 bottom-[104px] top-3" />
         <div className="absolute inset-x-5 top-10 rounded-xl bg-white/60 p-3 text-[8.5px] leading-relaxed text-neutral-800 shadow-[0_0_18px_rgba(31,164,99,0.45)]">
           <p className="mb-1 font-bold">Ingrediënten:</p>
           <p>
@@ -117,7 +154,8 @@ export function ScreenPhoto() {
           </p>
           <span className="absolute inset-x-3 -bottom-px h-0.5 bg-accent shadow-[0_0_8px_1px] shadow-accent" />
         </div>
-        <div className="absolute inset-x-0 bottom-5 flex items-center justify-center">
+        <div className="absolute inset-x-0 bottom-3 flex flex-col items-center gap-2">
+          <ModeSwitch active="text" />
           <span className="rounded-full border-[3px] border-white p-0.5">
             <span className="block h-10 w-10 rounded-full bg-white" />
           </span>

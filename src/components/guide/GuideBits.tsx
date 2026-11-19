@@ -31,12 +31,12 @@ export function RiskPill({ risk, size = 'sm' }: { risk: RiskLevel; size?: 'sm' |
   )
 }
 
-export function Instead({ items }: { items: string[] }) {
+export function Instead({ items, center = false }: { items: string[]; center?: boolean }) {
   if (items.length === 0) return null
   return (
     <div>
       <p className="text-[13px] font-bold uppercase tracking-wide text-safe">Neem liever</p>
-      <div className="mt-1.5 flex flex-wrap gap-1.5">
+      <div className={`mt-1.5 flex flex-wrap gap-1.5 ${center ? 'justify-center' : ''}`}>
         {items.map((a) => (
           <span key={a} className="rounded-full bg-safe/15 px-3 py-1.5 text-[15px] font-medium text-white">
             {a}
@@ -47,23 +47,23 @@ export function Instead({ items }: { items: string[] }) {
   )
 }
 
-export function Tip({ text }: { text?: string }) {
+export function Tip({ text, center = false }: { text?: string; center?: boolean }) {
   if (!text) return null
   return (
-    <p className="flex items-start gap-2 text-[15px] leading-snug text-white/80">
+    <p className={`flex items-start gap-2 text-[15px] leading-snug text-white/80 ${center ? 'justify-center text-left' : ''}`}>
       <Lightbulb size={18} className="mt-0.5 shrink-0 text-[#ffd75e]" aria-hidden />
       {text}
     </p>
   )
 }
 
-/** Het grote antwoord bovenaan bij zoeken. */
-export function AnswerCard({ item }: { item: Item }) {
+/** Het grote antwoord bovenaan bij zoeken. `center`: alles in het midden (website). */
+export function AnswerCard({ item, center = false }: { item: Item; center?: boolean }) {
   const ui = RISK_UI[item.risk]
   const Icon = ui.icon
   return (
-    <article className={`animate-slide-up flex flex-col gap-3 rounded-[28px] p-5 ring-2 ${ui.soft}`}>
-      <div className="flex items-center gap-3">
+    <article className={`animate-slide-up flex flex-col gap-3 rounded-[28px] p-5 ring-2 ${ui.soft} ${center ? 'items-center text-center' : ''}`}>
+      <div className={`flex items-center gap-3 ${center ? 'justify-center text-left' : ''}`}>
         <Icon size={40} className={`shrink-0 ${ui.text}`} />
         <div className="min-w-0">
           <p className={`text-[28px] font-extrabold leading-none ${ui.text}`}>{ui.word}</p>
@@ -72,8 +72,8 @@ export function AnswerCard({ item }: { item: Item }) {
       </div>
       <h3 className="text-[24px] font-bold leading-tight">{item.name}</h3>
       <p className="text-[17px] leading-snug text-white/85">{item.why}</p>
-      <Tip text={item.tip} />
-      <Instead items={item.instead} />
+      <Tip text={item.tip} center={center} />
+      <Instead items={item.instead} center={center} />
     </article>
   )
 }

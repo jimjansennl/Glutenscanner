@@ -37,14 +37,14 @@ function Modal({ title, sub, onClose, children }: { title: string; sub?: string;
     }
   }, [onClose])
   return (
-    <div className="fixed inset-0 z-30 flex items-start justify-center bg-black/60 px-6 pb-6 pt-28 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-30 flex items-start justify-center bg-black/60 px-3 pb-3 pt-24 backdrop-blur-sm lg:px-6 lg:pb-6 lg:pt-28" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-slide-up max-h-full w-full max-w-3xl overflow-y-auto rounded-[32px] bg-[#16191a] p-8 text-white shadow-2xl ring-1 ring-white/10"
+        className="animate-slide-up max-h-full w-full max-w-3xl overflow-y-auto rounded-[32px] bg-[#16191a] p-5 text-white lg:p-8 shadow-2xl ring-1 ring-white/10"
       >
         <div className="flex items-start justify-between gap-6">
           <div>
-            <h2 className="font-display text-[32px] font-bold leading-tight tracking-tight">{title}</h2>
+            <h2 className="font-display text-[24px] font-bold leading-tight tracking-tight lg:text-[32px]">{title}</h2>
             {sub && <p className="mt-1 text-[16px] text-white/60">{sub}</p>}
           </div>
           <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Sluiten">
@@ -151,7 +151,7 @@ function panelTitle(panel: Panel): [string, string?] {
 
 /** Eén tegelstijl voor het hele raster: even hoog, even rond, dezelfde rand. */
 const TILE =
-  'flex min-h-[76px] items-center gap-3 rounded-[20px] bg-white/[0.06] px-5 py-4 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]'
+  'flex min-h-[76px] items-center gap-3 rounded-[20px] bg-white/[0.06] px-4 py-4 lg:px-5 text-left ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white/[0.09]'
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.14em] text-white/50">{children}</h3>
@@ -181,7 +181,7 @@ export function SiteGuide() {
   const [title, sub] = panel ? panelTitle(panel) : ['']
 
   return (
-    <section className="bg-[#10140f] px-6 pb-24 text-white">
+    <section className="bg-[#10140f] px-4 pb-16 text-white lg:px-6 lg:pb-24">
       {panel && (
         <Modal title={title} sub={sub} onClose={() => setPanel(null)}>
           <PanelContent panel={panel} />
@@ -189,14 +189,14 @@ export function SiteGuide() {
       )}
 
       <div className="mx-auto max-w-6xl">
-        <label className="mx-auto flex max-w-2xl items-center gap-3 rounded-full bg-white py-2 pl-7 pr-2 text-black shadow-2xl shadow-black/40 focus-within:ring-4 focus-within:ring-accent/40">
+        <label className="mx-auto flex max-w-2xl items-center gap-3 rounded-full bg-white py-2 pl-5 pr-2 text-black lg:pl-7 shadow-2xl shadow-black/40 focus-within:ring-4 focus-within:ring-accent/40">
           <Search size={24} className="shrink-0 text-neutral-500" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Typ een product, bijv. couscous"
-            className="min-w-0 flex-1 bg-transparent py-2 text-[20px] text-black placeholder:text-neutral-500 focus:outline-none"
+            placeholder={window.innerWidth < 640 ? 'Bijv. couscous' : 'Typ een product, bijv. couscous'}
+            className="min-w-0 flex-1 bg-transparent py-2 text-[18px] lg:text-[20px] text-black placeholder:text-neutral-500 focus:outline-none"
             aria-label="Zoek een product of ingrediënt"
           />
           {query && (
@@ -207,7 +207,7 @@ export function SiteGuide() {
           <button
             type="button"
             onClick={() => inputRef.current?.focus()}
-            className="shrink-0 rounded-full bg-accent px-7 py-3.5 font-display text-[18px] font-bold text-white transition hover:bg-[#1a9258]"
+            className="shrink-0 rounded-full bg-accent px-5 py-3 font-display text-[17px] font-bold lg:px-7 lg:py-3.5 lg:text-[18px] text-white transition hover:bg-[#1a9258]"
           >
             Zoek
           </button>
@@ -221,8 +221,8 @@ export function SiteGuide() {
                 <p className="mt-1 text-[16px] text-white/60">Probeer een ander woord, of scan het etiket met de app.</p>
               </div>
             ) : (
-              <div className={results.length > 1 ? 'grid grid-cols-[1.1fr_1fr] items-start gap-8' : 'mx-auto max-w-xl'}>
-                <AnswerCard item={results[0]} />
+              <div className={results.length > 1 ? 'grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.1fr_1fr]' : 'mx-auto max-w-xl'}>
+                <AnswerCard item={results[0]} center />
                 {results.length > 1 && (
                   <div>
                     <SectionLabel>Ook gevonden</SectionLabel>
@@ -234,7 +234,7 @@ export function SiteGuide() {
           </div>
         ) : (
           <>
-            <div className="mx-auto mt-10 grid max-w-4xl grid-cols-3 gap-5">
+            <div className="mx-auto mt-10 grid max-w-4xl grid-cols-3 gap-2 lg:gap-5">
               {COLOR_ORDER.map((risk) => {
                 const ui = RISK_UI[risk]
                 const Icon = ui.icon
@@ -242,12 +242,12 @@ export function SiteGuide() {
                   <button
                     key={risk}
                     onClick={() => setPanel({ kind: 'color', risk })}
-                    className="flex flex-col items-center gap-1.5 rounded-[28px] bg-white/[0.06] px-4 py-7 text-center ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
+                    className="flex flex-col items-center gap-1.5 rounded-[24px] bg-white/[0.06] px-2 py-5 text-center lg:rounded-[28px] lg:px-4 lg:py-7 ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.09]"
                   >
-                    <Icon size={40} className={ui.text} />
-                    <span className={`font-display text-[30px] font-extrabold leading-none ${ui.text}`}>{ui.word}</span>
-                    <span className="text-[15px] text-white/70">{ui.long}</span>
-                    <span className="mt-1 text-[14px] font-semibold text-white/45">{countFood(risk)} dingen</span>
+                    <Icon size={34} className={ui.text} />
+                    <span className={`font-display text-[24px] font-extrabold lg:text-[30px] leading-none ${ui.text}`}>{ui.word}</span>
+                    <span className="text-[13px] leading-tight text-white/70 lg:text-[15px]">{ui.long}</span>
+                    <span className="mt-1 text-[13px] font-semibold text-white/45 lg:text-[14px]">{countFood(risk)} dingen</span>
                   </button>
                 )
               })}
@@ -255,7 +255,7 @@ export function SiteGuide() {
 
             <div className="mx-auto mt-14 max-w-6xl">
               <SectionLabel>Thema&apos;s</SectionLabel>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {GUIDE.filter((c) => !FEAST_IDS.includes(c.id)).map((c) => {
                   const Icon = THEME_ICONS[c.icon]
                   return (
@@ -276,7 +276,7 @@ export function SiteGuide() {
               <div className="mt-10">
                 <SectionLabel>Per soort</SectionLabel>
               </div>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {GROUPS.map((g) => (
                   <button
                     key={g.id}
@@ -295,7 +295,7 @@ export function SiteGuide() {
               <div className="mt-10">
                 <SectionLabel>Ook handig</SectionLabel>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
                 <WideRow
                   icon={Languages}
                   color="bg-[#3b6fd8]"

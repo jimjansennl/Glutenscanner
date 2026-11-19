@@ -13,6 +13,7 @@ import {
   Infinity as InfinityIcon,
   Plane,
   Languages,
+  Menu,
   Minus,
   Plus,
   ScanBarcode,
@@ -20,11 +21,13 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
+  X,
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../ui/DisclaimerModal'
 import { SiteGuide } from './SiteGuide'
+import { DESKTOP_QUERY, openScanner } from '../../services/siteNav'
 import {
   Phone,
   ScreenDanger,
@@ -65,11 +68,22 @@ function usePath() {
   return useSyncExternalStore(subscribePath, () => window.location.pathname)
 }
 
+function subscribeDesktop(onChange: () => void) {
+  const media = window.matchMedia(DESKTOP_QUERY)
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+/** Desktop met muis: daar wijzen de knoppen naar de QR-code; op de telefoon openen ze de scanner. */
+function useDesktop() {
+  return useSyncExternalStore(subscribeDesktop, () => window.matchMedia(DESKTOP_QUERY).matches)
+}
+
 /** Gaat naar een pagina (en eventueel een blok erop) zonder de site te herladen. */
 function go(href: string) {
   const [path, hash] = href.split('#')
   if (path !== window.location.pathname || hash) {
-    window.history.pushState(null, '', href)
+    window.history.pushState({ site: true }, '', href)
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
   requestAnimationFrame(() => {
@@ -115,10 +129,10 @@ function useReveal(path: string) {
 function Logo({ light = false }: { light?: boolean }) {
   return (
     <span className="flex items-center gap-2.5">
-      <span className="flex h-10 w-10 rotate-[-6deg] items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30">
-        <ScanBarcode size={21} />
+      <span className="flex h-9 w-9 rotate-[-6deg] items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30 lg:h-10 lg:w-10">
+        <ScanBarcode size={20} />
       </span>
-      <span className={`font-display text-[21px] font-bold tracking-tight ${light ? 'text-white' : 'text-[#14130f]'}`}>
+      <span className={`font-display text-[19px] font-bold tracking-tight lg:text-[21px] ${light ? 'text-white' : 'text-[#14130f]'}`}>
         glutenscanner
       </span>
     </span>
@@ -136,14 +150,26 @@ function QrCode({ size = 176 }: { size?: number }) {
   return <div ref={ref} className="rounded-3xl bg-white p-3 shadow-xl" style={{ width: size + 24, height: size + 24 }} />
 }
 
+const PRIMARY_CLS =
+  'group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-display text-[18px] font-semibold text-white shadow-xl shadow-accent/30 transition hover:-translate-y-0.5 hover:bg-[#1a9258] hover:shadow-2xl hover:shadow-accent/40'
+
+/** Grote groene knop. Desktop: naar de QR-code. Telefoon: meteen de scanner openen. */
 function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; href?: string }) {
+  const desktop = useDesktop()
+  const arrow = <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+  if (!desktop) {
+    return (
+      <button onClick={openScanner} className={PRIMARY_CLS}>
+        <ScanBarcode size={20} />
+        Open de scanner
+        {arrow}
+      </button>
+    )
+  }
   return (
-    <Link
-      href={href}
-      className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-display text-[18px] font-semibold text-white shadow-xl shadow-accent/30 transition hover:-translate-y-0.5 hover:bg-[#1a9258] hover:shadow-2xl hover:shadow-accent/40"
-    >
+    <Link href={href} className={PRIMARY_CLS}>
       {children}
-      <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+      {arrow}
     </Link>
   )
 }
@@ -158,10 +184,10 @@ function SectionTitle({ eyebrow, title, sub, light = false }: { eyebrow: string;
       >
         {eyebrow}
       </span>
-      <h2 className={`mt-5 font-display text-[52px] font-bold leading-[1.05] tracking-tight ${light ? 'text-white' : 'text-[#14130f]'}`}>
+      <h2 className={`mt-5 font-display text-[34px] font-bold lg:text-[52px] leading-[1.05] tracking-tight ${light ? 'text-white' : 'text-[#14130f]'}`}>
         {title}
       </h2>
-      {sub && <p className={`mt-4 text-[19px] leading-relaxed ${light ? 'text-white/65' : 'text-neutral-600'}`}>{sub}</p>}
+      {sub && <p className={`mt-4 text-[17px] leading-relaxed lg:text-[19px] ${light ? 'text-white/65' : 'text-neutral-600'}`}>{sub}</p>}
     </div>
   )
 }
@@ -181,7 +207,7 @@ function FloatChip({ className, children, tone = 'light' }: { className: string;
 }
 
 const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: ScanBarcode, title: 'Richt je camera', text: 'Op een barcode, of maak een foto van de ingrediënten of de menukaart. Geen account nodig.' },
+  { icon: ScanBarcode, title: 'Kies en richt', text: 'Kies onderin barcode of etiket en richt je camera. Een barcode leest hij vanzelf, bij een etiket of menukaart tik je op de knop.' },
   { icon: Sparkles, title: 'Zie de uitslag', text: 'Glutenvrij, twijfel of bevat gluten: groot, in kleur en met uitleg waarom.' },
   { icon: ShieldCheck, title: 'Kijk zelf mee', text: 'De scanner is een tweede paar ogen. Kijk daarna altijd nog zelf op de verpakking.' },
 ]
@@ -197,13 +223,26 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
 ]
 
 /** Elke manier van scannen een eigen kleur, in de stijl van de rest van de site. */
-const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: string; tile: string; iconCls: string; sub: string; pill: string }[] = [
+const WAYS: {
+  icon: LucideIcon
+  title: string
+  /** Het icoontje dat je onderin de scanner kiest. */
+  appIcon: LucideIcon
+  mode: string
+  text: string
+  tip: string
+  tile: string
+  iconCls: string
+  sub: string
+  pill: string
+}[] = [
   {
     icon: ScanBarcode,
     title: 'Barcode',
-    mode: 'Vanzelf',
-    text: 'Richt de camera op de streepjescode. Hij leest hem vanzelf.',
-    tip: 'Niet gevonden? Dan krijg je twijfel.',
+    appIcon: ScanBarcode,
+    mode: 'Leest vanzelf',
+    text: 'Richt de camera op de streepjescode. Je hoeft niet te tikken.',
+    tip: 'Geen ingrediënten bekend? Fotografeer ze.',
     tile: 'bg-[#14130f] text-white',
     iconCls: 'bg-accent text-white shadow-accent/40',
     sub: 'text-white/70',
@@ -212,8 +251,9 @@ const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: 
   {
     icon: ScanText,
     title: 'Etiket',
+    appIcon: ScanText,
     mode: 'Tik op de knop',
-    text: 'Fotografeer de ingrediënten. Hij zoekt woorden als tarwe, gerst en mout.',
+    text: 'Fotografeer de ingrediënten. Hij zoekt woorden als tarwe, gerst en mout. Een recept op de zak telt niet mee.',
     tip: 'Ook trigo, Weizen en meer',
     tile: 'bg-accent text-white',
     iconCls: 'bg-white text-accent shadow-black/20',
@@ -223,8 +263,9 @@ const WAYS: { icon: LucideIcon; title: string; mode: string; text: string; tip: 
   {
     icon: Camera,
     title: 'Menukaart',
+    appIcon: ScanText,
     mode: 'Tik op de knop',
-    text: 'Fotografeer het hele menu, het kader is groot genoeg. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.',
+    text: 'Fotografeer het menu, het kader is groot genoeg. Je ziet waar gluten in kunnen zitten en wat je kunt vragen.',
     tip: 'Handig in een restaurant',
     tile: 'bg-[#ffd75e] text-[#14130f]',
     iconCls: 'bg-[#14130f] text-[#ffd75e] shadow-black/20',
@@ -276,7 +317,7 @@ function Carousel() {
   return (
     <div data-reveal className="mt-14">
       {/* Precies vier kaarten breed (4 × 264 + 3 × 24 px), zodat niets half uit beeld valt. */}
-      <div ref={track} className="mx-auto flex max-w-[1128px] snap-x snap-mandatory gap-6 overflow-x-auto pb-6 [scrollbar-width:none]">
+      <div ref={track} className="mx-auto flex max-w-[1128px] snap-x snap-mandatory scroll-px-6 gap-6 overflow-x-auto px-6 pb-6 [scrollbar-width:none] lg:scroll-px-0 lg:px-0">
         {CAROUSEL.map(({ word, line, accent, bg, screen }) => (
           <article
             key={word}
@@ -317,20 +358,20 @@ function Carousel() {
 function Faq() {
   const [open, setOpen] = useState(0)
   return (
-    <div data-reveal className="mx-auto mt-12 max-w-3xl divide-y divide-neutral-200 rounded-[32px] bg-white px-8 shadow-sm ring-1 ring-neutral-200">
+    <div data-reveal className="mx-auto mt-12 max-w-3xl divide-y divide-neutral-200 rounded-[32px] bg-white px-5 shadow-sm ring-1 ring-neutral-200 lg:px-8">
       {FAQ.map(({ q, a }, i) => (
         <div key={q} className="py-2">
           <button
             onClick={() => setOpen(open === i ? -1 : i)}
             aria-expanded={open === i}
-            className="flex w-full items-center justify-between gap-6 py-4 text-left font-display text-[20px] font-semibold"
+            className="flex w-full items-center justify-between gap-4 py-4 text-left font-display text-[17px] font-semibold lg:gap-6 lg:text-[20px]"
           >
             {q}
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${open === i ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
               {open === i ? <Minus size={18} /> : <Plus size={18} />}
             </span>
           </button>
-          {open === i && <p className="pb-5 pr-14 text-[17px] leading-relaxed text-neutral-600">{a}</p>}
+          {open === i && <p className="pb-5 pr-2 text-[16px] leading-relaxed text-neutral-600 lg:pr-14 lg:text-[17px]">{a}</p>}
         </div>
       ))}
     </div>
@@ -342,7 +383,7 @@ function Faq() {
 /** Donkere band bovenaan elke pagina, in de stijl van het bovenstuk van de startpagina. */
 function PageBand({ eyebrow, title, sub }: { eyebrow: string; title: ReactNode; sub?: string }) {
   return (
-    <section className="relative overflow-hidden bg-[#10140f] px-6 pb-20 pt-40 text-white">
+    <section className="relative overflow-hidden bg-[#10140f] px-6 pb-14 pt-32 text-white lg:pb-20 lg:pt-40">
       <div className="pointer-events-none absolute -top-48 left-1/2 h-[520px] w-[1000px] -translate-x-1/2 rounded-full bg-accent/25 blur-[140px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px]" />
       <div className="relative">
@@ -353,20 +394,21 @@ function PageBand({ eyebrow, title, sub }: { eyebrow: string; title: ReactNode; 
 }
 
 function HomePage() {
+  const desktop = useDesktop()
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-32 text-white">
+      <section className="relative overflow-hidden bg-[#10140f] pb-0 pt-28 text-white lg:pt-32">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-accent/25 blur-[140px]" />
         <div className="pointer-events-none absolute -bottom-40 right-[-10%] h-[500px] w-[600px] rounded-full bg-[#ffd75e]/15 blur-[140px]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px]" />
 
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[14px] font-medium text-white/85 backdrop-blur">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[13px] font-medium text-white/85 backdrop-blur lg:text-[14px]">
             <Heart size={15} className="fill-[#ff5a4e] text-[#ff5a4e]" />
             Gratis, voor iedereen met coeliakie of glutenintolerantie
           </span>
-          <h1 className="mt-7 font-display text-[76px] font-extrabold leading-[0.98] tracking-tight">
+          <h1 className="mt-7 font-display text-[50px] font-extrabold leading-[0.98] tracking-tight lg:text-[76px]">
             Eet met een
             <br />
             <span className="relative inline-block text-[#7ee2a8]">
@@ -377,14 +419,14 @@ function HomePage() {
             </span>
             .
           </h1>
-          <p className="mt-7 max-w-2xl text-[20px] leading-relaxed text-white/70">
+          <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-white/70 lg:text-[20px]">
             Scan een barcode, etiket of menukaart en zie binnen seconden of er gluten in zitten. Onbeperkt, zonder
             account, gewoon in je browser op <b className="text-white">{SITE_LABEL}</b>.
           </p>
           <div className="mt-9 flex items-center gap-4">
             <PrimaryButton>Open op je telefoon</PrimaryButton>
           </div>
-          <p className="mt-6 flex gap-6 text-[15px] text-white/55">
+          <p className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px] text-white/55 lg:text-[15px]">
             {['Altijd gratis', 'Onbeperkt scannen', 'Geen account', 'Foto’s blijven op je toestel'].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <Check size={15} className="text-[#7ee2a8]" />
@@ -395,42 +437,45 @@ function HomePage() {
         </div>
 
         {/* Drie telefoons in een waaier, met zwevende labels */}
-        <div className="relative mx-auto mt-12 flex h-[470px] max-w-5xl items-start justify-center">
-          <div className="absolute left-[14%] top-14 -rotate-[9deg] opacity-95">
+        <div className="relative mx-auto mt-12 flex h-[400px] max-w-5xl items-start justify-center lg:h-[470px]">
+          <div className="absolute left-[14%] top-14 hidden -rotate-[9deg] opacity-95 lg:block">
             <Phone>
               <ScreenSafe />
             </Phone>
           </div>
-          <div className="absolute right-[14%] top-14 rotate-[9deg] opacity-95">
+          <div className="absolute right-[14%] top-14 hidden rotate-[9deg] opacity-95 lg:block">
             <Phone>
               <ScreenDanger />
             </Phone>
           </div>
-          <div className="relative z-10 scale-[1.08]">
+          <div className="relative z-10 lg:scale-[1.08]">
             <Phone className="shadow-[0_40px_120px_-20px_rgba(31,164,99,0.55)]">
               <ScreenScanner />
             </Phone>
           </div>
-          <FloatChip className="left-[6%] top-6 animate-float" tone="green">
-            <Check size={18} strokeWidth={3} /> Glutenvrij
-          </FloatChip>
-          <FloatChip className="right-[5%] top-2 animate-float-slow" tone="red">
-            trigo → tarwe
-          </FloatChip>
-          <FloatChip className="left-[24%] top-[62%] animate-float-slow">
-            <Sparkles size={16} className="text-accent" /> gerstemoutextract gevonden
-          </FloatChip>
-          <FloatChip className="right-[22%] top-[58%] animate-float">
-            <InfinityIcon size={18} className="text-accent" /> onbeperkt gratis
-          </FloatChip>
+          {/* Zwevende labels alleen op een groot scherm; op de telefoon is er geen ruimte. */}
+          <div className="pointer-events-none absolute inset-0 hidden lg:block">
+            <FloatChip className="left-[6%] top-6 animate-float" tone="green">
+              <Check size={18} strokeWidth={3} /> Glutenvrij
+            </FloatChip>
+            <FloatChip className="right-[5%] top-2 animate-float-slow" tone="red">
+              trigo → tarwe
+            </FloatChip>
+            <FloatChip className="left-[24%] top-[62%] animate-float-slow">
+              <Sparkles size={16} className="text-accent" /> gerstemoutextract gevonden
+            </FloatChip>
+            <FloatChip className="right-[22%] top-[58%] animate-float">
+              <InfinityIcon size={18} className="text-accent" /> onbeperkt gratis
+            </FloatChip>
+          </div>
         </div>
       </section>
 
       {/* Hoe het werkt */}
-      <section className="px-6 py-28">
+      <section className="px-6 py-20 lg:py-28">
         <SectionTitle eyebrow="Hoe het werkt" title="Drie stappen. Zo gedaan." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
-        <div className="relative mx-auto mt-16 grid max-w-5xl grid-cols-3 gap-8">
-          <div className="absolute left-[16%] right-[16%] top-12 border-t-2 border-dashed border-accent/40" />
+        <div className="relative mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-3 lg:gap-8">
+          <div className="absolute left-[16%] right-[16%] top-12 hidden border-t-2 border-dashed border-accent/40 lg:block" />
           {STEPS.map(({ icon: Icon, title, text }, i) => (
             <div key={title} data-reveal className="relative flex flex-col items-center text-center" style={{ transitionDelay: `${i * 120}ms` }}>
               <span className="relative flex h-24 w-24 items-center justify-center rounded-[30px] bg-accent text-white shadow-xl shadow-accent/30">
@@ -447,40 +492,57 @@ function HomePage() {
       </section>
 
       {/* Waarom gratis */}
-      <section className="px-6 pb-28">
-        <div data-reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-[40px] bg-accent px-14 py-16 text-center text-white">
+      <section className="px-4 pb-20 lg:px-6 lg:pb-28">
+        <div data-reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-[40px] bg-accent px-6 py-12 text-center text-white lg:px-14 lg:py-16">
           <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#ffd75e]/20" />
           <Heart size={44} className="relative mx-auto fill-white" />
-          <h2 className="relative mt-6 font-display text-[44px] font-bold leading-tight">Waarom gratis?</h2>
-          <p className="relative mx-auto mt-5 max-w-2xl text-[21px] leading-relaxed text-white/90">
+          <h2 className="relative mt-6 font-display text-[34px] font-bold leading-tight lg:text-[44px]">Waarom gratis?</h2>
+          <p className="relative mx-auto mt-5 max-w-2xl text-[17px] leading-relaxed text-white/90 lg:text-[21px]">
             Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Dan
             hoort de hulp daarbij gewoon voor iedereen beschikbaar te zijn: onbeperkt, zonder account en zonder reclame.
           </p>
         </div>
       </section>
 
-      {/* Naar je telefoon */}
-      <section id="telefoon" className="scroll-mt-28 px-6 py-28">
-        <div data-reveal className="mx-auto flex max-w-5xl flex-col items-center rounded-[40px] bg-white px-10 py-16 text-center shadow-sm ring-1 ring-neutral-200">
-          <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub={`Richt de camera van je telefoon op de code, of ga naar ${SITE_LABEL}. De scanner start meteen.`} />
-          <div className="mt-10 flex items-center gap-14">
-            <QrCode />
-            <ol className="flex flex-col gap-4 text-left text-[18px]">
-              {[
-                'Scan de QR-code met je camera',
-                'Sta cameratoegang toe',
-                'Handig: zet hem op je beginscherm',
-              ].map((t, i) => (
-                <li key={t} className="flex items-center gap-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-[17px] font-bold text-white">{i + 1}</span>
+      {/* Naar je telefoon: op de desktop de QR-code, op de telefoon meteen de scanner. */}
+      <section id="telefoon" className="scroll-mt-28 px-4 py-20 lg:px-6 lg:py-28">
+        {desktop ? (
+          <div data-reveal className="mx-auto flex max-w-5xl flex-col items-center rounded-[40px] bg-white px-10 py-16 text-center shadow-sm ring-1 ring-neutral-200">
+            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub={`Richt de camera van je telefoon op de code, of ga naar ${SITE_LABEL}. De scanner start meteen.`} />
+            <div className="mt-10 flex items-center gap-14">
+              <QrCode />
+              <ol className="flex flex-col gap-4 text-left text-[18px]">
+                {[
+                  'Scan de QR-code met je camera',
+                  'Sta cameratoegang toe',
+                  'Handig: zet hem op je beginscherm',
+                ].map((t, i) => (
+                  <li key={t} className="flex items-center gap-4">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-[17px] font-bold text-white">{i + 1}</span>
+                    {t}
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <p className="mt-10 font-display text-[28px] font-bold text-accent">{SITE_LABEL}</p>
+          </div>
+        ) : (
+          <div data-reveal className="mx-auto flex max-w-xl flex-col items-center rounded-[36px] bg-white px-6 py-12 text-center shadow-sm ring-1 ring-neutral-200">
+            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub="Je bent er al. Tik op de knop en de scanner start." />
+            <div className="mt-8">
+              <PrimaryButton>Open de scanner</PrimaryButton>
+            </div>
+            <ol className="mt-8 flex flex-col gap-3 text-left text-[16px]">
+              {['Sta cameratoegang toe', 'Handig: tik op Deel en dan "Zet op beginscherm"'].map((t, i) => (
+                <li key={t} className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent font-display text-[15px] font-bold text-white">{i + 1}</span>
                   {t}
                 </li>
               ))}
             </ol>
           </div>
-          <p className="mt-10 font-display text-[28px] font-bold text-accent">{SITE_LABEL}</p>
-        </div>
+        )}
       </section>
 
     </>
@@ -490,10 +552,10 @@ function HomePage() {
 function HowPage() {
   return (
     <>
-      <PageBand eyebrow="Hoe het werkt" title="Zo gebruik je de scanner" sub="Drie manieren om te scannen. Kies wat je voor je hebt." />
-      <section className="px-6 py-24">
-        <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6">
-          {WAYS.map(({ icon: Icon, title, mode, text, tip, tile, iconCls, sub, pill }, i) => (
+      <PageBand eyebrow="Hoe het werkt" title="Zo gebruik je de scanner" sub="Kies onderin de scanner het icoontje voor barcode of etiket. Een menukaart scan je ook met het etiket-icoontje." />
+      <section className="px-4 py-14 lg:px-6 lg:py-24">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 lg:grid-cols-3">
+          {WAYS.map(({ icon: Icon, title, appIcon: AppIcon, mode, text, tip, tile, iconCls, sub, pill }, i) => (
             <article
               key={title}
               data-reveal
@@ -507,7 +569,12 @@ function HowPage() {
                 </span>
               </span>
               <h3 className="mt-7 font-display text-[32px] font-bold leading-none">{title}</h3>
-              <p className={`mt-2 font-display text-[15px] font-bold uppercase tracking-[0.12em] ${sub}`}>{mode}</p>
+              <p className={`mt-3 flex items-center gap-2 font-display text-[15px] font-bold uppercase tracking-[0.12em] ${sub}`}>
+                <span className={`flex h-7 w-10 items-center justify-center rounded-full ${pill}`} title="Kies dit icoontje in de scanner">
+                  <AppIcon size={17} />
+                </span>
+                {mode}
+              </p>
               <p className={`mt-4 max-w-[280px] text-[17px] leading-relaxed ${sub}`}>{text}</p>
               <div className="mt-auto pt-6">
                 <span className={`inline-flex rounded-full px-4 py-2 text-[14px] font-semibold ${pill}`}>{tip}</span>
@@ -516,9 +583,9 @@ function HowPage() {
           ))}
         </div>
       </section>
-      <section className="bg-[#f3eee2] px-6 py-24">
+      <section className="bg-[#f3eee2] px-4 py-16 lg:px-6 lg:py-24">
         <SectionTitle eyebrow="De uitslag" title="Wat betekent de kleur?" sub="Na elke scan zie je meteen een kleur. Daaronder staat waarom." />
-        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-3 gap-6">
+        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
           {COLORS.map(({ icon: Icon, label, text, cls }) => (
             <div key={label} data-reveal className={`flex flex-col items-center rounded-[32px] px-6 py-10 text-center ${cls}`}>
               <Icon size={56} />
@@ -532,9 +599,9 @@ function HowPage() {
           Twijfel je? Kijk dan altijd nog even zelf op de verpakking.
         </p>
       </section>
-      <section className="px-6 py-24">
+      <section className="px-4 py-16 lg:px-6 lg:py-24">
         <SectionTitle eyebrow="Handig" title="Wat de scanner nog meer kan" />
-        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-4 gap-5">
+        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {EXTRAS.map(([Icon, title, text, bg], i) => (
             <article
               key={title}
@@ -608,6 +675,13 @@ const NAV_CLS = 'rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-
 
 export function LandingPage() {
   const path = usePath()
+  const [menuOpen, setMenuOpen] = useState(false)
+  // Menu dicht zodra je naar een andere pagina gaat.
+  const [menuPath, setMenuPath] = useState(path)
+  if (menuPath !== path) {
+    setMenuPath(path)
+    setMenuOpen(false)
+  }
   const View = PAGE_VIEWS[path] ?? HomePage
   const current = PAGES.find((p) => p.path === path)
   useReveal(path)
@@ -622,24 +696,51 @@ export function LandingPage() {
 
   return (
     <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
-      {/* Navigatie */}
-      <header className="fixed inset-x-0 top-4 z-40 px-6">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#14130f]/80 pl-5 pr-2 shadow-2xl backdrop-blur-xl">
+      {/* Navigatie: desktop alles in één balk; telefoon logo, scannerknop en menu rechts. */}
+      <header className="fixed inset-x-0 top-3 z-40 px-3 lg:top-4 lg:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 rounded-full border border-white/10 bg-[#14130f]/80 pl-4 pr-2 shadow-2xl backdrop-blur-xl lg:pl-5">
           <Link href="/" className="rounded-2xl">
             <Logo light />
           </Link>
-          <nav className="flex items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white">
+          <nav className="hidden items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white lg:flex">
             {PAGES.map(({ path: href, label }) => (
               <Link key={href} href={href} className={`${NAV_CLS} ${href === path ? 'bg-white/10 text-[#7ee2a8]' : ''}`}>
                 {label}
               </Link>
             ))}
           </nav>
-          <Link href={PHONE_HREF} className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258]">
+          <Link href={PHONE_HREF} className="hidden items-center gap-2 rounded-full bg-accent px-5 py-3 font-display text-[16px] font-bold text-white transition hover:bg-[#1a9258] lg:flex">
             <Smartphone size={17} />
             Op je telefoon
           </Link>
+          <div className="flex items-center gap-1 lg:hidden">
+            <button onClick={openScanner} className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full bg-accent px-3 font-display text-[16px] font-bold text-white min-[380px]:pl-3.5 min-[380px]:pr-4" aria-label="Open de scanner">
+              <ScanBarcode size={18} />
+              <span className="hidden min-[380px]:inline">Scan</span>
+            </button>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-white active:bg-white/10"
+              aria-label={menuOpen ? 'Menu sluiten' : 'Menu openen'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+        {menuOpen && (
+          <nav className="animate-slide-up mx-auto mt-2 flex max-w-6xl flex-col rounded-[28px] border border-white/10 bg-[#14130f]/95 p-2 font-display text-[20px] font-bold text-white shadow-2xl backdrop-blur-xl lg:hidden">
+            {PAGES.map(({ path: href, label }) => (
+              <Link key={href} href={href} className={`rounded-2xl px-5 py-3.5 ${href === path ? 'bg-white/10 text-[#7ee2a8]' : 'active:bg-white/10'}`}>
+                {label}
+              </Link>
+            ))}
+            <button onClick={openScanner} className="mt-1 flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3.5 text-[18px]">
+              <ScanBarcode size={20} />
+              Open de scanner
+            </button>
+          </nav>
+        )}
       </header>
 
       <main key={path}>
@@ -648,8 +749,8 @@ export function LandingPage() {
 
       {/* Footer: één platte regel; de navigatie staat al in de kop. */}
       <footer className="border-t border-neutral-200 bg-[#fbf8f1] px-6 py-3">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 text-[12.5px] text-neutral-500">
-          <span className="origin-left scale-[0.8]">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-1 text-[12.5px] text-neutral-500 lg:flex-row lg:gap-8">
+          <span className="origin-center scale-[0.8] lg:origin-left">
             <Logo />
           </span>
           <p className="text-center leading-snug">
