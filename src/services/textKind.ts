@@ -1,7 +1,7 @@
 import type { AnalysisContext } from '../types/product'
 
 const LABEL_HINTS =
-  /ingredi|zutaten|ingr[eé]dients|ingredientes|ingrediënten|kan sporen|may contain|kann spuren|voedingswaarde|nutrition|n[aä]hrwert|houdbaar|ten minste/i
+  /ingredi|zutaten|ingr[eé]dients|ingredientes|ingrediënten|kan sporen|may contain|kann spuren|voedingswaarde|nutrition|n[aä]hrwert|houdbaar|ten minste|\brecept|\brecipe|\brezept|\brecette/i
 const MENU_HINTS = /menu|voorgerecht|hoofdgerecht|nagerecht|dessert|starter|bijgerecht|lunch|diner|dagschotel|\bkaart\b|vorspeise|hauptgericht|entr[ée]es?|plats?\b/i
 const PRICE = /(€\s?\d|\d+[.,]\d{2}\b|\d+[.,]-)/g
 

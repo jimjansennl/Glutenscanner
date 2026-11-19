@@ -23,7 +23,7 @@ type Tab = Exclude<NavTab, 'scan'>
 
 type View =
   | { name: 'scanner' }
-  | { name: 'photo'; image: Blob; imageUrl: string }
+  | { name: 'photo'; image: Blob; imageUrl: string; textOnly: boolean }
   | { name: 'loading'; label: string }
   | { name: 'result'; result: ScanResult; back: 'scan' | 'history' }
   | { name: 'travel'; back: 'guide' | 'settings' }
@@ -118,11 +118,11 @@ function ScannerApp() {
   )
 
   const handlePhoto = useCallback(
-    (image: Blob) => {
+    (image: Blob, textOnly: boolean) => {
       releaseImage()
       const imageUrl = URL.createObjectURL(image)
       imageUrlRef.current = imageUrl
-      go({ name: 'photo', image, imageUrl })
+      go({ name: 'photo', image, imageUrl, textOnly })
     },
     [go, releaseImage],
   )
@@ -195,6 +195,7 @@ function ScannerApp() {
         <PhotoAnalysis
           image={view.image}
           imageUrl={view.imageUrl}
+          textOnly={view.textOnly}
           onCode={handleCode}
           onText={(text, context) =>
             showResult({

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ReactNode, type RefObject } from 'react'
-import { Camera, Images, Menu, ScanBarcode, Zap, ZapOff } from 'lucide-react'
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode, type RefObject } from 'react'
+import { Camera, Images, Menu, ScanBarcode, ScanText, Zap, ZapOff } from 'lucide-react'
 import { SECURE_URL } from '../../services/secureContext'
 import { useBarcodeScanner, type DecodedCode, type SeenBox } from '../../hooks/useBarcodeScanner'
 import { BottomNav, type NavTab } from '../ui/BottomNav'
 import { captureArea } from '../../services/capture'
+import { loadScanMode, saveScanMode, type ScanMode } from '../../services/scanMode'
 
 const CORNERS = [
   'left-3 top-3 border-l-4 border-t-4 rounded-tl-xl',
@@ -16,7 +17,8 @@ interface Props {
   onNavigate: (tab: NavTab) => void
   onMenu: () => void
   onCode: (code: DecodedCode) => void
-  onPhoto: (image: Blob) => void
+  /** textOnly: foto gemaakt in de stand etiket/menu, dan niet eerst naar een barcode zoeken. */
+  onPhoto: (image: Blob, textOnly: boolean) => void
 }
 
 function Pill({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -58,8 +60,12 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
 /** Hoe lang een gezien barcodekader blijft staan als de code even uit beeld is. */
 const SEEN_HOLD_MS = 700
 
-/** Het grote kader op het scherm (fracties van het camerabeeld). */
-const FRAME = { left: 0.06, top: 0.04, width: 0.88, height: 0.72 }
+/** Ruimte (px) die de knoppen onderin innemen: het etiketkader eindigt daarboven. */
+const CONTROLS_SPACE = 204
+
+/** Barcodekader: breed en laag in het midden (fracties van het camerabeeld). */
+const BARCODE_FRAME = { left: 0.08, top: 0.2, width: 0.84, height: 0.3 }
+
 /** De foto pakt iets ruimer dan het kader, zodat er geen letters afvallen. */
 const MARGIN = 0.03
 
@@ -68,16 +74,33 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [seen, setSeen] = useState<SeenBox | null>(null)
   const [capturing, setCapturing] = useState(false)
+  const [mode, setMode] = useState<ScanMode>(loadScanMode)
+  const frameRef = useRef<HTMLDivElement>(null)
   const hold = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  // Eén scherm: barcodes worden altijd vanzelf gelezen; de sluiterknop is voor etiket en menukaart.
-  const { error, ready } = useBarcodeScanner(videoRef, onCode, true, (box) => {
-    if (!box) return
-    setSeen(box)
-    clearTimeout(hold.current)
-    hold.current = setTimeout(() => setSeen(null), SEEN_HOLD_MS)
-  })
+  // Stand barcode: leest vanzelf. Stand etiket/menu: camera blijft aan, geen barcodes, wel de sluiterknop.
+  const { error, ready } = useBarcodeScanner(
+    videoRef,
+    onCode,
+    true,
+    (box) => {
+      if (!box) return
+      setSeen(box)
+      clearTimeout(hold.current)
+      hold.current = setTimeout(() => setSeen(null), SEEN_HOLD_MS)
+    },
+    mode === 'barcode',
+  )
   useEffect(() => () => clearTimeout(hold.current), [])
   const torch = useTorch(videoRef, ready)
+
+  function choose(next: ScanMode) {
+    if (next === mode) return
+    navigator.vibrate?.(10)
+    clearTimeout(hold.current)
+    setSeen(null)
+    setMode(next)
+    saveScanMode(next)
+  }
 
   async function snapshot() {
     const video = videoRef.current
@@ -85,15 +108,18 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
     setCapturing(true)
     navigator.vibrate?.(30)
     try {
-      const left = Math.max(0, FRAME.left - MARGIN)
-      const top = Math.max(0, FRAME.top - MARGIN)
+      // Precies wat er in het kader staat (plus wat rand), gemeten op het scherm.
+      const v = video.getBoundingClientRect()
+      const f = frameRef.current!.getBoundingClientRect()
+      const left = Math.max(0, (f.left - v.left) / v.width - MARGIN)
+      const top = Math.max(0, (f.top - v.top) / v.height - MARGIN)
       const blob = await captureArea(video, {
         left,
         top,
-        width: Math.min(1 - left, FRAME.width + MARGIN * 2),
-        height: Math.min(1 - top, FRAME.height + MARGIN * 2),
+        width: Math.min(1 - left, f.width / v.width + MARGIN * 2),
+        height: Math.min(1 - top, f.height / v.height + MARGIN * 2),
       })
-      onPhoto(blob)
+      onPhoto(blob, true)
     } catch {
       setCapturing(false)
     }
@@ -101,7 +127,7 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
 
   function onFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) onPhoto(file)
+    if (file) onPhoto(file, mode === 'text')
     e.target.value = ''
   }
 
@@ -120,21 +146,26 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
     <span className="block h-14 w-14" />
   )
 
-  // Kader: groot (past een menukaart in), of strak om een gevonden barcode heen.
+  // Kader: groot voor etiket of menukaart (tot net boven de knoppen), breed en laag voor een
+  // barcode, en strak om een gevonden barcode heen.
   const PAD = 0.04
-  const frame = seen
-    ? {
-        left: `${Math.max(0, seen.left - PAD) * 100}%`,
-        top: `${Math.max(0, seen.top - PAD) * 100}%`,
-        width: `${Math.min(1, seen.width + PAD * 2) * 100}%`,
-        height: `${Math.min(1, seen.height + PAD * 2) * 100}%`,
-      }
-    : {
-        left: `${FRAME.left * 100}%`,
-        top: `${FRAME.top * 100}%`,
-        width: `${FRAME.width * 100}%`,
-        height: `${FRAME.height * 100}%`,
-      }
+  const pct = (n: number) => `${n * 100}%`
+  const frame: CSSProperties =
+    mode === 'text'
+      ? { left: '6%', right: '6%', top: '3%', bottom: CONTROLS_SPACE }
+      : seen
+        ? {
+            left: pct(Math.max(0, seen.left - PAD)),
+            top: pct(Math.max(0, seen.top - PAD)),
+            width: pct(Math.min(1, seen.width + PAD * 2)),
+            height: pct(Math.min(1, seen.height + PAD * 2)),
+          }
+        : {
+            left: pct(BARCODE_FRAME.left),
+            top: pct(BARCODE_FRAME.top),
+            width: pct(BARCODE_FRAME.width),
+            height: pct(BARCODE_FRAME.height),
+          }
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
@@ -154,6 +185,7 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
 
         {/* Het kader beweegt soepel van groot naar om de barcode heen; de schaduw dimt de rest. */}
         <div
+          ref={frameRef}
           className={`pointer-events-none absolute rounded-[28px] transition-all duration-300 ease-out ${
             seen ? 'border-[3px] border-accent shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]' : 'shadow-[0_0_0_9999px_rgba(0,0,0,0.3)]'
           }`}
@@ -194,22 +226,44 @@ export function ScannerView({ onNavigate, onMenu, onCode, onPhoto }: Props) {
             </Pill>
           ) : null}
 
-          <div className="mt-1 grid w-full max-w-xs grid-cols-3 items-center">
+          {/* Keuze met alleen icoontjes: barcode (vanzelf) of etiket/menukaart (met knop). */}
+          <div role="radiogroup" aria-label="Wat wil je scannen?" className="flex rounded-full bg-neutral-800/80 p-1 backdrop-blur-xl">
+            {(
+              [
+                ['barcode', ScanBarcode, 'Barcode'],
+                ['text', ScanText, 'Etiket of menukaart'],
+              ] as const
+            ).map(([m, Icon, label]) => (
+              <button
+                key={m}
+                role="radio"
+                aria-checked={mode === m}
+                aria-label={label}
+                onClick={() => choose(m)}
+                className={`flex h-11 w-16 items-center justify-center rounded-full transition-colors ${
+                  mode === m ? 'bg-accent text-black' : 'text-white/70 active:bg-white/10'
+                }`}
+              >
+                <Icon size={24} />
+              </button>
+            ))}
+          </div>
+
+          <div className="grid w-full max-w-xs grid-cols-3 items-center">
             <span className="justify-self-start">{torchButton}</span>
-            <div className="relative justify-self-center">
+            {mode === 'text' ? (
               <button
                 onClick={snapshot}
                 disabled={!ready || capturing}
-                className="block rounded-full border-[5px] border-white p-1 disabled:opacity-40"
+                className="justify-self-center rounded-full border-[5px] border-white p-1 disabled:opacity-40"
                 aria-label="Foto maken van etiket of menukaart"
               >
                 <span className="block h-[68px] w-[68px] rounded-full bg-white transition-transform active:scale-90" />
               </button>
-              {/* Klein woordje zoals 'FOTO' in de iPhone-camera; een barcode gaat vanzelf. */}
-              <span className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold uppercase tracking-wider text-white/70">
-                Etiket of menu
-              </span>
-            </div>
+            ) : (
+              // Barcode leest vanzelf: geen sluiterknop, wel dezelfde ruimte zodat niets verspringt.
+              <span className="block h-[88px] w-[88px] justify-self-center" />
+            )}
             <button
               onClick={() => fileRef.current?.click()}
               className="flex h-14 w-14 items-center justify-center justify-self-end rounded-full bg-neutral-800/80 backdrop-blur-xl active:bg-neutral-700"

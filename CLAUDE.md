@@ -56,10 +56,10 @@ Belangrijke bestanden:
 |---|---|
 | `src/hooks/useBarcodeScanner.ts` | Camera en barcodelezer. Gebruikt zxing-cpp (WebAssembly, via `barcode-detector`) en op Android de ingebouwde `BarcodeDetector` van Chrome. Leest elke ~120 ms een uitsnede in het midden van het beeld, met af en toe het hele beeld als vangnet. Een code telt pas na 2 gelijke lezingen. |
 | `src/services/secureContext.ts` | De camera werkt alleen via https. Wordt de site onbeveiligd geopend, dan stuurt hij door naar https://glutenscanner.vercel.app. Zit hij in een frame (domein doorgestuurd met maskering), dan toont de scanner een knop "Open de scanner". Nooit techtaal zoals "HTTPS" aan de gebruiker tonen. |
-| `src/components/scanner/ScannerView.tsx` | Eén slim camerascherm (geen keuze Foto/Barcode): groot kader waar een menukaart in past; een barcode wordt vanzelf gelezen en het kader springt eromheen (`onSeen` in de hook geeft de plek). Sluiterknop voor etiket of menukaart, zaklamp, galerij en ☰-knop. |
+| `src/components/scanner/ScannerView.tsx` | Camerascherm met een keuze van twee icoontjes (zonder tekst): **barcode** (breed laag kader, leest vanzelf, het kader springt om de code via `onSeen`, géén sluiterknop) en **etiket of menukaart** (groot kader tot net boven de knoppen, sluiterknop, geen live barcodes). De keuze wordt onthouden (`src/services/scanMode.ts`). De knop "Fotografeer de ingrediënten" op een uitslag zet de stand op etiket. Verder zaklamp, galerij en ☰-knop. |
 | `src/services/capture.ts`, `src/services/enhance.ts` | Sluiterknop: de camera gaat heel even naar 4K en pakt alleen het kader (plus wat rand). Voor het lezen knapt `enhance.ts` de foto op: schaduw en glans weg, lichte letters op donker omdraaien, contrast en scherpte. Is de uitslag onzeker, dan leest `ocr.ts` ook de gewone foto en kiest de beste. Gemeten op testfoto's: van 18–64% naar 94–100% goed gelezen woorden bij schaduw, glans, kleine letters en gekleurde verpakkingen. |
 | `src/components/scanner/PhotoAnalysis.tsx` | Na een foto zoekt hij eerst een barcode, daarna leest OCR (Tesseract, `nld`+`eng`) de tekst. Of het een etiket of menukaart is, raadt `src/services/textKind.ts`. De gebruiker kan dat nog omzetten. |
-| `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen, met restaurantrisico's voor menukaarten. |
+| `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen tegelijk (taal kiezen hoeft niet), met restaurantrisico's voor menukaarten. Een recept op de verpakking ("200 g speltmeel") wordt eruit gehaald (`stripRecipe`); staat er alleen een recept op de foto, dan vraagt hij om het stukje "Ingrediënten:". "Kan glutenbevattende granen bevatten" telt als sporen. Testfoto van een echte zak: `ocrbench/zon_achter.jpg` (buiten de repo). |
 | `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode. |
 | `src/data/ingredientGuide.ts`, `src/data/glutenGuide.ts` | Inhoud van de glutengids. |
 | `src/data/guideItems.ts`, `src/components/guide/*`, `src/data/travelCards.ts` | Gedeelde gidsinhoud en bouwstenen. De app (`GuidePage.tsx`) en de website (`SiteGuide.tsx`, pagina `/glutengids`) gebruiken dezelfde data: pas de gids op één plek aan. |
@@ -100,9 +100,12 @@ barcode wordt naar Open Food Facts gestuurd.
 
 **Scanner (telefoon)**
 - Hij moet eruitzien als een **echte scanner**: zwart scherm, camerabeeld, een duidelijk
-  kader met groene hoeken en een scanlijn. **Geen keuze Foto/Barcode** (op verzoek van de
-  gebruiker weggehaald): de scanner herkent zelf een barcode; na een foto raadt de app zelf
-  etiket of menukaart. Het kader is groot zoals een documentscanner op de iPhone.
+  kader met groene hoeken en een scanlijn. **Twee standen met alleen een icoon** (gebruiker
+  koos dit na het slimme scherm zonder keuze): barcode (leest vanzelf, geen sluiterknop,
+  want die vond hij zinloos) en etiket of menukaart (groot kader zoals de documentscanner
+  van de iPhone, met sluiterknop). Na een foto raadt de app zelf etiket of menukaart.
+- Geen uitlegzinnen in het camerabeeld (zoals "Barcode? Die lees ik vanzelf."): die vond
+  de gebruiker storend. Alleen korte meldingen als er iets gebeurt.
 - Geen "Tekstherkenning GRATIS"-labeltje of andere gratis-reclame in de scanner.
 - Gebruik niet de zin "Onbeperkt gratis scannen" in de scanner of in de nagebouwde
   telefoonschermen.

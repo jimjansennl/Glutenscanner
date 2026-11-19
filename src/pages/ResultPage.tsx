@@ -4,6 +4,7 @@ import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { GlutenMatch, ScanResult } from '../types/product'
+import { saveScanMode } from '../services/scanMode'
 
 const SOURCE_META = {
   barcode: { icon: Barcode, label: 'Barcode' },
@@ -93,7 +94,11 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
       {/* Product onbekend, of wel bekend maar zonder ingrediënten: dan zelf het etiket lezen. */}
       {isCodeScan && result.source !== 'qr' && !product?.ingredientsText && analysis.matches.length === 0 && (
         <button
-          onClick={onPhotoScan}
+          onClick={() => {
+            // Meteen in de stand etiket/menu, met de sluiterknop klaar.
+            saveScanMode('text')
+            onPhotoScan()
+          }}
           className="flex items-center justify-center gap-3 rounded-[22px] bg-accent p-4 text-left text-black active:opacity-80"
         >
           <Camera size={26} className="shrink-0" />

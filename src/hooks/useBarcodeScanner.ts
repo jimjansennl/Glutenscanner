@@ -130,15 +130,19 @@ export function useBarcodeScanner(
   enabled = true,
   /** Wordt aangeroepen zodra er een barcode in beeld is (nog vóór de bevestiging), met de plek. */
   onSeen?: (box: SeenBox | null) => void,
+  /** false = camera blijft aan, maar er worden even geen barcodes gelezen (stand etiket/menu). */
+  decode = true,
 ) {
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
   const onDecodeRef = useRef(onDecode)
   const onSeenRef = useRef(onSeen)
+  const decodeRef = useRef(decode)
   useEffect(() => {
     onDecodeRef.current = onDecode
     onSeenRef.current = onSeen
-  }, [onDecode, onSeen])
+    decodeRef.current = decode
+  }, [onDecode, onSeen, decode])
 
   useEffect(() => {
     const video = videoRef.current
@@ -155,7 +159,7 @@ export function useBarcodeScanner(
     async function scanLoop() {
       if (cancelled || !video) return
       try {
-        if (video.readyState >= 2 && video.videoWidth) {
+        if (decodeRef.current && video.readyState >= 2 && video.videoWidth) {
           const detector = await getDetector()
           // Om en om het midden en het hele beeld: het kader is groot, een barcode kan overal staan.
           const crop = drawCrop(video, canvas, ++tick % 2 === 0)

@@ -13,6 +13,8 @@ const MIN_CONFIDENCE = 45
 interface Props {
   imageUrl: string
   image: Blob
+  /** Foto uit de stand etiket/menu: niet eerst naar een barcode zoeken. */
+  textOnly?: boolean
   onCode: (code: DecodedCode) => void
   onText: (text: string, context: AnalysisContext) => void
   onCancel: () => void
@@ -44,8 +46,8 @@ function overallProgress(p: OcrProgress | null): number {
  * daarna leest OCR de tekst en gaat die direct naar de gluten-parser. Is de tekst
  * slecht leesbaar of faalt OCR, dan kan de gebruiker de tekst controleren of typen.
  */
-export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Props) {
-  const [codeStep, setCodeStep] = useState<StepState>('active')
+export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onText, onCancel }: Props) {
+  const [codeStep, setCodeStep] = useState<StepState>(textOnly ? 'skipped' : 'active')
   const [loadStep, setLoadStep] = useState<StepState>('pending')
   const [readStep, setReadStep] = useState<StepState>('pending')
   const [progress, setProgress] = useState<OcrProgress | null>(null)
@@ -63,7 +65,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
     const { onCode } = callbacks.current
     let cancelled = false
     ;(async () => {
-      const code = await decodeImage(imageUrl)
+      const code = textOnly ? null : await decodeImage(imageUrl)
       if (cancelled) return
       if (code) {
         setCodeStep('done')
@@ -108,7 +110,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
     return () => {
       cancelled = true
     }
-  }, [image, imageUrl])
+  }, [image, imageUrl, textOnly])
 
   const busy = manual === null
   const percent = Math.round(overallProgress(progress) * 100)
@@ -183,7 +185,7 @@ export function PhotoAnalysis({ imageUrl, image, onCode, onText, onCancel }: Pro
         <div className="flex flex-col items-center gap-3 rounded-[22px] bg-surface p-4">
           <ul className="flex flex-col gap-2">
             <Step state="done" label="Foto vastgelegd" />
-            <Step state={codeStep} label="Zoeken naar barcode of QR-code" />
+            {!textOnly && <Step state={codeStep} label="Zoeken naar barcode of QR-code" />}
             <Step state={loadStep} label="Tekstherkenning laden" />
             <Step state={readStep} label={context === 'menu' ? 'Menukaart lezen' : 'Ingrediënten lezen'} />
           </ul>

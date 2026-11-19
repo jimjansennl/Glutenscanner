@@ -474,6 +474,8 @@ const RECIPE_AMOUNT =
 /** Bereidingsstap uit een recept: "3 Meng in een andere kom het meel". */
 const RECIPE_STEP =
   /^[\s•·\-+*–]*\d{1,2}\s*[.)]?\s*(?:verwarm|meng|prak|voeg|roer|giet|laat|bak|snijd|kook|klop|verdeel|bestrooi|preheat|mix|stir|add|bake|pour|heizen|mischen|vermengen|backen|prechauff|melang|ajout|verse[rz])/i
+/** De echte ingrediëntenlijst van het product: "Ingrediënten:" met dubbele punt. */
+const DECLARATION = /(?:ingredi\p{L}{1,3}nten|ingredients?|zutaten|ingr\p{L}dients|ingredientes|ingredienti|ingredienser|sk\p{L}adniki)\s*:/iu
 const RECIPE_MARKER = /\b(?:recept|recipe|rezept|recette|receta|ricetta|bereiding|zubereitung|preparation|bereidingswijze)\b/i
 
 /**
@@ -481,7 +483,8 @@ const RECIPE_MARKER = /\b(?:recept|recipe|rezept|recette|receta|ricetta|bereidin
  * ("200 g speltmeel"): dat zit niet in het product zelf en mag geen alarm geven.
  */
 export function stripRecipe(text: string): { text: string; hadRecipe: boolean } {
-  const lines = text.split(/\n/)
+  // Ook opsommingstekens als regelgrens: de tekstherkenning zet een lijstje soms op één regel.
+  const lines = text.split(/\n|\s(?=[•·+*]\s?\d)/)
   const isRecipe = (l: string) => RECIPE_AMOUNT.test(l) || RECIPE_STEP.test(l)
   const count = lines.filter(isRecipe).length
   if (count === 0 || (count < 2 && !RECIPE_MARKER.test(text))) return { text, hadRecipe: false }
@@ -494,6 +497,16 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
   const result = scan([{ text, source: 'text' }], context)
   // Met een recept op de zak gaat "brood" bijna altijd over het recept ("bananenbrood").
   if (hadRecipe) result.warnings = result.warnings.filter((w) => w.label !== 'Brood')
+  // Alleen een recept en geen ingrediëntenlijst: dan hebben we het product zelf niet gezien.
+  if (hadRecipe && !DECLARATION.test(text) && result.matches.length === 0) {
+    return {
+      status: 'warning',
+      matches: [],
+      warnings: result.warnings,
+      reasons: ['Op de foto staat vooral een recept. Maak een foto van het stukje met "Ingrediënten:".'],
+      tips: [],
+    }
+  }
   return conclude(
     result,
     {
