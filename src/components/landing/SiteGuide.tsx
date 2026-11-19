@@ -221,7 +221,8 @@ export function SiteGuide() {
                 <p className="mt-1 text-[16px] text-white/60">Probeer een ander woord, of scan het etiket met de app.</p>
               </div>
             ) : (
-              <div className={results.length > 1 ? 'grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]' : 'mx-auto max-w-xl'}>
+              // Onder elkaar: eerst het antwoord, daaronder wat er nog meer gevonden is.
+              <div className="mx-auto flex max-w-2xl flex-col gap-8">
                 <AnswerCard item={results[0]} center />
                 {results.length > 1 && (
                   <div>

@@ -139,7 +139,7 @@ barcode wordt naar Open Food Facts gestuurd.
 - **"Neem liever" alleen als het echt iets toevoegt.** Niet "Een versie zonder X" of
   "Navragen bij…": dat vond de gebruiker te logisch en dommig. Liever een slimme `tip`
   waar je zelf niet aan denkt (bijv. bij medicijnen: laat de apotheek "coeliakie" in je
-  dossier zetten). De antwoordkaart op de website staat in het midden (`AnswerCard center`).
+  dossier zetten). De antwoordkaart op de website staat in het midden (`AnswerCard center`), met "Ook gevonden" eronder (niet ernaast), even breed als de zoekbalk.
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 
