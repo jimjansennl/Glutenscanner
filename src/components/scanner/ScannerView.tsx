@@ -62,8 +62,9 @@ function useTorch(videoRef: RefObject<HTMLVideoElement | null>, ready: boolean) 
 /** Hoe lang een gezien barcodekader blijft staan als de code even uit beeld is. */
 const SEEN_HOLD_MS = 700
 
-/** Ruimte (px) die de knoppen onderin innemen: het etiketkader eindigt daarboven. */
-const CONTROLS_SPACE = 164
+/** Ruimte (px) voor de rij met de sluiterknop: het etiketkader eindigt net daarboven.
+ *  De kleine keuzeknop zweeft onderin over het kader; de foto pakt ook wat eronder zit. */
+const CONTROLS_SPACE = 104
 
 /** Barcodekader: breed en laag in het midden (fracties van het camerabeeld). */
 const BARCODE_FRAME = { left: 0.08, top: 0.2, width: 0.84, height: 0.3 }
@@ -179,7 +180,7 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
   const pct = (n: number) => `${n * 100}%`
   const frame: CSSProperties =
     mode === 'text'
-      ? { left: '6%', right: '6%', top: '3%', bottom: CONTROLS_SPACE }
+      ? { left: '3%', right: '3%', top: '2%', bottom: CONTROLS_SPACE }
       : seen
         ? {
             left: pct(Math.max(0, seen.left - PAD)),
