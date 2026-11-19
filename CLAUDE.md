@@ -136,8 +136,10 @@ barcode wordt naar Open Food Facts gestuurd.
   teksten of beelden over uit andere apps.
 - **Kaart voor de bediening** (`src/pages/TravelCardPage.tsx`): eigen tekst in 10 talen met
   een titel, één zin uitleg en drie gekleurde blokken (Niet in mijn eten / In de keuken / Dit
-  kan meestal wel). Slimme taalknop: kiest op reis vanzelf de taal via de tijdzone van de
-  telefoon (label "Hier"), anders de laatst gekozen taal. "Lees mee in het Nederlands" toont
+  kan meestal wel). Begint **standaard in het Nederlands**. Slimme taalknop: kiest op reis
+  vanzelf de taal van het land (label "Hier"). Op reis = tijdzone anders dan "thuis" (de
+  tijdzone van de eerste keer dat de kaart openging); een iPhone in Nederland kan namelijk
+  ook Europe/Berlin melden. Een gekozen taal wordt niet onthouden. "Lees mee in het Nederlands" toont
   de vertaling. Pas bij een tekstwijziging alle 10 talen aan.
   De kaart staat alleen in de Gids, niet (nog eens) bij Instellingen.
 - **"Neem liever" alleen als het echt iets toevoegt.** Niet "Een versie zonder X" of

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Eye, EyeOff, MapPin, X } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
-import { readJson, writeJson } from '../lib/storage'
 import { BLOCK_STYLE, CARDS, zoneLang, type Lang } from '../data/travelCards'
 
 /**
@@ -9,23 +8,16 @@ import { BLOCK_STYLE, CARDS, zoneLang, type Lang } from '../data/travelCards'
  * waar de keuken op moet letten en wat meestal wél kan. Eigen tekst en opbouw.
  */
 
-const LANG_KEY = 'glutenscanner.travelLang.v1'
-
 export function TravelCardPage({ onBack }: { onBack: () => void }) {
   const here = zoneLang()
-  const [lang, setLang] = useState<Lang>(() => {
-    // Op reis (niet in Nederland) kiezen we de taal van het land; thuis de laatst gekozen taal.
-    if (here && here !== 'nl') return here
-    const saved = readJson<string>(LANG_KEY, 'en')
-    return saved in CARDS ? (saved as Lang) : 'en'
-  })
+  // Thuis altijd Nederlands; op reis meteen de taal van het land.
+  const [lang, setLang] = useState<Lang>(() => here ?? 'nl')
   const [picker, setPicker] = useState(false)
   const [readAlong, setReadAlong] = useState(false)
   const card = CARDS[lang]
 
   function choose(next: Lang) {
     setLang(next)
-    writeJson(LANG_KEY, next)
     setPicker(false)
   }
 

@@ -167,14 +167,39 @@ const ZONE_LANG: Record<string, Lang> = {
   'Europe/Stockholm': 'sv',
 }
 
-export function zoneLang(): Lang | null {
+const HOME_ZONE_KEY = 'glutenscanner.homeZone.v1'
+
+function currentZone(): string | null {
   try {
-    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (ZONE_LANG[zone]) return ZONE_LANG[zone]
-    if (zone.startsWith('America/') || zone.startsWith('Australia/')) return 'en'
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || null
   } catch {
-    // Geen tijdzone: dan geen voorstel.
+    return null
   }
+}
+
+/**
+ * Taal van het land waar je nu bent, maar alleen als je op reis bent.
+ * Thuis geeft dit null: dan begint de kaart in het Nederlands.
+ * "Thuis" is de tijdzone van de eerste keer dat de kaart openging. Een tijdzone als
+ * Europe/Berlin kan ook in Nederland gemeld worden, daarom vergelijken we met thuis.
+ */
+export function zoneLang(): Lang | null {
+  const zone = currentZone()
+  if (!zone) return null
+  let home: string | null = null
+  try {
+    home = localStorage.getItem(HOME_ZONE_KEY)
+    if (!home) {
+      localStorage.setItem(HOME_ZONE_KEY, zone)
+      home = zone
+    }
+  } catch {
+    // Geen opslag: dan nemen we aan dat je thuis bent.
+    return null
+  }
+  if (zone === home) return null
+  if (ZONE_LANG[zone]) return ZONE_LANG[zone] === 'nl' ? null : ZONE_LANG[zone]
+  if (zone.startsWith('America/') || zone.startsWith('Australia/')) return 'en'
   return null
 }
 
