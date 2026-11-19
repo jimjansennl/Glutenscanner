@@ -15,6 +15,7 @@ const FIELDS = [
   'traces_tags',
   'labels_tags',
   'labels',
+  'categories_tags',
 ].join(',')
 
 export interface OffProduct extends OffProductFields {
@@ -22,6 +23,9 @@ export interface OffProduct extends OffProductFields {
   product_name_nl?: string
   brands?: string
   image_front_small_url?: string
+  /** Van algemeen naar specifiek, bijv. ["en:snacks", "en:biscuits", "en:shortbread"]. */
+  categories_tags?: string[]
+  code?: string
 }
 
 export class ProductNotFoundError extends Error {
@@ -51,10 +55,41 @@ export function toProduct(barcode: string, off: OffProduct): Product {
     brand: off.brands?.split(',')[0]?.trim() || undefined,
     imageUrl: off.image_front_small_url,
     ingredientsText: off.ingredients_text_nl || off.ingredients_text || off.ingredients_text_en,
+    categories: off.categories_tags,
   }
 }
 
 /** EAN-8, UPC-A, EAN-13 en GTIN-14 zijn allemaal 8–14 cijfers. */
 export function isProductBarcode(value: string): boolean {
   return /^\d{8,14}$/.test(value.trim())
+}
+
+/**
+ * Zoekt glutenvrije producten in dezelfde soort als `categories` (de meest specifieke eerst).
+ * Eerst in Nederland, anders wereldwijd. Alleen de soort gaat naar Open Food Facts, verder niets.
+ */
+export async function fetchGlutenFreeAlternatives(
+  categories: string[],
+  exclude: string,
+  signal?: AbortSignal,
+): Promise<OffProduct[]> {
+  const tries = [...categories].reverse().slice(0, 3)
+  for (const category of tries) {
+    for (const country of ['en:netherlands', '']) {
+      const params = new URLSearchParams({
+        categories_tags: category,
+        labels_tags: 'en:no-gluten',
+        fields: `code,${FIELDS}`,
+        page_size: '24',
+        sort_by: 'unique_scans_n',
+      })
+      if (country) params.set('countries_tags', country)
+      const res = await fetch(`https://world.openfoodfacts.org/api/v2/search?${params}`, { signal })
+      if (!res.ok) continue
+      const data: { products?: OffProduct[] } = await res.json()
+      const found = (data.products ?? []).filter((p) => p.code && p.code !== exclude && (p.product_name_nl || p.product_name))
+      if (found.length > 0) return found
+    }
+  }
+  return []
 }

@@ -1,9 +1,15 @@
-import { Fragment, useMemo, useState, type ReactNode } from 'react'
-import { Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, QrCode } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Star } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
-import type { GlutenMatch, ScanResult } from '../types/product'
+import type { GlutenMatch, GlutenStatus, RecipeChange, ScanResult } from '../types/product'
+import { isStarred, setStarred } from '../services/products'
+import { fetchGlutenFreeAlternatives, type OffProduct } from '../services/openFoodFacts'
+import { analyzeOffProduct } from '../services/glutenParser'
+import type { Product } from '../types/product'
+import { MENU_QUESTIONS } from '../data/menuQuestions'
+import { CARDS, zoneLang } from '../data/travelCards'
 import { saveScanMode } from '../services/scanMode'
 import { fold, findSpans } from '../lib/fold'
 import { translateIngredients } from '../services/translateIngredients'
@@ -95,13 +101,162 @@ function ReadAlong({ text, danger, warning }: { text: string; danger: GlutenMatc
   )
 }
 
+const STATUS_WORD: Record<GlutenStatus, string> = { safe: 'groen', warning: 'oranje', danger: 'rood' }
+const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
+
+/** Waarschuwing: de fabrikant heeft de ingrediënten veranderd sinds de vorige scan. */
+function RecipeChanged({ change, status }: { change: RecipeChange; status: GlutenStatus }) {
+  const worse = change.statusBefore === 'safe' && status !== 'safe'
+  return (
+    <section className="animate-slide-up flex flex-col gap-2 rounded-[22px] bg-warning/15 p-4 text-left ring-2 ring-warning">
+      <p className="flex items-center gap-2 text-[19px] font-extrabold text-warning">
+        <AlertTriangle size={22} className="shrink-0" />
+        Het recept is veranderd!
+      </p>
+      <p className="text-[15px] leading-snug text-white/85">
+        Sinds je laatste scan op {dateFormat.format(change.since)} staan er andere ingrediënten op.
+        {worse && <strong className="text-white"> Eerst was hij {STATUS_WORD[change.statusBefore]}, nu {STATUS_WORD[status]}.</strong>}
+        {' '}Kijk extra goed naar de verpakking.
+      </p>
+      {change.added.length > 0 && (
+        <p className="text-[15px] leading-snug">
+          <span className="font-bold text-white">Nieuw: </span>
+          <span className="text-white/85">{change.added.join(', ')}</span>
+        </p>
+      )}
+      {change.removed.length > 0 && (
+        <p className="text-[15px] leading-snug">
+          <span className="font-bold text-white">Weg: </span>
+          <span className="text-white/60 line-through">{change.removed.join(', ')}</span>
+        </p>
+      )}
+    </section>
+  )
+}
+
+/** Ster: bewaar bij "Onze vaste producten". */
+function StarButton({ result }: { result: ScanResult }) {
+  const barcode = result.product?.barcode ?? ''
+  const [on, setOn] = useState(() => isStarred(barcode))
+  return (
+    <button
+      onClick={() => {
+        setStarred(result, result.analysis.status, !on)
+        setOn(!on)
+      }}
+      aria-pressed={on}
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold transition-colors ${
+        on ? 'bg-warning/15 text-warning' : 'bg-white/10 text-white active:bg-white/20'
+      }`}
+    >
+      <Star size={17} fill={on ? 'currentColor' : 'none'} />
+      {on ? 'Bij onze vaste producten' : 'Bewaar als vast product'}
+    </button>
+  )
+}
+
+/** Menukaart: per risico een vraag voor de bediening. Op reis in de taal van het land. */
+function MenuQuestions({ warnings }: { warnings: GlutenMatch[] }) {
+  const abroad = useMemo(() => zoneLang(), [])
+  const byLabel = new Map<string, string[]>()
+  for (const w of warnings) {
+    if (!MENU_QUESTIONS[w.label]) continue
+    const terms = byLabel.get(w.label) ?? []
+    if (!terms.includes(w.term)) terms.push(w.term)
+    byLabel.set(w.label, terms)
+  }
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="flex items-center justify-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-warning">
+        <MessageCircleQuestion size={15} />
+        Vraag de bediening
+        {abroad && <span className="ml-1 normal-case tracking-normal">{CARDS[abroad].flag}</span>}
+      </h3>
+      <ul className="flex flex-col gap-2">
+        {[...byLabel.entries()].map(([label, terms]) => {
+          const q = MENU_QUESTIONS[label]
+          return (
+            <li key={label} className="rounded-[18px] bg-surface p-4 text-left">
+              <p className="mb-1 text-[13px] text-muted">
+                Bij <span className="font-semibold text-white/80">{terms.slice(0, 3).join(', ')}</span>
+              </p>
+              <p className="text-[18px] font-semibold leading-snug">{abroad ? q[abroad] : q.nl}</p>
+              {abroad && <p className="mt-1 text-[14px] leading-snug text-muted">{q.nl}</p>}
+            </li>
+          )
+        })}
+      </ul>
+      <p className="px-2 text-center text-[13px] leading-snug text-muted">
+        Zeg altijd dat je geen gluten mag, ook niet een klein beetje. De Kaart voor de bediening in de Gids helpt daarbij.
+      </p>
+    </section>
+  )
+}
+
+/** Rood product? Dan zoeken we glutenvrije producten van dezelfde soort. */
+function Alternatives({ product, onOpen }: { product: Product; onOpen: (barcode: string) => void }) {
+  const [items, setItems] = useState<OffProduct[] | null>(null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetchGlutenFreeAlternatives(product.categories ?? [], product.barcode, ctrl.signal)
+      // Zelf nog eens nakijken: alleen wat bij ons ook groen is.
+      .then((found) =>
+        setItems(
+          found
+            .filter((p) => {
+              const a = analyzeOffProduct(p)
+              return a.status === 'safe' && !(a.conflicts?.length ?? 0)
+            })
+            .slice(0, 4),
+        ),
+      )
+      .catch(() => setItems([]))
+    return () => ctrl.abort()
+  }, [product])
+
+  if (items === null) {
+    return <p className="animate-pulse text-center text-[14px] text-muted">Ik zoek een glutenvrij alternatief…</p>
+  }
+  if (items.length === 0) return null
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-center text-[13px] font-bold uppercase tracking-wide text-safe">Probeer liever</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((p) => (
+          <button
+            key={p.code}
+            onClick={() => onOpen(p.code!)}
+            className="flex flex-col items-center gap-1.5 rounded-[18px] bg-surface p-3 text-center active:bg-surface-raised"
+          >
+            {p.image_front_small_url ? (
+              <img src={p.image_front_small_url} alt="" className="h-16 w-16 rounded-xl bg-white object-contain" />
+            ) : (
+              <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface-raised text-muted">
+                <Barcode size={24} />
+              </span>
+            )}
+            <span className="line-clamp-2 text-[14px] font-semibold leading-tight">{p.product_name_nl || p.product_name}</span>
+            {p.brands && <span className="truncate text-[12px] text-muted">{p.brands.split(',')[0]}</span>}
+            <span className="flex items-center gap-1 text-[12px] font-semibold text-safe">
+              <span className="h-2 w-2 rounded-full bg-safe" />
+              Glutenvrij
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 interface Props {
   result: ScanResult
   onHome: () => void
   onPhotoScan: () => void
+  /** Een alternatief product openen (zelfde stappen als een barcode scannen). */
+  onOpenBarcode: (barcode: string) => void
 }
 
-export function ResultPage({ result, onHome, onPhotoScan }: Props) {
+export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props) {
   const { product, analysis } = result
   const meta = SOURCE_META[result.source]
   const isCodeScan = result.source !== 'photo'
@@ -132,14 +287,25 @@ export function ResultPage({ result, onHome, onPhotoScan }: Props) {
             <h1 className="text-[22px] font-semibold leading-tight">{product.name}</h1>
             {product.brand && <p className="text-[15px] text-muted">{product.brand}</p>}
           </div>
+          <StarButton key={product.barcode} result={result} />
         </section>
       )}
+
 
       {result.imageUrl && !product && (
         <img src={result.imageUrl} alt="Gescande foto" className="max-h-40 w-full rounded-[22px] object-cover" />
       )}
 
-      <ResultCard analysis={analysis} />
+      {/* Menukaart: de vragen hieronder vervangen de losse tips. */}
+      <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} />
+
+      {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
+
+      {result.recipeChange && <RecipeChanged change={result.recipeChange} status={analysis.status} />}
+
+      {product && analysis.status === 'danger' && (product.categories?.length ?? 0) > 0 && (
+        <Alternatives key={product.barcode} product={product} onOpen={onOpenBarcode} />
+      )}
 
       {/* Product onbekend, of wel bekend maar zonder ingrediënten: dan zelf het etiket lezen. */}
       {isCodeScan && result.source !== 'qr' && !product?.ingredientsText && analysis.matches.length === 0 && (

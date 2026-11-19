@@ -12,13 +12,15 @@ import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { ResultPage } from './pages/ResultPage'
 import { DESKTOP_QUERY, openWebsite, showWebsite } from './services/siteNav'
+import { feel } from './lib/haptics'
+import { rememberProduct, starredProducts } from './services/products'
 import { SettingsPage } from './pages/SettingsPage'
 import { TravelCardPage } from './pages/TravelCardPage'
 import { analyzeText } from './services/glutenParser'
 import { addToHistory, clearHistory, loadHistory, type HistoryItem } from './services/history'
 import { applyProfile, loadProfile, saveProfile, type SafetyProfile } from './services/profile'
 import { analyzeCode } from './services/scanService'
-import type { GlutenStatus, ScanResult } from './types/product'
+import type { ScanResult } from './types/product'
 
 type Tab = Exclude<NavTab, 'scan'>
 
@@ -30,12 +32,6 @@ type View =
   | { name: 'travel'; back: 'guide' | 'settings' }
   | { name: Tab }
 
-/** Voelbare feedback: kort tikje = veilig, dubbel = twijfel, lang dubbel = gluten. */
-const HAPTICS: Record<GlutenStatus, number[]> = {
-  safe: [40],
-  warning: [60, 80, 60],
-  danger: [200, 100, 200],
-}
 
 /** Schermen met de tabbalk onderin; het camerascherm tekent zijn eigen balk. */
 function WithNav({
@@ -88,8 +84,11 @@ function ScannerApp() {
 
   /** Toont een vers resultaat: trillen, bewaren in de geschiedenis en tonen. */
   const showResult = useCallback(
-    (result: ScanResult) => {
-      navigator.vibrate?.(HAPTICS[profiled(result).status])
+    (scanned: ScanResult) => {
+      const status = profiled(scanned).status
+      // Zelfde barcode als eerder? Dan vergelijken we de ingrediënten met de vorige keer.
+      const result: ScanResult = { ...scanned, recipeChange: rememberProduct(scanned, status) }
+      feel(result.recipeChange ? 'danger' : status)
       setHistory(addToHistory(result))
       setView({ name: 'result', result, back: 'scan' })
     },
@@ -167,6 +166,8 @@ function ScannerApp() {
             items={history}
             statusOf={(item) => profiled(item.result).status}
             onOpen={(item) => setView({ name: 'result', result: item.result, back: 'history' })}
+            starred={starredProducts().map((p) => ({ ...p, status: profiled(p.result).status }))}
+            onOpenResult={(result) => setView({ name: 'result', result, back: 'history' })}
             onClear={() => {
               clearHistory()
               setHistory([])
@@ -230,6 +231,7 @@ function ScannerApp() {
             result={{ ...view.result, analysis: profiled(view.result) }}
             onHome={() => navigate(view.back)}
             onPhotoScan={() => go({ name: 'scanner' })}
+            onOpenBarcode={(barcode) => handleCode({ text: barcode, format: 'barcode' })}
           />
         </WithNav>
       )

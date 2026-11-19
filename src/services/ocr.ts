@@ -57,6 +57,13 @@ function getWorker(): Promise<TesseractWorker> {
       psm = mod.PSM
       const { createWorker } = mod
       const worker = await createWorker(LANGS, 1, {
+        // Alles komt van onze eigen site (public/tesseract), niet van een externe server.
+        // Zo werkt het ook offline zodra de bestanden één keer geladen zijn.
+        workerPath: '/tesseract/worker.min.js',
+        corePath: '/tesseract',
+        langPath: '/tesseract/lang',
+        // Direct vanaf ons adres starten (niet via een blob), dan kan de offline-opslag meekijken.
+        workerBlobURL: false,
         logger: (m) => {
           const stage: OcrStage = m.status === 'recognizing text' ? 'recognizing' : 'loading'
           reportProgress?.({ stage, progress: m.progress })

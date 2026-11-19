@@ -107,7 +107,7 @@ const RESTAURANT_RISKS: Trigger[] = [
   },
   {
     label: 'Gedeelde frituur',
-    pattern: /frituur|gefrituurd|\bfriet|patat|\bfries\b|fried|\bfrit[oa]s?\b|fritt[oi]|fritura|frittura|\bfrites\b/g,
+    pattern: /frituur|gefrituurd|friet|patat|\bfries\b|fried|\bfrit[oa]s?\b|fritt[oi]|fritura|frittura|\bfrites\b/g,
     tip: 'Vraag of er een aparte frituur is: gedeelde olie met gepaneerde producten geeft kruisbesmetting.',
   },
   {
@@ -346,6 +346,21 @@ function conclude(
 
   // Certificering wint: een glutenvrij-claim op het product gaat boven (vaak vervuilde)
   // database-tekst. Tegenstrijdige termen blijven zichtbaar als notitie, niet als blokkade.
+  if (context === 'label' && claimSources.length > 0 && matches.length > 0) {
+    // "Glutenvrij" erop, maar ook een glutengraan in de ingrediënten (bijv. speltmeel):
+    // dan niet groen. Vaak een fout in de gegevens, maar bij coeliakie liever zeker weten.
+    const sources = [...new Set(matches.map(describeMatch))]
+    return {
+      status: 'warning',
+      matches: [],
+      warnings: matches,
+      reasons: [
+        `Er staat "glutenvrij" op, maar in de ingrediënten staat ook ${sources.join(', ')}. Kijk goed op de verpakking.`,
+      ],
+      tips,
+    }
+  }
+
   if (context === 'label' && claimSources.length > 0) {
     const conflicts = [...new Set([...matches, ...warnings].map((m) => m.term))]
     return {

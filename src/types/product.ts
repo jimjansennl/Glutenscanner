@@ -38,6 +38,8 @@ export interface Product {
   brand?: string
   imageUrl?: string
   ingredientsText?: string
+  /** Soort product volgens Open Food Facts, voor glutenvrije alternatieven. */
+  categories?: string[]
 }
 
 export type ScanSource = 'barcode' | 'qr' | 'photo' | 'manual'
@@ -51,4 +53,14 @@ export interface ScanResult {
   imageUrl?: string
   /** Alleen bij foto/tekst: etiket of menukaart. */
   context?: AnalysisContext
+  /** Het recept is veranderd sinds de vorige scan van deze barcode. */
+  recipeChange?: RecipeChange
+}
+
+export interface RecipeChange {
+  /** Wanneer we dit product de vorige keer zagen. */
+  since: number
+  added: string[]
+  removed: string[]
+  statusBefore: GlutenStatus
 }

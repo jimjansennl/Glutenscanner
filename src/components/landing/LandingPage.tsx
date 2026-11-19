@@ -698,7 +698,7 @@ export function LandingPage() {
   return (
     <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
       {/* Navigatie: desktop alles in één balk; telefoon logo, scannerknop en menu rechts. */}
-      <header className="fixed inset-x-0 top-3 z-40 px-3 lg:top-4 lg:px-6">
+      <header className="fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-40 px-3 lg:top-4 lg:px-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 rounded-full border border-white/10 bg-[#14130f]/80 pl-4 pr-2 shadow-2xl backdrop-blur-xl lg:pl-5">
           <Link href="/" className="rounded-2xl">
             <Logo light />

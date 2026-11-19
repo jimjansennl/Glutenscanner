@@ -198,7 +198,7 @@ export function ScannerView({ onNavigate, onHome, onMenu, onCode, onPhoto }: Pro
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black text-white">
       {/* Kop: logo links (naar de website), menu rechts. */}
-      <header className="flex h-14 shrink-0 items-end justify-between px-3 pb-1.5 pt-[env(safe-area-inset-top)]">
+      <header className="flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-end justify-between px-3 pb-1.5 pt-[env(safe-area-inset-top)]">
         <button onClick={onHome} className="flex items-center gap-2 rounded-xl p-1 active:opacity-70" aria-label="Naar de website van Glutenscanner">
           <span className="flex h-8 w-8 rotate-[-6deg] items-center justify-center rounded-[10px] bg-accent text-white shadow-lg shadow-accent/30">
             <ScanBarcode size={17} />

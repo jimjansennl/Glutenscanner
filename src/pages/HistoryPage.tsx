@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { History } from 'lucide-react'
+import { History, Star } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { HistoryItem } from '../services/history'
-import type { GlutenStatus } from '../types/product'
+import type { GlutenStatus, ScanResult } from '../types/product'
 
 type Filter = 'all' | GlutenStatus
 
@@ -27,9 +27,12 @@ interface Props {
   statusOf: (item: HistoryItem) => GlutenStatus
   onOpen: (item: HistoryItem) => void
   onClear: () => void
+  /** Onze vaste producten (met ster), met status volgens het profiel. */
+  starred: { barcode: string; name: string; status: GlutenStatus; result: ScanResult }[]
+  onOpenResult: (result: ScanResult) => void
 }
 
-export function HistoryPage({ items, statusOf, onOpen, onClear }: Props) {
+export function HistoryPage({ items, statusOf, onOpen, onClear, starred, onOpenResult }: Props) {
   const [filter, setFilter] = useState<Filter>('all')
   const count = (f: Filter) => (f === 'all' ? items.length : items.filter((i) => statusOf(i) === f).length)
   const visible = filter === 'all' ? items : items.filter((i) => statusOf(i) === filter)
@@ -38,7 +41,38 @@ export function HistoryPage({ items, statusOf, onOpen, onClear }: Props) {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
       <PageHeader title="Geschiedenis" className="-mx-4" />
 
-      <div className="sticky top-14 z-10 -mx-4 bg-black/80 px-4 py-2 backdrop-blur-xl">
+      {/* Onze vaste producten: wat jullie vaak kopen, in één oogopslag. */}
+      {starred.length > 0 ? (
+        <section>
+          <h2 className="mb-2 flex items-center justify-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-warning">
+            <Star size={14} fill="currentColor" />
+            Onze vaste producten
+          </h2>
+          <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
+            {starred.map((p) => (
+              <li key={p.barcode}>
+                <button
+                  onClick={() => onOpenResult(p.result)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-raised"
+                >
+                  <span className={`h-3 w-3 shrink-0 rounded-full ${STATUS_LABEL[p.status].dot}`} />
+                  <span className="min-w-0 flex-1 truncate text-[17px]">{p.name}</span>
+                  <span className="shrink-0 text-[13px] text-muted">{STATUS_LABEL[p.status].label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        items.some((i) => i.result.product) && (
+          <p className="flex items-center justify-center gap-1.5 text-center text-[13px] text-muted">
+            <Star size={14} />
+            Tik op de ster bij een product om het bij je vaste producten te zetten.
+          </p>
+        )
+      )}
+
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 bg-black/80 px-4 py-2 backdrop-blur-xl">
         <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1" role="tablist" aria-label="Filter op status">
           {FILTERS.map(({ id, label, dot }) => (
             <button

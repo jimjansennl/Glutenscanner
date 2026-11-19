@@ -26,3 +26,6 @@ dist-ssr
 # Env
 .env
 .env.local
+
+# Wordt bij build gekopieerd uit node_modules
+public/tesseract

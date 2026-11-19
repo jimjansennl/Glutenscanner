@@ -67,15 +67,26 @@ Belangrijke bestanden:
 | `src/services/capture.ts`, `src/services/enhance.ts` | Sluiterknop: de camera gaat heel even naar 4K en pakt alleen het kader (plus wat rand). Voor het lezen knapt `enhance.ts` de foto op: schaduw en glans weg, lichte letters op donker omdraaien, contrast en scherpte. Is de uitslag onzeker, dan leest `ocr.ts` ook de gewone foto en kiest de beste. Gemeten op testfoto's: van 18–64% naar 94–100% goed gelezen woorden bij schaduw, glans, kleine letters en gekleurde verpakkingen. |
 | `src/components/scanner/PhotoAnalysis.tsx` | Na een foto zoekt hij eerst een barcode, daarna leest OCR (Tesseract, `nld`+`eng`) de tekst. Of het een etiket of menukaart is, raadt `src/services/textKind.ts`. De gebruiker kan dat nog omzetten. |
 | `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen tegelijk (taal kiezen hoeft niet), met restaurantrisico's voor menukaarten. Een recept op de verpakking ("200 g speltmeel") wordt eruit gehaald (`stripRecipe`); staat er alleen een recept op de foto, dan vraagt hij om het stukje "Ingrediënten:". "Kan glutenbevattende granen bevatten" telt als sporen. Testfoto van een echte zak: `ocrbench/zon_achter.jpg` (buiten de repo). |
-| `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode (wereldwijde database, dus ook buitenlandse producten). |
+| `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode (wereldwijde database, dus ook buitenlandse producten). `fetchGlutenFreeAlternatives`: bij rood zoekt hij in dezelfde soort met label `en:no-gluten` ("Probeer liever"); de app keurt elk alternatief zelf nog na. |
+| `src/services/products.ts` | Onthoudt per barcode de ingrediënten: anders dan de vorige keer → banner "Het recept is veranderd!" (`recipeChange`). Ster = "Onze vaste producten", bovenaan Geschiedenis. |
+| `src/lib/haptics.ts` | Uitslag voelen: groen 1, oranje 2, rood 3 tikjes. iPhone via een onzichtbaar `<input type=checkbox switch>` (iOS 18+). |
+| `src/data/menuQuestions.ts` | Menukaart: per risico één vraag voor de bediening, in 10 talen. Op reis (`zoneLang`) groot in de taal van het land, Nederlands klein eronder. Pas bij een wijziging alle talen aan. |
 | `src/services/translateIngredients.ts`, `src/data/ingredientWords.ts` | "Lees mee in het Nederlands" onder een buitenlandse ingrediëntenlijst. Ingebouwde woordenlijst per taal (10 talen, geen internet): raadt de taal, vertaalt vaste combinaties eerst ("farine de blé" → tarwebloem), gluten rood/oranje, onbekende woorden grijs. Knop alleen als de lijst niet Nederlands is en we ≥50% kennen. Woorden toevoegen: gewoon met accenten in `ingredientWords.ts`. |
 | `src/lib/fold.ts` | Accenten gelijkmaken bij zoeken ("BLÉ" = "ble") en weer terug naar het echte woord om te tonen. |
 | `src/data/ingredientGuide.ts`, `src/data/glutenGuide.ts` | Inhoud van de glutengids. |
 | `src/data/guideItems.ts`, `src/components/guide/*`, `src/data/travelCards.ts` | Gedeelde gidsinhoud en bouwstenen. De app (`GuidePage.tsx`) en de website (`SiteGuide.tsx`, pagina `/glutengids`) gebruiken dezelfde data: pas de gids op één plek aan. |
 | `src/components/landing/PhoneScreens.tsx` | Nagebouwde telefoonschermen voor de website, geen screenshots. Pas ze aan als de echte app verandert. |
 
-Privacy: foto's en geschiedenis blijven op de telefoon (localStorage). Alleen een
-barcode wordt naar Open Food Facts gestuurd.
+Privacy: foto's, geschiedenis en vaste producten blijven op de telefoon (localStorage).
+Naar Open Food Facts gaat alleen een barcode, en bij een rood product de soort product
+(bijv. "koekjes") om een glutenvrij alternatief te zoeken.
+
+**Echte app (PWA):** `vite-plugin-pwa` in `vite.config.ts` met manifest, iconen
+(`public/icon-*.png`, `apple-touch-icon.png`, `favicon.svg`) en een service worker. De app
+werkt offline: de app zelf staat meteen klaar, de tekstherkenning (±10 MB, zelf geleverd via
+`scripts/copy-tesseract.mjs` → `public/tesseract`, niet in git) wordt bij de eerste foto
+bewaard, eerder gescande producten en alternatieven ook. Koppen gebruiken
+`env(safe-area-inset-top)`, want schermvullend loopt de app onder de statusbalk door.
 
 ## Ontwerp: wat de gebruiker wil (niet terugdraaien zonder te vragen)
 
@@ -148,6 +159,8 @@ barcode wordt naar Open Food Facts gestuurd.
   "Navragen bij…": dat vond de gebruiker te logisch en dommig. Liever een slimme `tip`
   waar je zelf niet aan denkt (bijv. bij medicijnen: laat de apotheek "coeliakie" in je
   dossier zetten). De antwoordkaart op de website staat in het midden (`AnswerCard center`), met "Ook gevonden" eronder (niet ernaast), even breed als de zoekbalk.
+- Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
+  (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 
