@@ -424,7 +424,8 @@ function HomePage() {
             Scan een barcode, etiket of menukaart en zie binnen seconden of er gluten in zitten. Onbeperkt, zonder
             account, gewoon in je browser op <b className="text-white">{SITE_LABEL}</b>.
           </p>
-          <div className="mt-9 flex items-center gap-4">
+          {/* Desktop: geen knop, "Op je telefoon" staat al in de kop. Telefoon: "Open de scanner". */}
+          <div className="mt-9 flex items-center gap-4 lg:hidden">
             <PrimaryButton>Open op je telefoon</PrimaryButton>
           </div>
           <p className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px] text-white/55 lg:text-[15px]">
@@ -696,7 +697,7 @@ export function LandingPage() {
   }, [current])
 
   return (
-    <div className="min-h-full overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#fbf8f1] text-[#14130f] [color-scheme:light]">
       {/* Navigatie: desktop alles in één balk; telefoon logo, scannerknop en menu rechts. */}
       <header className="fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-40 px-3 lg:top-4 lg:px-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 rounded-full border border-white/10 bg-[#14130f]/80 pl-4 pr-2 shadow-2xl backdrop-blur-xl lg:pl-5">
@@ -744,7 +745,8 @@ export function LandingPage() {
         )}
       </header>
 
-      <main key={path}>
+      {/* flex-1: bij een korte pagina (Vragen) staat de footer toch onderaan het scherm. */}
+      <main key={path} className="flex-1">
         <View />
       </main>
 

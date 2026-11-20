@@ -93,8 +93,9 @@ bewaard, eerder gescande producten en alternatieven ook. Koppen gebruiken
 **Website (desktop)**
 - Het **donkere bovenstuk** blijft zoals het is: groene gloed, de kop "Eet met een gerust
   hart.", drie telefoons in een waaier en de zwevende labels. Daar is de gebruiker blij mee.
-- Er staat **één knop** in het bovenstuk: "Open op je telefoon". De knop "Hoe werkt het?"
-  is bewust weggehaald, want die staat al in de kop.
+- Er staat **geen knop** meer in het bovenstuk op de desktop: "Op je telefoon" staat al in de
+  kop (eerder ook "Hoe werkt het?" weggehaald). Op de telefoon staat er wel "Open de scanner".
+- De footer staat altijd onderaan het scherm, ook bij een korte pagina (`flex-1` op `main`).
 - De **kop** blijft zoals hij is: logo, de menu-items Hoe het werkt, In actie,
   Glutengids en Vragen, en de groene knop "Op je telefoon". "Functies" is bewust
   opgegaan in Hoe het werkt (te veel overlap); `/functies` stuurt door naar `/hoe-het-werkt`. De menu-items staan in
