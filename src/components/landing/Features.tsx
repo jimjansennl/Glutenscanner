@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Clock3, Smartphone, Star, UserRound, Vibrate, WifiOff } from 'lucide-react'
+import { WifiOff } from 'lucide-react'
 import { Phone, ScreenAlternative, ScreenMenu, ScreenReadAlong, ScreenRecipe, ScreenSafe } from './PhoneScreens'
 
 /**
@@ -40,17 +40,8 @@ const WORDS = [
   ['frumento', 'Italiaans'],
 ] as const
 
-const MORE: [typeof Star, string][] = [
-  [UserRound, 'Jouw profiel: streng of gevoelig'],
-  [Clock3, 'Geschiedenis van je scans'],
-  [Star, 'Ster voor je vaste producten'],
-  [Vibrate, 'Uitslag voelen: 1, 2 of 3 tikjes'],
-  [Smartphone, 'Op je beginscherm, zonder app-winkel'],
-]
-
 export function Features() {
   return (
-    <>
       <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr] lg:grid-rows-2 lg:gap-5">
         {/* Grote kaart: talen */}
         <article data-reveal className="relative flex min-h-[520px] flex-col overflow-hidden rounded-[36px] bg-[#10140f] p-7 text-white lg:row-span-2 lg:p-8">
@@ -104,17 +95,6 @@ export function Features() {
           title="Geeft een betere keus"
           text="Is het rood? Dan zie je glutenvrije producten van dezelfde soort. Zo sta je niet met lege handen."
         />
-      </div>
-
-      {/* De rest kort op een rij */}
-      <ul data-reveal className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-2.5">
-        {MORE.map(([Icon, label]) => (
-          <li key={label} className="flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-[15px] font-semibold text-neutral-700 ring-1 ring-neutral-200">
-            <Icon size={17} className="text-accent" />
-            {label}
-          </li>
-        ))}
-      </ul>
-    </>
+    </div>
   )
 }
