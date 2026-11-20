@@ -714,7 +714,8 @@ export function LandingPage() {
       </header>
 
       {/* flex-1: bij een korte pagina (Vragen) staat de footer toch onderaan het scherm. */}
-      <main key={path} className="flex-1">
+      {/* Glutengids: donker tot aan de footer, anders een groot wit vlak onder de vakken. */}
+      <main key={path} className={`flex-1 ${path === '/glutengids' ? 'bg-[#10140f]' : ''}`}>
         <View />
       </main>
 

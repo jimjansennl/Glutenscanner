@@ -105,7 +105,9 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
 - Zoekbalk in de gids (app én website): wit, rond, met groene knop "Zoek"; de vakken Nee/Let op/Mag zijn donker met alleen kleur in icoon en woord (gebruiker koos optie A).
 - De pagina **Glutengids** op de website is bewust **alleen zoeken**: zoekbalk, het antwoord
-  (met "Ook gevonden" eronder) en de drie vakken Nee / Let op / Mag (die openen een lijst).
+  (met "Ook gevonden" eronder), een rij "Probeer eens:" met verrassende woorden (Sojasaus,
+  Boekweit…, zonder kleur, een tik vult de zoekbalk) en de drie vakken Nee / Let op / Mag (die
+  openen een lijst). De pagina is donker tot aan de footer (geen wit vlak).
   Geen thema's, per soort, Kaart voor de bediening of Feestelijk eten op de website: dat was
   te druk en hoort bij de telefoon (gebruiker koos "Alleen zoeken"). Eén zin verwijst naar de
   app. In het ☰-menu van de app opent "Glutengids" direct het tabblad Gids.

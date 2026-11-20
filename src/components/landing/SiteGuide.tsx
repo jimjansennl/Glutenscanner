@@ -49,6 +49,9 @@ function Modal({ title, sub, onClose, children }: { title: string; sub?: string;
   )
 }
 
+/** Woorden waar je niet meteen aan denkt: een tik vult de zoekbalk. Geen kleur, dan blijft het een verrassing. */
+const TRY_WORDS = ['Sojasaus', 'Drop', 'Haver', 'Patat', 'Spelt', 'Boekweit', 'Bouillon', 'Quinoa']
+
 function SectionLabel({ children }: { children: ReactNode }) {
   return <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.14em] text-white/50">{children}</h3>
 }
@@ -96,6 +99,21 @@ export function SiteGuide() {
             Zoek
           </button>
         </label>
+
+        <div className="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-2">
+          <span className="mr-1 text-[14px] text-white/50 lg:text-[15px]">Probeer eens:</span>
+          {TRY_WORDS.map((w) => (
+            <button
+              key={w}
+              onClick={() => setQuery(w)}
+              className={`rounded-full px-3.5 py-1.5 text-[14px] font-semibold ring-1 transition lg:text-[15px] ${
+                normalize(w) === q ? 'bg-white text-black ring-white' : 'bg-white/[0.06] text-white/80 ring-white/10 hover:bg-white/[0.12] hover:text-white'
+              }`}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
 
         {q.length >= 2 ? (
           <div className="mx-auto mt-8 max-w-5xl">
