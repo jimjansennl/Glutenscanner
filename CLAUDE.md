@@ -102,9 +102,11 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   opgegaan in Hoe het werkt (te veel overlap); `/functies` stuurt door naar `/hoe-het-werkt`. De menu-items staan in
   dezelfde vette displayletter als het logo "glutenscanner" (`font-display font-bold`).
 - Zoekbalk in de gids (app én website): wit, rond, met groene knop "Zoek"; de vakken Nee/Let op/Mag zijn donker met alleen kleur in icoon en woord (gebruiker koos optie A).
-- De pagina **Glutengids** is dezelfde gids als in de app (zoeken, Nee/Let op/Mag, thema's, per soort,
-  kaart, feestelijk eten), breed opgezet in één raster van 4 kolommen (Thema's, Per soort, Ook handig); lijsten openen in een venster. In het ☰-menu van de
-  app opent "Glutengids" direct het tabblad Gids.
+- De pagina **Glutengids** op de website is bewust **alleen zoeken**: zoekbalk, het antwoord
+  (met "Ook gevonden" eronder) en de drie vakken Nee / Let op / Mag (die openen een lijst).
+  Geen thema's, per soort, Kaart voor de bediening of Feestelijk eten op de website: dat was
+  te druk en hoort bij de telefoon (gebruiker koos "Alleen zoeken"). Eén zin verwijst naar de
+  app. In het ☰-menu van de app opent "Glutengids" direct het tabblad Gids.
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
   `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van
   scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" (11 talen, jouw

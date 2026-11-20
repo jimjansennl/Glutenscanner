@@ -647,10 +647,11 @@ function GuidePage() {
       <PageBand
         eyebrow="Glutengids"
         title="Mag ik dit eten?"
-        sub="Typ een product en zie meteen of het mag. Dit is dezelfde gids als in de app op je telefoon."
+        sub="Typ een product en zie meteen of het mag."
       />
       <SiteGuide />
-      <section className="bg-[#10140f] px-6 pb-24">
+      {/* Alleen op de telefoon: op de desktop staat "Op je telefoon" al in de kop. */}
+      <section className="bg-[#10140f] px-6 pb-24 lg:hidden">
         <div className="flex justify-center">
           <PrimaryButton>Neem de gids mee op je telefoon</PrimaryButton>
         </div>
