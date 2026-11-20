@@ -327,6 +327,8 @@ const GF_STARCH_NOTE = 'Bevat glutenvrij tarwezetmeel: dit is wettelijk glutenvr
 /** "tarwe (trigo)": de Nederlandse naam, met de buitenlandse term erbij als die afwijkt. */
 export function describeMatch(m: GlutenMatch): string {
   const label = m.label.toLowerCase()
+  // "moutazijn" zegt meer dan "mout": daar staat een eigen uitleg bij.
+  if (m.term === 'moutazijn') return m.term
   return m.term.includes(label) ? label : `${label} (${m.term})`
 }
 
