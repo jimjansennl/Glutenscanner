@@ -328,7 +328,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
       {details && (
         <section className="rounded-[22px] bg-surface p-4 text-center">
           <h3 className="mb-2 text-[13px] font-medium uppercase tracking-wide text-muted">
-            {product ? 'Ingrediënten' : 'Geanalyseerde tekst'}
+            {product ? 'Ingrediënten' : 'Dit las de scanner'}
           </h3>
           <p className="text-[15px] leading-relaxed text-white/85">
             <Highlighted text={details} danger={analysis.matches} warning={analysis.warnings} />

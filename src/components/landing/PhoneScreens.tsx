@@ -205,7 +205,7 @@ export function ScreenSafe() {
         </Circle>
         <span className="text-[22px] font-bold text-safe">Glutenvrij</span>
         <span className="rounded-full bg-safe/15 px-2 py-0.5 text-[8px] font-semibold text-safe">Met glutenvrij-logo</span>
-        <span className="text-[9px] text-white/60">Geen glutenbronnen in ingrediënten en allergenen.</span>
+        <span className="text-[9px] text-white/60">Geen gluten gevonden in de ingrediënten.</span>
       </div>
       <div className="rounded-2xl bg-neutral-900 p-3 text-center text-[9px] text-white/80">
         <p className="mb-1 text-[8px] uppercase tracking-wide text-white/50">Ingrediënten</p>

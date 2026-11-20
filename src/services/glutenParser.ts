@@ -57,7 +57,7 @@ const SUSPICIOUS_TRIGGERS: Trigger[] = [
   {
     label: 'Paneermeel',
     pattern: /paneermeel|gepaneerd|breadcrumb|breaded|panko|paniermehl|paniert|chapelure|pan rallado|pangrattato|empanad|impanat/g,
-    tip: 'Een paneerlaag bevat vrijwel altijd tarwe: vraag naar een ongepaneerde variant.',
+    tip: 'In een paneerlaag zit bijna altijd tarwe. Vraag of het ook zonder paneerlaag kan.',
   },
   {
     label: 'Pasta / noedels',
@@ -98,7 +98,7 @@ const RESTAURANT_RISKS: Trigger[] = [
   {
     label: 'Gebonden saus',
     pattern: /\broux\b|bechamel|besciamella|veloute|\bjus\b|gravy|demi[- ]?glace|roomsaus|bruine saus|gebonden|(?<!soja)saus\b|(?<!soy )sauce\b|\bsalsa\b/g,
-    tip: 'Vraag of de saus gebonden is met tarwebloem (roux) of met maïzena.',
+    tip: 'Vraag of de saus dik gemaakt is met tarwebloem of met maïzena.',
   },
   {
     label: 'Dressing',
@@ -108,7 +108,7 @@ const RESTAURANT_RISKS: Trigger[] = [
   {
     label: 'Gedeelde frituur',
     pattern: /frituur|gefrituurd|friet|patat|\bfries\b|fried|\bfrit[oa]s?\b|fritt[oi]|fritura|frittura|\bfrites\b/g,
-    tip: 'Vraag of er een aparte frituur is: gedeelde olie met gepaneerde producten geeft kruisbesmetting.',
+    tip: 'Vraag of er een aparte frituur is. Zit er ook gepaneerd eten in dezelfde olie, dan komt daar gluten in.',
   },
   {
     label: 'Beslag / tempura',
@@ -123,7 +123,7 @@ const RESTAURANT_RISKS: Trigger[] = [
   {
     label: 'Gebonden soep',
     pattern: /\bsoep\b|\bsoup\b|\bsopa\b|\bzuppa\b|bisque|chowder|veloute/g,
-    tip: 'Soepen worden vaak gebonden met bloem: vraag hoe deze soep gebonden is.',
+    tip: 'Soep wordt vaak dik gemaakt met bloem. Vraag hoe deze soep gemaakt is.',
   },
   {
     label: 'Gedeelde grill / wok',
@@ -132,7 +132,7 @@ const RESTAURANT_RISKS: Trigger[] = [
   },
 ]
 
-const GENERAL_MENU_TIP = 'Meld je glutenintolerantie altijd expliciet aan de bediening en vraag naar kruisbesmetting in de keuken.'
+const GENERAL_MENU_TIP = 'Zeg altijd tegen de bediening dat je geen gluten mag. Ook geen kruimels uit een pan of frituur.'
 
 /** Wegstrepen vóór het matchen: bevatten "tarwe"/"wheat"/"trigo" maar zijn glutenvrij (boekweit). */
 const EXCLUSIONS =
@@ -429,7 +429,7 @@ function conclude(
     if (warnings.some((w) => w.source !== 'traces')) {
       reasons.push(
         context === 'menu'
-          ? 'Op de kaart staan gerechten of bereidingen met een verhoogd glutenrisico.'
+          ? 'Bij een paar gerechten moet je even navragen of er gluten in zit.'
           : 'Bevat ingrediënten die vaak gluten bevatten.',
       )
     }
@@ -448,10 +448,10 @@ function conclude(
 
   const reason =
     context === 'menu'
-      ? 'Geen glutenbronnen herkend in deze tekst.'
+      ? 'Geen gluten gevonden in deze tekst.'
       : textClaim
-        ? 'Tekst vermeldt glutenvrij en er zijn geen glutenbronnen gevonden.'
-        : 'Geen glutenbronnen gevonden in ingrediënten en allergenen.'
+        ? 'Er staat glutenvrij op en we vonden geen gluten.'
+        : 'Geen gluten gevonden in de ingrediënten.'
   return { status: 'safe', matches, warnings, reasons: [reason, ...starchNote], tips }
 }
 

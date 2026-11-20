@@ -216,7 +216,7 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
                 ? 'De tekst was niet goed leesbaar. Controleer en vul aan wat we gelezen hebben.'
                 : 'Tekstherkenning kon niet starten (eerste keer is internet nodig). Typ of plak de tekst zelf.'}
               {context === 'menu' && (
-                <span className="text-xs text-muted">We letten ook op sauzen, frituur en kruisbesmetting.</span>
+                <span className="text-xs text-muted">We letten ook op sauzen, frituur en kruimels in de keuken.</span>
               )}
             </p>
             <textarea

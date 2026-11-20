@@ -5,7 +5,7 @@ import { readJson, writeJson } from '../../lib/storage'
 const KEY = 'glutenscanner.disclaimer.v1'
 
 export const DISCLAIMER_SHORT =
-  'Hulpmiddel voor dubbele controle, geen medisch advies. Controleer altijd de fysieke verpakking.'
+  'De app helpt je, maar kan zich vergissen. Kijk daarom altijd zelf nog op de verpakking.'
 
 /** Eenmalige medische disclaimer bij de eerste start; akkoord wordt in localStorage bewaard. */
 export function DisclaimerModal() {
@@ -29,15 +29,15 @@ export function DisclaimerModal() {
           <ShieldAlert size={32} className="text-warning" />
         </span>
         <h2 id="disclaimer-title" className="text-[22px] font-bold tracking-tight">
-          Belangrijke medische disclaimer
+          Even belangrijk
         </h2>
         <p className="text-[15px] leading-relaxed text-white/80">
-          Deze app is een hulpmiddel voor dubbele controle en geen medisch advies. Controleer altijd de fysieke
-          verpakking.
+          De app helpt je, maar kan zich vergissen. Kijk daarom altijd zelf nog op de verpakking. Het is geen medisch
+          advies.
         </p>
         <p className="text-[13px] leading-relaxed text-muted">
-          Productdata komt van Open Food Facts en kan onvolledig of verouderd zijn. Recepten en productieprocessen
-          kunnen wijzigen.
+          De productgegevens komen van Open Food Facts. Die kunnen oud zijn of niet compleet. En een fabriek kan een
+          recept veranderen.
         </p>
         <button
           onClick={accept}

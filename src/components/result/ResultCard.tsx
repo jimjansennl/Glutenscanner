@@ -149,15 +149,15 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
         ))}
       </ul>
 
-      <MatchList title="Glutenbevattende granen" matches={analysis.matches} chip={STATUS.danger.chip} />
-      <MatchList title="Twijfelachtig" matches={analysis.warnings} chip={STATUS.warning.chip} />
+      <MatchList title="Hier zit gluten in" matches={analysis.matches} chip={STATUS.danger.chip} />
+      <MatchList title="Hier zit misschien gluten in" matches={analysis.warnings} chip={STATUS.warning.chip} />
       {analysis.contradictory && (
         <section className="flex flex-col items-center gap-1.5 rounded-2xl bg-warning/10 px-4 py-3 text-center ring-1 ring-warning/40">
           <AlertTriangle size={18} className="text-warning" aria-hidden />
-          <p className="text-[15px] font-semibold text-warning">Tegenstrijdige ingrediëntenlijst</p>
+          <p className="text-[15px] font-semibold text-warning">Er klopt iets niet</p>
           <p className="text-[13px] leading-snug text-white/80">
-            Er staat &quot;glutenvrij&quot;, maar de lijst noemt ook een glutenbron. Het risico gaat voor: bij twijfel
-            niet eten en de verpakking controleren.
+            Er staat &quot;glutenvrij&quot; op, maar in de lijst staat ook iets met gluten. Twijfel je? Eet het dan niet
+            en kijk goed op de verpakking.
           </p>
         </section>
       )}
@@ -168,8 +168,8 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
             De database noemt ook: <span className="font-semibold">{analysis.conflicts!.join(', ')}</span>
           </p>
           <p className="text-[13px] leading-snug text-muted">
-            Waarschijnlijk vervuilde data. De glutenvrij-claim op het product gaat voor; controleer bij twijfel het
-            logo op de verpakking.
+            Er staat een glutenvrij-logo op het product. Dat telt. De lijst in de database is waarschijnlijk oud. Twijfel
+            je? Kijk dan of het logo echt op de verpakking staat.
           </p>
         </section>
       )}
