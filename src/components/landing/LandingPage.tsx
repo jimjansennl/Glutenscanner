@@ -37,6 +37,9 @@ import {
   ScreenPhoto,
   ScreenSafe,
   ScreenScanner,
+  ScreenReadAlong,
+  ScreenAlternative,
+  ScreenRecipe,
   ScreenTravel,
 } from './PhoneScreens'
 
@@ -218,8 +221,11 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
   { word: 'Spot', line: 'verborgen gluten', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenPhoto /> },
   { word: 'Weet', line: 'of er gluten in zit', accent: 'text-[#14130f]', bg: 'bg-[#7ee2a8]', screen: <ScreenSafe /> },
   { word: 'Zie', line: 'wat er wél in zit', accent: 'text-white', bg: 'bg-[#ff5a4e]', screen: <ScreenDanger /> },
+  { word: 'Kies', line: 'een glutenvrij alternatief', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenAlternative /> },
+  { word: 'Merk', line: 'het als het recept verandert', accent: 'text-[#14130f]', bg: 'bg-[#f2a33a]', screen: <ScreenRecipe /> },
+  { word: 'Lees', line: 'buitenlandse etiketten mee', accent: 'text-white', bg: 'bg-[#7c5cd6]', screen: <ScreenReadAlong /> },
   { word: 'Vraag', line: 'het restaurant', accent: 'text-[#14130f]', bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
-  { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
+  { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenGuide /> },
   { word: 'Reis', line: 'met een kaart in 10 talen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
 ]
 

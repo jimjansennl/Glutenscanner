@@ -85,7 +85,8 @@ Naar Open Food Facts gaat alleen een barcode, en bij een rood product de soort p
 (`public/icon-*.png`, `apple-touch-icon.png`, `favicon.svg`) en een service worker. De app
 werkt offline: de app zelf staat meteen klaar, de tekstherkenning (±10 MB, zelf geleverd via
 `scripts/copy-tesseract.mjs` → `public/tesseract`, niet in git) wordt bij de eerste foto
-bewaard, eerder gescande producten en alternatieven ook. Koppen gebruiken
+bewaard, eerder gescande producten en alternatieven ook. Na een nieuwe versie laadt de
+pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.tsx`). Koppen gebruiken
 `env(safe-area-inset-top)`, want schermvullend loopt de app onder de statusbalk door.
 
 ## Ontwerp: wat de gebruiker wil (niet terugdraaien zonder te vragen)
@@ -118,6 +119,9 @@ bewaard, eerder gescande producten en alternatieven ook. Koppen gebruiken
 - De **footer** is plat, één regel: logo, disclaimer met Open Food Facts en
   "© jaar · Nederland" (geen hartje), dun (py-3). Herhaal er niets uit de kop.
 - De carrousel "Bekijk het zelf" (pagina In actie) laat precies 4 kaarten zien en niets half buiten beeld.
+  Kaarten (10): Scan, Spot, Weet, Zie, Kies (alternatief), Merk (recept veranderd), Lees
+  (lees mee), Vraag (vraag de bediening), Leer, Reis. Komt er iets nieuws in de app, voeg dan
+  een kaart toe of pas het telefoonscherm aan (`PhoneScreens.tsx`).
 
 **Scanner (telefoon)**
 - Hij moet eruitzien als een **echte scanner**: zwart scherm, camerabeeld, een duidelijk

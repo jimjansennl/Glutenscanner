@@ -11,8 +11,10 @@ import {
   MessageCircleQuestion,
   ScanBarcode,
   Settings,
+  Star,
   XCircle,
 } from 'lucide-react'
+import { MENU_QUESTIONS } from '../../data/menuQuestions'
 
 /**
  * Nagebouwde mini-versies van de echte app-schermen voor de informatiesite.
@@ -238,20 +240,108 @@ export function ScreenDanger() {
 export function ScreenMenu() {
   return (
     <ResultShell product="Menukaart">
-      <div className="flex flex-col items-center gap-2 rounded-3xl bg-neutral-900 px-3 py-4 text-center">
+      <div className="flex flex-col items-center gap-1.5 rounded-3xl bg-neutral-900 px-3 py-3 text-center">
         <Circle tone="warning">
-          <AlertTriangle size={40} />
+          <AlertTriangle size={36} />
         </Circle>
-        <span className="text-[20px] font-bold text-warning">Twijfel</span>
-        <span className="text-[9px] text-white/60">Croutons en dressing op de kaart</span>
+        <span className="text-[18px] font-bold text-warning">Twijfel</span>
       </div>
-      <p className="text-center text-[8px] uppercase tracking-wide text-white/50">Vraag in het restaurant</p>
-      {['Vraag de salade zonder croutons.', 'Vraag naar de dressing: soms met bloem of sojasaus.'].map((t) => (
-        <div key={t} className="flex flex-col items-center gap-1 rounded-2xl bg-neutral-900 p-2 text-center text-[9px]">
-          <MessageCircleQuestion size={12} className="text-safe" />
-          {t}
+      <p className="flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wide text-warning">
+        <MessageCircleQuestion size={10} />
+        Vraag de bediening
+      </p>
+      {(
+        [
+          ['croutons', 'Croutons'],
+          ['dressing', 'Dressing'],
+        ] as const
+      ).map(([term, label]) => (
+        <div key={label} className="rounded-2xl bg-neutral-900 p-2.5 text-left">
+          <p className="text-[7.5px] text-white/50">
+            Bij <b className="text-white/80">{term}</b>
+          </p>
+          <p className="text-[9.5px] font-semibold leading-snug">{MENU_QUESTIONS[label].nl}</p>
         </div>
       ))}
+    </ResultShell>
+  )
+}
+
+/** Buitenlands etiket: origineel met gluten gemarkeerd, en "Lees mee in het Nederlands". */
+export function ScreenReadAlong() {
+  return (
+    <ResultShell product="Petits beurre">
+      <div className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 py-2.5">
+        <XCircle size={20} className="text-danger" />
+        <span className="text-[15px] font-bold text-danger">Bevat gluten</span>
+      </div>
+      <div className="rounded-2xl bg-neutral-900 p-2.5 text-center text-[9px] leading-relaxed text-white/85">
+        <p className="mb-1 text-[7.5px] uppercase tracking-wide text-white/50">Ingrediënten</p>
+        Farine de <mark className="rounded bg-danger/20 px-0.5 font-semibold text-danger">blé</mark> 75%, sucre, beurre, sel, poudres à lever
+      </div>
+      <div className="mx-auto flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[8px] font-semibold">Lees mee in het Nederlands</div>
+      <div className="rounded-2xl bg-white/[0.07] p-2.5 text-left text-[9px] leading-relaxed">
+        <p className="mb-0.5 text-[7.5px] text-white/50">Vertaald uit het Frans</p>
+        <mark className="rounded bg-danger/20 px-0.5 font-semibold text-danger">tarwebloem</mark> 75%, suiker, boter, zout, rijsmiddelen
+      </div>
+    </ResultShell>
+  )
+}
+
+/** Rood product met "Probeer liever": glutenvrije producten van dezelfde soort. */
+export function ScreenAlternative() {
+  return (
+    <ResultShell product="Kaneelkoeken">
+      <div className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 py-2.5">
+        <XCircle size={20} className="text-danger" />
+        <span className="text-[15px] font-bold text-danger">Bevat gluten</span>
+      </div>
+      <p className="text-center text-[8px] font-bold uppercase tracking-wide text-safe">Probeer liever</p>
+      <div className="grid grid-cols-2 gap-1.5">
+        {[
+          ['Rijstkoekjes', 'bg-[#e9c995]'],
+          ['Maïswafels', 'bg-[#f3df9b]'],
+          ['Kokosmakronen', 'bg-[#f1ece2]'],
+          ['Havermout-koek', 'bg-[#d9b27a]'],
+        ].map(([name, color]) => (
+          <div key={name} className="flex flex-col items-center gap-1 rounded-xl bg-neutral-900 p-2 text-center">
+            <span className={`h-9 w-9 rounded-lg ${color}`} />
+            <span className="text-[8.5px] font-semibold leading-tight">{name}</span>
+            <span className="flex items-center gap-0.5 text-[7px] font-semibold text-safe">
+              <span className="h-1.5 w-1.5 rounded-full bg-safe" />
+              Glutenvrij
+            </span>
+          </div>
+        ))}
+      </div>
+    </ResultShell>
+  )
+}
+
+/** Vast product opnieuw gescand: het recept is veranderd. */
+export function ScreenRecipe() {
+  return (
+    <ResultShell product="Chocoladepasta">
+      <span className="mx-auto flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[8px] font-semibold text-warning">
+        <Star size={9} fill="currentColor" />
+        Bij onze vaste producten
+      </span>
+      <div className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 py-2.5">
+        <XCircle size={20} className="text-danger" />
+        <span className="text-[15px] font-bold text-danger">Bevat gluten</span>
+      </div>
+      <div className="flex flex-col gap-1 rounded-2xl bg-warning/15 p-2.5 text-left ring-1 ring-warning">
+        <p className="flex items-center gap-1 text-[11px] font-extrabold text-warning">
+          <AlertTriangle size={12} />
+          Het recept is veranderd!
+        </p>
+        <p className="text-[8.5px] leading-snug text-white/85">
+          Sinds je laatste scan staan er andere ingrediënten op. <b className="text-white">Eerst was hij groen, nu rood.</b>
+        </p>
+        <p className="text-[8.5px]">
+          <b>Nieuw:</b> tarwebloem
+        </p>
+      </div>
     </ResultShell>
   )
 }
