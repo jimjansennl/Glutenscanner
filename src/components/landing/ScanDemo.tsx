@@ -17,8 +17,8 @@ import { Circle, ModeSwitch, Phone, ScanHeader, StatusBar } from './PhoneScreens
 /**
  * Bewegend voorbeeld op de startpagina, met drie verhaaltjes na elkaar:
  * barcode (rijstwafels → groen), etiket (koekjes → rood, gerstemoutextract) en
- * menukaart (→ oranje, met een vraag voor de bediening). Elk verhaaltje heeft drie stappen;
- * de stappen ernaast lichten mee op en de tabjes erboven laten zien welk verhaaltje speelt.
+ * menukaart (→ oranje, met een vraag voor de bediening). Niets te kiezen: het speelt vanzelf
+ * alles af. De drie stappen ernaast lichten mee op; een labeltje in beeld zegt wat er gescand wordt.
  * Eigen ontwerp in de stijl van de site, geen beelden van anderen.
  */
 
@@ -26,37 +26,17 @@ const STEP_MS = 3400
 
 type SceneId = 'barcode' | 'label' | 'menu'
 
-const SCENES: { id: SceneId; tab: string; icon: LucideIcon; steps: { title: string; text: string }[] }[] = [
-  {
-    id: 'barcode',
-    tab: 'Barcode',
-    icon: Barcode,
-    steps: [
-      { title: 'Richt je camera', text: 'Kies onderin de streepjes en richt op de barcode.' },
-      { title: 'Hij leest vanzelf', text: 'Het kader springt om de barcode. Je hoeft niks te tikken.' },
-      { title: 'Zie de uitslag', text: 'Groen: glutenvrij. Kijk daarna nog even zelf op de verpakking.' },
-    ],
-  },
-  {
-    id: 'label',
-    tab: 'Etiket',
-    icon: FileText,
-    steps: [
-      { title: 'Richt op het etiket', text: 'Kies onderin het blaadje en zet de ingrediënten in het kader.' },
-      { title: 'Tik op de knop', text: 'Hij leest de kleine lettertjes, ook in een andere taal.' },
-      { title: 'Zie de uitslag', text: 'Rood: hier zit gerst in. Hij laat zien welk woord het is.' },
-    ],
-  },
-  {
-    id: 'menu',
-    tab: 'Menukaart',
-    icon: UtensilsCrossed,
-    steps: [
-      { title: 'Richt op de menukaart', text: 'Kies onderin het blaadje en zet de gerechten in het kader.' },
-      { title: 'Tik op de knop', text: 'Hij zoekt naar paneermeel, saus en andere stiekeme gluten.' },
-      { title: 'Zie de uitslag', text: 'Oranje: vraag het na. Je krijgt meteen de vraag voor de bediening.' },
-    ],
-  },
+const SCENES: { id: SceneId; label: string; icon: LucideIcon }[] = [
+  { id: 'barcode', label: 'Barcode', icon: Barcode },
+  { id: 'label', label: 'Etiket', icon: FileText },
+  { id: 'menu', label: 'Menukaart', icon: UtensilsCrossed },
+]
+
+/** Dezelfde drie stappen voor alles: er hoeft niets gekozen te worden. */
+const STEPS = [
+  { title: 'Richt je camera', text: 'Op een barcode, een etiket of een menukaart.' },
+  { title: 'Hij leest het', text: 'Een barcode leest hij vanzelf. Bij een etiket of menukaart tik je op de knop.' },
+  { title: 'Zie de uitslag', text: 'Groen, oranje of rood, met uitleg waarom. Kijk daarna nog even zelf.' },
 ]
 
 const BARS = [2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 3, 1, 1, 2, 1, 3, 1, 2, 2, 1, 3]
@@ -317,7 +297,6 @@ const OBJECT_STYLE: Record<SceneId, string> = {
 export function ScanDemo() {
   const [scene, setScene] = useState(0)
   const [step, setStep] = useState(0)
-  const [round, setRound] = useState(0) // telt mee bij een klik, zodat de tijd opnieuw begint
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -340,46 +319,23 @@ export function ScanDemo() {
       }
     }, STEP_MS)
     return () => window.clearTimeout(t)
-  }, [visible, step, scene, round])
+  }, [visible, step, scene])
 
-  const pickStep = (i: number) => {
-    setStep(i)
-    setRound((r) => r + 1)
-  }
-  const pickScene = (i: number) => {
-    setScene(i)
-    setStep(0)
-    setRound((r) => r + 1)
-  }
-
-  const { id, steps } = SCENES[scene]
+  const { id, label, icon: SceneIcon } = SCENES[scene]
   const phoneTilt = ['rotate(8deg) translate(10%, 4%)', 'rotate(3deg) translate(4%, 0)', 'rotate(0deg) translate(0, -2%)'][step]
 
   return (
-    <div ref={ref} className="mx-auto mt-10 max-w-6xl lg:mt-12">
-      {/* Welk verhaaltje speelt: barcode, etiket of menukaart */}
-      <div className="mx-auto mb-8 flex w-fit rounded-full bg-white p-1.5 shadow-sm ring-1 ring-neutral-200" role="tablist" aria-label="Wat scan je?">
-        {SCENES.map(({ tab, icon: Icon }, i) => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={i === scene}
-            onClick={() => pickScene(i)}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-2.5 font-display text-[14px] font-bold transition min-[400px]:px-4 min-[400px]:text-[15px] lg:gap-2 lg:px-6 lg:text-[17px] ${
-              i === scene ? 'bg-accent text-white shadow-md shadow-accent/30' : 'text-neutral-500 hover:text-[#14130f]'
-            }`}
-          >
-            <Icon size={16} className="lg:h-[18px] lg:w-[18px]" />
-            {tab}
-          </button>
-        ))}
-      </div>
-
+    <div ref={ref} className="mx-auto mt-12 max-w-6xl lg:mt-16">
       <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
         {/* Het toneel */}
         <div className="relative h-[460px] overflow-hidden rounded-[36px] bg-[#10140f] lg:h-[600px] lg:rounded-[40px]">
           <div className="pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-accent/25 blur-[120px]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
+          {/* Wat er nu gescand wordt (geen knop, alleen een labeltje) */}
+          <span key={label} className="absolute left-5 top-5 z-10 flex animate-slide-up items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-display text-[15px] font-bold text-white ring-1 ring-white/15 backdrop-blur lg:left-7 lg:top-7 lg:text-[17px]">
+            <SceneIcon size={17} className="text-[#7ee2a8]" />
+            {label}
+          </span>
           <div
             key={id}
             className={`absolute transition-all duration-700 ease-out motion-reduce:transition-none ${OBJECT_STYLE[id]}`}
@@ -407,14 +363,13 @@ export function ScanDemo() {
 
         {/* De drie stappen, de actieve licht op */}
         <ol className="flex flex-col gap-3">
-          {steps.map(({ title, text }, i) => {
+          {STEPS.map(({ title, text }, i) => {
             const active = i === step
             return (
               <li key={i}>
-                <button
-                  onClick={() => pickStep(i)}
+                <div
                   className={`relative flex w-full items-start gap-4 overflow-hidden rounded-[26px] p-5 text-left transition lg:p-6 ${
-                    active ? 'bg-white shadow-xl shadow-black/5 ring-1 ring-neutral-200' : 'hover:bg-white/60'
+                    active ? 'bg-white shadow-xl shadow-black/5 ring-1 ring-neutral-200' : ''
                   }`}
                   aria-current={active ? 'step' : undefined}
                 >
@@ -431,12 +386,12 @@ export function ScanDemo() {
                   </span>
                   {active && visible && (
                     <span
-                      key={`${scene}-${step}-${round}`}
+                      key={`${scene}-${step}`}
                       className="absolute inset-x-0 bottom-0 h-1 origin-left bg-accent motion-reduce:hidden"
                       style={{ animation: `demo-progress ${STEP_MS}ms linear both` }}
                     />
                   )}
-                </button>
+                </div>
               </li>
             )
           })}
