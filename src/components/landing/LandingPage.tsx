@@ -450,8 +450,7 @@ function HomePage() {
           <div data-reveal className="relative flex flex-col justify-center overflow-hidden rounded-[36px] bg-accent px-7 py-10 text-white lg:px-10">
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
             <div className="pointer-events-none absolute -bottom-20 -left-12 h-48 w-48 rounded-full bg-[#ffd75e]/20" />
-            <Heart size={34} className="relative fill-white" />
-            <h2 className="relative mt-4 font-display text-[30px] font-bold leading-tight lg:text-[36px]">Waarom gratis?</h2>
+            <h2 className="relative font-display text-[30px] font-bold leading-tight lg:text-[36px]">Waarom gratis?</h2>
             <p className="relative mt-3 text-[16px] leading-relaxed text-white/90 lg:text-[18px]">
               Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Daarom
               is alles gratis: zonder account en zonder reclame.
