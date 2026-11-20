@@ -42,6 +42,7 @@ import {
   ScreenRecipe,
   ScreenTravel,
 } from './PhoneScreens'
+import { ScanDemo } from './ScanDemo'
 
 /**
  * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
@@ -187,12 +188,6 @@ function FloatChip({ className, children, tone = 'light' }: { className: string;
     </span>
   )
 }
-
-const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: ScanBarcode, title: 'Kies en richt', text: 'Kies onderin barcode of etiket en richt je camera. Een barcode leest hij vanzelf, bij een etiket of menukaart tik je op de knop.' },
-  { icon: Sparkles, title: 'Zie de uitslag', text: 'Glutenvrij, twijfel of bevat gluten: groot, in kleur en met uitleg waarom.' },
-  { icon: ShieldCheck, title: 'Kijk zelf mee', text: 'De scanner is een tweede paar ogen. Kijk daarna altijd nog zelf op de verpakking.' },
-]
 
 const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen: ReactNode }[] = [
   { word: 'Scan', line: 'de barcode in seconden', accent: 'text-[#ffd75e]', bg: 'bg-accent', screen: <ScreenScanner /> },
@@ -453,24 +448,10 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Hoe het werkt */}
+      {/* Hoe het werkt: bewegend voorbeeld in plaats van drie losse stappen */}
       <section className="px-6 py-20 lg:py-28">
-        <SectionTitle eyebrow="Hoe het werkt" title="Drie stappen. Zo gedaan." sub="Van schap tot winkelwagen, of van menukaart tot bestelling." />
-        <div className="relative mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-12 lg:mt-16 lg:grid-cols-3 lg:gap-8">
-          <div className="absolute left-[16%] right-[16%] top-12 hidden border-t-2 border-dashed border-accent/40 lg:block" />
-          {STEPS.map(({ icon: Icon, title, text }, i) => (
-            <div key={title} data-reveal className="relative flex flex-col items-center text-center" style={{ transitionDelay: `${i * 120}ms` }}>
-              <span className="relative flex h-24 w-24 items-center justify-center rounded-[30px] bg-accent text-white shadow-xl shadow-accent/30">
-                <Icon size={40} />
-                <span className="absolute -right-2 -top-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#ffd75e] font-display text-[17px] font-bold text-[#14130f]">
-                  {i + 1}
-                </span>
-              </span>
-              <h3 className="mt-6 font-display text-[26px] font-bold">{title}</h3>
-              <p className="mt-2 max-w-xs text-[17px] leading-relaxed text-neutral-600">{text}</p>
-            </div>
-          ))}
-        </div>
+        <SectionTitle eyebrow="Hoe het werkt" title="Richten. Scannen. Klaar." sub="Zo gaat het in de winkel: van schap tot winkelwagen in een paar tellen." />
+        <ScanDemo />
       </section>
 
       {/* Waarom gratis */}

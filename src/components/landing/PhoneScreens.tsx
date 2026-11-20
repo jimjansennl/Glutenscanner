@@ -30,7 +30,7 @@ export function Phone({ children, className = '' }: { children: ReactNode; class
   )
 }
 
-function StatusBar() {
+export function StatusBar() {
   return (
     <div className="flex h-9 shrink-0 items-end justify-between px-6 pb-1 text-[10px] font-semibold">
       <span>9:41</span>
@@ -47,7 +47,7 @@ function Title({ children }: { children: ReactNode }) {
 }
 
 /** Kop van de scanner: logo links, menu rechts (zoals in de echte app). */
-function ScanHeader() {
+export function ScanHeader() {
   return (
     <div className="flex shrink-0 items-center justify-between px-3.5 pb-2">
       <span className="flex items-center gap-1.5">
@@ -62,7 +62,7 @@ function ScanHeader() {
 }
 
 /** Keuze met twee icoontjes: barcode of etiket/menukaart. */
-function ModeSwitch({ active }: { active: 'barcode' | 'text' }) {
+export function ModeSwitch({ active }: { active: 'barcode' | 'text' }) {
   return (
     <span className="flex rounded-full bg-neutral-800/90 p-0.5">
       {(
@@ -183,7 +183,7 @@ function ResultShell({ children, product }: { children: ReactNode; product: stri
   )
 }
 
-function Circle({ tone, children }: { tone: 'safe' | 'danger' | 'warning'; children: ReactNode }) {
+export function Circle({ tone, children }: { tone: 'safe' | 'danger' | 'warning'; children: ReactNode }) {
   const cls = {
     safe: 'bg-safe/15 ring-safe shadow-safe/60 text-safe',
     danger: 'bg-danger/15 ring-danger shadow-danger/60 text-danger',
