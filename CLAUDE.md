@@ -171,6 +171,10 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   "Navragen bij…": dat vond de gebruiker te logisch en dommig. Liever een slimme `tip`
   waar je zelf niet aan denkt (bijv. bij medicijnen: laat de apotheek "coeliakie" in je
   dossier zetten). De antwoordkaart op de website staat in het midden (`AnswerCard center`), met "Ook gevonden" eronder (niet ernaast), even breed als de zoekbalk.
+- **Moutazijn = overal rood** (gebruiker koos dit, veiligste keuze voor zijn dochter). Is moutazijn de
+  enige glutenbron, dan geeft de scanner een eigen uitleg (`MALT_VINEGAR_REASONS` in `glutenParser.ts`:
+  azijn van gerst, weinig gluten, niet glutenvrij, vraag je diëtist). Zegt de diëtist later dat een
+  beetje mag, dan kan het naar oranje (scanner én gids).
 - Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten

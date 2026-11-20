@@ -305,6 +305,23 @@ function mentionsGfWheatStarch(texts: string[]): boolean {
   return texts.some((t) => new RegExp(GF_WHEAT_STARCH.source).test(normalize(t)))
 }
 
+/** Moutazijn in allerlei talen: azijn van gerst, met maar heel weinig gluten. */
+const MALT_VINEGAR = /moutazijn|malt vinegar|malzessig|vinaigre de malt|aceto di malto|vinagre de malta|maltedikk|maltattika|maltaattika|ocet slodowy/
+
+/** Moutazijn is de énige glutenbron: haal moutazijn weg en kijk of er nog een glutengraan staat. */
+function onlyMaltVinegar(texts: string[]): boolean {
+  const norm = texts.map(normalize)
+  if (!norm.some((t) => MALT_VINEGAR.test(t))) return false
+  const rest = norm.map((t) => t.replace(new RegExp(MALT_VINEGAR.source, 'g'), ' ')).join(' ')
+  return findMatches(rest, GLUTEN_TRIGGERS, 'text').length === 0
+}
+
+/** Alleen moutazijn gevonden: rood, maar met eerlijke uitleg (er blijft weinig gluten in). */
+const MALT_VINEGAR_REASONS = [
+  'Bevat moutazijn. Dat is azijn gemaakt van gerst. Er blijft maar weinig gluten in, maar het is niet glutenvrij.',
+  'Bij coeliakie liever niet eten. Vraag je diëtist of een klein beetje mag.',
+]
+
 const GF_STARCH_NOTE = 'Bevat glutenvrij tarwezetmeel: dit is wettelijk glutenvrij en telt niet als tarwe.'
 
 /** "tarwe (trigo)": de Nederlandse naam, met de buitenlandse term erbij als die afwijkt. */
@@ -334,11 +351,13 @@ interface Evidence {
   /** "glutenvrij" staat alleen in de ingrediënten-/etikettekst: telt nooit als override. */
   textClaim: boolean
   gfWheatStarch: boolean
+  /** Moutazijn is de enige glutenbron in de tekst. */
+  maltVinegar: boolean
 }
 
 function conclude(
   { matches, warnings }: Pick<GlutenAnalysis, 'matches' | 'warnings'>,
-  { hasData, claimSources, textClaim, gfWheatStarch }: Evidence,
+  { hasData, claimSources, textClaim, gfWheatStarch, maltVinegar }: Evidence,
   context: AnalysisContext,
 ): GlutenAnalysis {
   const tips = context === 'menu' ? menuTips(warnings) : []
@@ -379,6 +398,10 @@ function conclude(
 
   if (matches.length > 0) {
     const sources = [...new Set(matches.map(describeMatch))]
+    // Alleen moutazijn: wel rood (veilige keuze), maar met uitleg waarom het "maar een beetje" is.
+    if (maltVinegar && !textClaim) {
+      return { status: 'danger', matches, warnings, reasons: MALT_VINEGAR_REASONS, contradictory: false, tips }
+    }
     // "glutenvrij" in de tekst naast een harde glutenbron: het risico wint altijd.
     const contradiction = textClaim
       ? [
@@ -482,6 +505,7 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
       claimSources,
       textClaim: ingredientTexts.some(hasGlutenFreeClaim),
       gfWheatStarch: mentionsGfWheatStarch(ingredientTexts),
+      maltVinegar: onlyMaltVinegar(ingredientTexts),
     },
     'label',
   )
@@ -534,6 +558,7 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
       claimSources: [],
       textClaim: context === 'label' && hasGlutenFreeClaim(text),
       gfWheatStarch: mentionsGfWheatStarch([text]),
+      maltVinegar: onlyMaltVinegar([text]),
     },
     context,
   )
