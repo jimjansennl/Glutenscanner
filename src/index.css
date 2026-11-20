@@ -34,6 +34,11 @@
   }
 }
 
+@keyframes flash {
+  from { opacity: 0.9; }
+  to { opacity: 0; }
+}
+
 @keyframes demo-progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }

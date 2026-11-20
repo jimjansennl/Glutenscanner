@@ -117,7 +117,7 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   profiel, geschiedenis, kaart voor de bediening). Elke pagina begint met een
   donkere band in de stijl van het bovenstuk. De router zit in `LandingPage.tsx`
   (History API, geen extra pakket). `vercel.json` stuurt alle adressen naar `index.html`.
-- De **startpagina** (`/`) heeft: het donkere bovenstuk, het bewegende voorbeeld "Richten. Scannen. Klaar." (`ScanDemo.tsx`: telefoon richt op een zak rijstwafels, kader springt om de barcode, uitslag Glutenvrij komt omhoog; de drie stappen ernaast lichten mee op en zijn aanklikbaar; speelt alleen als hij in beeld is; eigen ontwerp, gebruiker wilde dit in plaats van de drie losse stappen), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
+- De **startpagina** (`/`) heeft: het donkere bovenstuk, het bewegende voorbeeld "Richten. Scannen. Klaar." (`ScanDemo.tsx`: drie verhaaltjes na elkaar met tabjes Barcode / Etiket / Menukaart: rijstwafels → Glutenvrij, koekjes-etiket → Bevat gluten (gerstemoutextract), menukaart → Twijfel met vraag voor de bediening; elk in drie stappen; de stappen ernaast lichten mee op en zijn aanklikbaar; speelt alleen als hij in beeld is; eigen ontwerp, gebruiker wilde dit in plaats van de drie losse stappen), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
   Scrollen mag. Een pagina van één scherm vond de gebruiker te kaal en "wit en saai".
 - **Niet terugzetten:** een aparte pagina Functies, en op de startpagina de cijferblokken
   (€ 0, ∞, 11, 106), het functieblok, het glutengidsblok, de carrousel en de vragen. Die staan op hun eigen

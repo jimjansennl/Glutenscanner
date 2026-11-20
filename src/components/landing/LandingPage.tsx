@@ -450,7 +450,7 @@ function HomePage() {
 
       {/* Hoe het werkt: bewegend voorbeeld in plaats van drie losse stappen */}
       <section className="px-6 py-20 lg:py-28">
-        <SectionTitle eyebrow="Hoe het werkt" title="Richten. Scannen. Klaar." sub="Zo gaat het in de winkel: van schap tot winkelwagen in een paar tellen." />
+        <SectionTitle eyebrow="Hoe het werkt" title="Richten. Scannen. Klaar." sub="Barcode, etiket of menukaart: in een paar tellen weet je of het mag." />
         <ScanDemo />
       </section>
 
