@@ -264,8 +264,20 @@ const FAQ = [
     a: 'Ja. Geen proefperiode, geen scanlimiet, geen abonnement en geen account. Alle functies zijn voor iedereen, altijd.',
   },
   {
+    q: 'Hoe weet hij of iets glutenvrij is?',
+    a: 'Scan je een barcode, dan zoekt hij het product op in een grote open database met producten uit de hele wereld. Maak je een foto van een etiket of menukaart, dan leest hij zelf de tekst en zoekt hij naar glutenwoorden, in 11 talen.',
+  },
+  {
+    q: 'Is het geschikt bij coeliakie?',
+    a: 'Ja. We hebben hem gemaakt voor onze eigen dochter met coeliakie. Bij Instellingen kies je zelf of "kan sporen bevatten" rood of oranje wordt.',
+  },
+  {
     q: 'Moet ik een app downloaden?',
     a: `Nee. Open ${SITE_LABEL} op je telefoon en de scanner start direct. Wil je een icoon tussen je apps? iPhone: tik op "Deel" en dan "Zet op beginscherm". Android: tik op ⋮ en dan "Toevoegen aan startscherm".`,
+  },
+  {
+    q: 'Werkt het zonder internet?',
+    a: 'Grotendeels wel. De glutengids, het lezen van etiketten en producten die je al eens gescand hebt, werken ook zonder internet. Een nieuwe barcode opzoeken lukt alleen met internet.',
   },
   {
     q: 'Worden mijn foto’s geüpload?',
@@ -274,6 +286,10 @@ const FAQ = [
   {
     q: 'Werkt het in het buitenland?',
     a: 'Zeker. De scanner herkent glutentermen in 11 Europese talen en meldt ze in het Nederlands. Met de kaart voor de bediening leg je coeliakie uit aan de bediening, in 10 talen.',
+  },
+  {
+    q: 'Wat als een product niet gevonden wordt?',
+    a: 'Dan krijg je oranje, nooit groen. Tik op "Fotografeer de ingrediënten" en maak een foto van het etiket. Dan leest de scanner de ingrediënten zelf.',
   },
   {
     q: 'Kan ik er blind op vertrouwen?',
