@@ -444,55 +444,53 @@ function HomePage() {
         <ScanDemo />
       </section>
 
-      {/* Waarom gratis */}
-      <section className="px-4 pb-20 lg:px-6 lg:pb-28">
-        <div data-reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-[40px] bg-accent px-6 py-12 text-center text-white lg:px-14 lg:py-16">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#ffd75e]/20" />
-          <Heart size={44} className="relative mx-auto fill-white" />
-          <h2 className="relative mt-6 font-display text-[34px] font-bold leading-tight lg:text-[44px]">Waarom gratis?</h2>
-          <p className="relative mx-auto mt-5 max-w-2xl text-[17px] leading-relaxed text-white/90 lg:text-[21px]">
-            Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Dan
-            hoort de hulp daarbij gewoon voor iedereen beschikbaar te zijn: onbeperkt, zonder account en zonder reclame.
-          </p>
-        </div>
-      </section>
+      {/* Waarom gratis en Op je telefoon: compact naast elkaar (telefoon: onder elkaar) */}
+      <section id="telefoon" className="scroll-mt-28 px-4 pb-20 lg:px-6 lg:pb-28">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 lg:grid-cols-2">
+          <div data-reveal className="relative flex flex-col justify-center overflow-hidden rounded-[36px] bg-accent px-7 py-10 text-white lg:px-10">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
+            <div className="pointer-events-none absolute -bottom-20 -left-12 h-48 w-48 rounded-full bg-[#ffd75e]/20" />
+            <Heart size={34} className="relative fill-white" />
+            <h2 className="relative mt-4 font-display text-[30px] font-bold leading-tight lg:text-[36px]">Waarom gratis?</h2>
+            <p className="relative mt-3 text-[16px] leading-relaxed text-white/90 lg:text-[18px]">
+              Omdat veilig eten geen abonnement zou moeten zijn. Wie coeliakie heeft, leest al genoeg kleine lettertjes. Daarom
+              is alles gratis: zonder account en zonder reclame.
+            </p>
+          </div>
 
-      {/* Naar je telefoon: op de desktop de QR-code, op de telefoon meteen de scanner. */}
-      <section id="telefoon" className="scroll-mt-28 px-4 py-20 lg:px-6 lg:py-28">
-        {desktop ? (
-          <div data-reveal className="mx-auto flex max-w-5xl flex-col items-center rounded-[40px] bg-white px-10 py-16 text-center shadow-sm ring-1 ring-neutral-200">
-            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub={`Richt de camera van je telefoon op de code, of ga naar ${SITE_LABEL}. De scanner start meteen.`} />
-            <div className="mt-10 flex items-center gap-14">
-              <QrCode />
-              <ol className="flex flex-col gap-4 text-left text-[18px]">
-                {[
-                  'Scan de QR-code met je camera',
-                  'Sta cameratoegang toe',
-                  'Handig: zet hem op je beginscherm',
-                ].map((t, i) => (
-                  <li key={t} className="flex items-center gap-4">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-[17px] font-bold text-white">{i + 1}</span>
+          {desktop ? (
+            <div data-reveal className="flex items-center gap-8 rounded-[36px] bg-white px-10 py-10 shadow-sm ring-1 ring-neutral-200">
+              <QrCode size={136} />
+              <div>
+                <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-accent">Op je telefoon</p>
+                <h2 className="mt-2 font-display text-[30px] font-bold leading-tight lg:text-[34px]">Geen app nodig.</h2>
+                <ol className="mt-4 flex flex-col gap-2.5 text-[16px]">
+                  {['Scan de code met je camera', 'Sta cameratoegang toe', 'Handig: zet hem op je beginscherm'].map((t, i) => (
+                    <li key={t} className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent font-display text-[14px] font-bold text-white">{i + 1}</span>
+                      {t}
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-4 font-display text-[20px] font-bold text-accent">{SITE_LABEL}</p>
+              </div>
+            </div>
+          ) : (
+            <div data-reveal className="rounded-[36px] bg-white px-7 py-10 shadow-sm ring-1 ring-neutral-200">
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-accent">Op je telefoon</p>
+              <h2 className="mt-2 font-display text-[30px] font-bold leading-tight">Geen app nodig.</h2>
+              <p className="mt-2 text-[16px] text-neutral-600">Je bent er al. Tik bovenaan op Scan en de scanner start.</p>
+              <ol className="mt-4 flex flex-col gap-2.5 text-[16px]">
+                {['Sta cameratoegang toe', 'Handig: tik op Deel en dan "Zet op beginscherm"'].map((t, i) => (
+                  <li key={t} className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent font-display text-[14px] font-bold text-white">{i + 1}</span>
                     {t}
                   </li>
                 ))}
               </ol>
             </div>
-            <p className="mt-10 font-display text-[28px] font-bold text-accent">{SITE_LABEL}</p>
-          </div>
-        ) : (
-          <div data-reveal className="mx-auto flex max-w-xl flex-col items-center rounded-[36px] bg-white px-6 py-12 text-center shadow-sm ring-1 ring-neutral-200">
-            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub="Je bent er al. Tik bovenaan op Scan en de scanner start." />
-            <ol className="mt-8 flex flex-col gap-3 text-left text-[16px]">
-              {['Sta cameratoegang toe', 'Handig: tik op Deel en dan "Zet op beginscherm"'].map((t, i) => (
-                <li key={t} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent font-display text-[15px] font-bold text-white">{i + 1}</span>
-                  {t}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
+          )}
+        </div>
       </section>
 
     </>
