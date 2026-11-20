@@ -2,6 +2,8 @@ import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Star } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
+import { IngredientChips } from '../components/result/IngredientChips'
+import { parseIngredientList } from '../services/ingredientList'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { GlutenMatch, GlutenStatus, RecipeChange, ScanResult } from '../types/product'
 import { isStarred, setStarred } from '../services/products'
@@ -262,6 +264,11 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
   const isCodeScan = result.source !== 'photo'
   // Open Food Facts zet allergenen tussen liggende streepjes (_blé_): die laten we niet zien.
   const details = (product?.ingredientsText ?? (isCodeScan && result.source !== 'qr' ? undefined : result.rawValue))?.replace(/_/g, '')
+  // Etiket of database: de ingrediënten als losse blokjes. Menukaarten blijven gewone tekst.
+  const ingredientList = useMemo(
+    () => (details && result.context !== 'menu' ? parseIngredientList(details) : null),
+    [details, result.context],
+  )
   const headerLabel =
     result.source === 'photo' ? (result.context === 'menu' ? 'Menukaart' : 'Etiket') : meta.label
 
@@ -297,7 +304,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
       )}
 
       {/* Menukaart: de vragen hieronder vervangen de losse tips. */}
-      <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} />
+      <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} hideMatches={!!ingredientList} />
 
       {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
 
@@ -325,7 +332,19 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
         </button>
       )}
 
-      {details && (
+      {details && ingredientList && (
+        <>
+          <IngredientChips
+            list={ingredientList}
+            danger={analysis.matches}
+            warning={analysis.warnings}
+            fullText={product ? undefined : <Highlighted text={details} danger={analysis.matches} warning={analysis.warnings} />}
+          />
+          <ReadAlong text={details} danger={analysis.matches} warning={analysis.warnings} />
+        </>
+      )}
+
+      {details && !ingredientList && (
         <section className="rounded-[22px] bg-surface p-4 text-center">
           <h3 className="mb-2 text-[13px] font-medium uppercase tracking-wide text-muted">
             {product ? 'Ingrediënten' : 'Dit las de scanner'}

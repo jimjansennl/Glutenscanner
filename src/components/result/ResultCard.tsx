@@ -100,7 +100,8 @@ function Tips({ tips }: { tips: string[] }) {
   )
 }
 
-export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
+/** `hideMatches`: de ingrediënten staan al als gekleurde blokjes eronder, dus geen lijst met treffers. */
+export function ResultCard({ analysis, hideMatches = false }: { analysis: GlutenAnalysis; hideMatches?: boolean }) {
   const style = STATUS[analysis.status]
   const Icon = style.icon
   // Bij een gluten-match de bron feitelijk benoemen, met vertaling van buitenlandse termen.
@@ -149,8 +150,12 @@ export function ResultCard({ analysis }: { analysis: GlutenAnalysis }) {
         ))}
       </ul>
 
-      <MatchList title="Hier zit gluten in" matches={analysis.matches} chip={STATUS.danger.chip} />
-      <MatchList title="Hier zit misschien gluten in" matches={analysis.warnings} chip={STATUS.warning.chip} />
+      {!hideMatches && (
+        <>
+          <MatchList title="Hier zit gluten in" matches={analysis.matches} chip={STATUS.danger.chip} />
+          <MatchList title="Hier zit misschien gluten in" matches={analysis.warnings} chip={STATUS.warning.chip} />
+        </>
+      )}
       {analysis.contradictory && (
         <section className="flex flex-col items-center gap-1.5 rounded-2xl bg-warning/10 px-4 py-3 text-center ring-1 ring-warning/40">
           <AlertTriangle size={18} className="text-warning" aria-hidden />
