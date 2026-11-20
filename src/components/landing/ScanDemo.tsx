@@ -18,7 +18,7 @@ import { Circle, ModeSwitch, Phone, ScanHeader, StatusBar } from './PhoneScreens
  * Bewegend voorbeeld op de startpagina, met drie verhaaltjes na elkaar:
  * barcode (rijstwafels → groen), etiket (koekjes → rood, gerstemoutextract) en
  * menukaart (→ oranje, met een vraag voor de bediening). Niets te kiezen: het speelt vanzelf
- * alles af. De drie stappen ernaast lichten mee op; een labeltje in beeld zegt wat er gescand wordt.
+ * alles af. Een labeltje in beeld zegt wat er gescand wordt. Geen stappen ernaast (gebruiker: niet nodig).
  * Eigen ontwerp in de stijl van de site, geen beelden van anderen.
  */
 
@@ -30,13 +30,6 @@ const SCENES: { id: SceneId; label: string; icon: LucideIcon }[] = [
   { id: 'barcode', label: 'Barcode', icon: Barcode },
   { id: 'label', label: 'Etiket', icon: FileText },
   { id: 'menu', label: 'Menukaart', icon: UtensilsCrossed },
-]
-
-/** Dezelfde drie stappen voor alles: er hoeft niets gekozen te worden. */
-const STEPS = [
-  { title: 'Richt je camera', text: 'Op een barcode, een etiket of een menukaart.' },
-  { title: 'Hij leest het', text: 'Een barcode leest hij vanzelf. Bij een etiket of menukaart tik je op de knop.' },
-  { title: 'Zie de uitslag', text: 'Groen, oranje of rood, met uitleg waarom. Kijk daarna nog even zelf.' },
 ]
 
 const BARS = [2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 3, 1, 1, 2, 1, 3, 1, 2, 2, 1, 3]
@@ -289,9 +282,9 @@ function Box({ title, children }: { title: string; children: ReactNode }) {
 /* ---------- Het geheel ---------- */
 
 const OBJECT_STYLE: Record<SceneId, string> = {
-  barcode: 'left-[6%] top-[12%] h-[74%] w-[44%] lg:left-[10%] lg:w-[36%]',
-  label: 'left-[5%] top-[14%] h-[68%] w-[46%] lg:left-[8%] lg:w-[40%]',
-  menu: 'left-[5%] top-[10%] h-[76%] w-[46%] lg:left-[8%] lg:w-[38%]',
+  barcode: 'left-[6%] top-[12%] h-[74%] w-[44%] lg:left-[17%] lg:w-[28%]',
+  label: 'left-[5%] top-[14%] h-[68%] w-[46%] lg:left-[14%] lg:w-[33%]',
+  menu: 'left-[5%] top-[10%] h-[76%] w-[46%] lg:left-[15%] lg:w-[30%]',
 }
 
 export function ScanDemo() {
@@ -326,13 +319,13 @@ export function ScanDemo() {
 
   return (
     <div ref={ref} className="mx-auto mt-12 max-w-6xl lg:mt-16">
-      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
+      <div className="mx-auto max-w-4xl">
         {/* Het toneel */}
         <div className="relative h-[460px] overflow-hidden rounded-[36px] bg-[#10140f] lg:h-[600px] lg:rounded-[40px]">
           <div className="pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-accent/25 blur-[120px]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
           {/* Wat er nu gescand wordt (geen knop, alleen een labeltje) */}
-          <span key={label} className="absolute left-5 top-5 z-10 flex animate-slide-up items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-display text-[15px] font-bold text-white ring-1 ring-white/15 backdrop-blur lg:left-7 lg:top-7 lg:text-[17px]">
+          <span key={label} className="absolute bottom-5 left-5 z-10 flex animate-slide-up lg:bottom-auto lg:top-7 items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-display text-[15px] font-bold text-white ring-1 ring-white/15 backdrop-blur lg:left-7 lg:text-[17px]">
             <SceneIcon size={17} className="text-[#7ee2a8]" />
             {label}
           </span>
@@ -345,7 +338,7 @@ export function ScanDemo() {
             <div className="h-full animate-slide-up">{id === 'barcode' ? <Bag /> : id === 'label' ? <Pack /> : <MenuCard />}</div>
           </div>
           <div
-            className="absolute left-1/2 top-1/2 origin-center transition-transform duration-700 ease-out [--dx:-44%] motion-reduce:transition-none lg:[--dx:-30%]"
+            className="absolute left-1/2 top-1/2 origin-center transition-transform duration-700 ease-out [--dx:-44%] motion-reduce:transition-none lg:[--dx:-8%]"
             style={{ transform: `translate(var(--dx), -50%) ${phoneTilt}` }}
           >
             <div className="scale-[0.76] lg:scale-100">
@@ -361,41 +354,6 @@ export function ScanDemo() {
           </div>
         </div>
 
-        {/* De drie stappen, de actieve licht op */}
-        <ol className="flex flex-col gap-3">
-          {STEPS.map(({ title, text }, i) => {
-            const active = i === step
-            return (
-              <li key={i}>
-                <div
-                  className={`relative flex w-full items-start gap-4 overflow-hidden rounded-[26px] p-5 text-left transition lg:p-6 ${
-                    active ? 'bg-white shadow-xl shadow-black/5 ring-1 ring-neutral-200' : ''
-                  }`}
-                  aria-current={active ? 'step' : undefined}
-                >
-                  <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-display text-[18px] font-bold transition ${
-                      active ? 'bg-accent text-white' : 'bg-neutral-200 text-neutral-500'
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                  <span>
-                    <span className={`block font-display text-[22px] font-bold lg:text-[24px] ${active ? 'text-[#14130f]' : 'text-neutral-500'}`}>{title}</span>
-                    <span className={`mt-1 block text-[16px] leading-relaxed lg:text-[17px] ${active ? 'text-neutral-600' : 'text-neutral-400'}`}>{text}</span>
-                  </span>
-                  {active && visible && (
-                    <span
-                      key={`${scene}-${step}`}
-                      className="absolute inset-x-0 bottom-0 h-1 origin-left bg-accent motion-reduce:hidden"
-                      style={{ animation: `demo-progress ${STEP_MS}ms linear both` }}
-                    />
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ol>
       </div>
     </div>
   )
