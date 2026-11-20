@@ -537,6 +537,67 @@ export function stripRecipe(text: string): { text: string; hadRecipe: boolean } 
 }
 
 /** Vrije tekst analyseren: OCR van een etiket of menukaart, of QR-inhoud. */
+/** Het woord "Ingrediënten" (ook als de dubbele punt door de camera is weggevallen). */
+const DECLARATION_WORD = /(?:ingredi\p{L}{1,3}nten|ingredients?|zutaten|ingr\p{L}dients|ingredientes|ingredienti|ingredienser|sk\p{L}adniki)/iu
+
+export const NO_LIST_REASON = 'Ik zie geen ingrediënten op de foto. Maak een foto van het stukje met "Ingrediënten:".'
+
+/**
+ * Glutenwoorden die de camera net verkeerd kan lezen ("tarvebloem"). Woorden die bijna zo'n
+ * woord zijn, worden oranje: liever even zelf kijken dan een groen vinkje dat niet klopt.
+ */
+const NEAR_KEYS: [string, string][] = [
+  ['tarwe', 'tarwe'],
+  ['gerst', 'gerst'],
+  ['rogge', 'rogge'],
+  ['spelt', 'spelt'],
+  ['weizen', 'tarwe'],
+  ['gerste', 'gerst'],
+  ['roggen', 'rogge'],
+  ['dinkel', 'spelt'],
+  ['wheat', 'tarwe'],
+  ['barley', 'gerst'],
+  ['gluten', 'gluten'],
+]
+/** Staartjes van samengestelde glutenwoorden: tarwe|bloem, gerst|emout, wheat|flour. */
+const NEAR_TAILS = /^(-?(bloem|meel|zetmeel|eiwit|gluten|vlokken|kiemen|kiem|zemelen|gries|griesmeel|mout|moutextract|emout|emoutextract|stroop|vezel|flour|starch|protein|malt|mehl|starke|eiweiss|malz|flocken|kleie|grutten|korrels|brood|crackers))$/
+/** Alleen deze mogen zonder staartje ("tarve"); bij de rest lijken te veel gewone woorden (kerst, winkel). */
+const STANDALONE_KEYS = new Set(['tarwe', 'wheat'])
+/** Echte woorden die toevallig op een glutenwoord lijken. */
+const NEAR_EXCEPTIONS = /^(rouge|tarte|tarde|cheat|kerst|targe|tarse|waren|weizen|gerste|roggen|wheat|barley|gluten|haver|harte|garst|getest|geest|sterk|spelen|speelt|spel|gelden|golden|glutamaat|glutamine|wheats|tarwes)/
+
+function editDistance(a: string, b: string): number {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array<number>(b.length).fill(0)])
+  for (let j = 1; j <= b.length; j++) d[0][j] = j
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+  return d[a.length][b.length]
+}
+
+/** Woorden die bijna (maar niet precies) met een glutenwoord beginnen. */
+export function nearGlutenWords(text: string): { word: string; like: string }[] {
+  const out: { word: string; like: string }[] = []
+  const seen = new Set<string>()
+  for (const raw of text.match(/\p{L}{5,}/gu) ?? []) {
+    const w = normalize(raw)
+    if (seen.has(w) || NEAR_EXCEPTIONS.test(w)) continue
+    for (const [key, like] of NEAR_KEYS) {
+      const head = w.slice(0, key.length)
+      if (head === key) break // echt glutenwoord: dat vindt de gewone zoektocht al
+      // Alleen het hele woord ("tarve") of met een bekend staartje ("tarvebloem"), anders te veel
+      // gewone woorden die toevallig lijken ("verste", "kerst").
+      const tail = w.slice(key.length)
+      if (head.length === key.length && ((tail === '' && STANDALONE_KEYS.has(key)) || NEAR_TAILS.test(tail)) && editDistance(head, key) === 1) {
+        seen.add(w)
+        out.push({ word: raw, like })
+        break
+      }
+    }
+  }
+  return out
+}
+
 export function analyzeText(rawText: string, context: AnalysisContext = 'label'): GlutenAnalysis {
   const { text, hadRecipe } = context === 'label' ? stripRecipe(rawText) : { text: rawText, hadRecipe: false }
   const result = scan([{ text, source: 'text' }], context)
@@ -552,7 +613,15 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
       tips: [],
     }
   }
-  return conclude(
+  // Geen ingrediëntenlijst te zien (bijv. alleen de voedingswaarde): dan nooit groen.
+  const looksLikeList = DECLARATION_WORD.test(text) || (text.match(/,\s*\p{L}/gu)?.length ?? 0) >= 4 // komma's tussen woorden, niet in getallen (52,5 g)
+  if (context === 'label' && !looksLikeList && result.matches.length === 0 && !hasGlutenFreeClaim(text)) {
+    return { status: 'warning', matches: [], warnings: result.warnings, reasons: [NO_LIST_REASON], tips: [] }
+  }
+  // Bijna-glutenwoorden (leesfout van de camera): oranje met eigen uitleg.
+  const near = context === 'label' ? nearGlutenWords(text) : []
+  for (const n of near) result.warnings.push({ label: `Lijkt op ${n.like}`, term: n.word, source: 'text' })
+  const out = conclude(
     result,
     {
       hasData: text.trim().length > 0,
@@ -564,4 +633,9 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
     },
     context,
   )
+  if (out.status === 'warning' && near.length > 0 && out.warnings.every((w) => w.label.startsWith('Lijkt op'))) {
+    const n = near[0]
+    out.reasons = [`De camera las "${n.word}". Dat lijkt op ${n.like}. Kijk even zelf op de verpakking.`]
+  }
+  return out
 }

@@ -4,6 +4,7 @@ import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { IngredientChips } from '../components/result/IngredientChips'
 import { parseIngredientList } from '../services/ingredientList'
+import { NO_LIST_REASON } from '../services/glutenParser'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { GlutenMatch, GlutenStatus, RecipeChange, ScanResult } from '../types/product'
 import { isStarred, setStarred } from '../services/products'
@@ -315,7 +316,8 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
       )}
 
       {/* Product onbekend, of wel bekend maar zonder ingrediënten: dan zelf het etiket lezen. */}
-      {isCodeScan && result.source !== 'qr' && !product?.ingredientsText && analysis.matches.length === 0 && (
+      {((isCodeScan && result.source !== 'qr' && !product?.ingredientsText && analysis.matches.length === 0) ||
+        analysis.reasons[0] === NO_LIST_REASON) && (
         <button
           onClick={() => {
             // Meteen in de stand etiket/menu, met de sluiterknop klaar.

@@ -176,6 +176,11 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   enige glutenbron, dan geeft de scanner een eigen uitleg (`MALT_VINEGAR_REASONS` in `glutenParser.ts`:
   azijn van gerst, weinig gluten, niet glutenvrij, vraag je diëtist). Zegt de diëtist later dat een
   beetje mag, dan kan het naar oranje (scanner én gids).
+- **Foto nooit groen zonder ingrediëntenlijst** (`NO_LIST_REASON`): geen woord "Ingrediënten" en geen
+  lijst met komma's tussen woorden → oranje "Ik zie geen ingrediënten op de foto" plus knop om opnieuw te
+  fotograferen. **Leesfouten** (`nearGlutenWords`): woorden die één letter verschillen van een glutenwoord
+  mét bekend staartje ("tarvebloem", "gerstemout") → oranje "De camera las … Dat lijkt op tarwe". Getest
+  tegen de woordenboeken nl/en/de/fr om valse meldingen te vermijden. Tests: `ocrbench/safety.ts`.
 - Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
