@@ -9,12 +9,9 @@ import {
   Barcode,
   Check,
   CheckCircle2,
-  Clock3,
   Heart,
   FileText,
   Infinity as InfinityIcon,
-  Plane,
-  Languages,
   Menu,
   Minus,
   Plus,
@@ -43,6 +40,7 @@ import {
   ScreenTravel,
 } from './PhoneScreens'
 import { ScanDemo } from './ScanDemo'
+import { Features } from './Features'
 
 /**
  * Op de desktop is dit een informatiesite: de scanner heeft een telefooncamera nodig.
@@ -259,14 +257,6 @@ const COLORS: { icon: LucideIcon; label: string; text: string; cls: string }[] =
   { icon: AlertTriangle, label: 'Twijfel', text: 'Misschien gluten. Lees het etiket of vraag het na.', cls: 'bg-[#fff1d6] text-[#a35f00]' },
   { icon: XCircle, label: 'Bevat gluten', text: 'Gluten gevonden. Niet eten.', cls: 'bg-[#ffe3e0] text-[#c0281d]' },
 ]
-
-/** Wat de scanner nog meer kan: alleen wat niet al elders op de site staat. */
-const EXTRAS = [
-  [Languages, '11 talen', 'Trigo, frumento, Weizen of hvete: hij herkent glutenwoorden in 11 talen en zegt in het Nederlands wat het is.', 'bg-[#ffd75e]'],
-  [ShieldCheck, 'Jouw profiel', 'Strikte coeliakie of gevoelig? Jij kiest of "kan sporen bevatten" rood of oranje wordt. Dat zet je bij Instellingen.', 'bg-white'],
-  [Clock3, 'Geschiedenis', 'Je laatste 15 scans terugzien. Filter op glutenvrij, twijfel of bevat gluten.', 'bg-[#7ee2a8]'],
-  [Plane, 'Kaart voor de bediening', 'Laat in een restaurant zien dat je geen gluten mag. Hier en in het buitenland, in 10 talen.', 'bg-white'],
-] as const
 
 const FAQ = [
   {
@@ -560,23 +550,8 @@ function HowPage() {
         </p>
       </section>
       <section className="px-4 py-16 lg:px-6 lg:py-24">
-        <SectionTitle eyebrow="Handig" title="Wat de scanner nog meer kan" />
-        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {EXTRAS.map(([Icon, title, text, bg], i) => (
-            <article
-              key={title}
-              data-reveal
-              className={`flex flex-col items-center rounded-[32px] p-7 text-center ring-1 ring-black/5 ${bg}`}
-              style={{ transitionDelay: `${i * 80}ms` }}
-            >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#14130f] text-white">
-                <Icon size={26} />
-              </span>
-              <h3 className="mt-5 font-display text-[22px] font-bold">{title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{text}</p>
-            </article>
-          ))}
-        </div>
+        <SectionTitle eyebrow="Handig" title="Wat de scanner nog meer kan" sub="Meer dan alleen gluten zoeken. En alles is gratis." />
+        <Features />
       </section>
     </>
   )

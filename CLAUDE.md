@@ -113,8 +113,10 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   app. In het ☰-menu van de app opent "Glutengids" direct het tabblad Gids.
 - **Elk menu-item is een eigen pagina** met een eigen adres: `/hoe-het-werkt`,
   `/in-actie`, `/glutengids` en `/vragen`. Hoe het werkt heeft: de drie manieren van
-  scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" (11 talen, jouw
-  profiel, geschiedenis, kaart voor de bediening). Elke pagina begint met een
+  scannen, wat de kleuren betekenen en "Wat de scanner nog meer kan" als raster (`Features.tsx`):
+  één grote donkere kaart "Snapt 11 talen" en vier witte kaarten met een kleine telefoon (Ook
+  zonder internet, Merkt een nieuw recept, Weet wat je moet vragen, Geeft een betere keus),
+  daaronder een rij labeltjes (profiel, geschiedenis, ster, tikjes, beginscherm). Gebruiker koos dit. Elke pagina begint met een
   donkere band in de stijl van het bovenstuk. De router zit in `LandingPage.tsx`
   (History API, geen extra pakket). `vercel.json` stuurt alle adressen naar `index.html`.
 - De **startpagina** (`/`) heeft: het donkere bovenstuk, het bewegende voorbeeld "Richten. Scannen. Klaar." (`ScanDemo.tsx`: drie verhaaltjes vanzelf na elkaar, **zonder tabjes of keuze** (gebruiker: mensen klikken dat niet aan), alleen een labeltje in beeld (Barcode / Etiket / Menukaart): rijstwafels → Glutenvrij, koekjes-etiket → Bevat gluten (gerstemoutextract), menukaart → Twijfel met vraag voor de bediening; dezelfde drie algemene stappen voor alles; de stappen ernaast lichten mee op (niet aanklikbaar); speelt alleen als hij in beeld is; eigen ontwerp, gebruiker wilde dit in plaats van de drie losse stappen), "Waarom gratis?", het blok met de QR-code (`#telefoon`) en de footer.
