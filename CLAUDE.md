@@ -49,8 +49,10 @@ npx vite preview --port 4173   # gebouwde versie bekijken
   `lg:` = desktop; de desktop moet er precies hetzelfde uit blijven zien). Wie welke kant
   ziet, regelt `src/services/siteNav.ts`: op de telefoon is `/` de scanner; het logo opent
   `/` met een vlaggetje in de geschiedenis (terugknop = scanner); `/glutengids`, `/vragen`
-  enz. zijn altijd de site. Op de telefoon worden de groene knoppen "Open de scanner"
-  (geen QR-code, je bent er al) en staat rechts in de kop een knop "Scan" en ☰.
+  enz. zijn altijd de site. Op de telefoon staat in de kop alleen het logo-icoon (zonder het
+  woord "glutenscanner", te druk) en rechts een knop "Scan" en ☰. Er staan op de telefoon
+  **geen** extra knoppen "Open de scanner" op de pagina's of in het ☰-menu: die knop staat
+  al in de kop.
 - **Hamburgermenu (☰)** rechtsboven in de scanner: dezelfde onderdelen als de kop van
   de website (Hoe het werkt, In actie, Glutengids, Vragen), elk als eigen
   scherm. De code staat in `src/components/landing/LandingPanels.tsx` en
@@ -94,8 +96,8 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 **Website (desktop)**
 - Het **donkere bovenstuk** blijft zoals het is: groene gloed, de kop "Eet met een gerust
   hart.", drie telefoons in een waaier en de zwevende labels. Daar is de gebruiker blij mee.
-- Er staat **geen knop** meer in het bovenstuk op de desktop: "Op je telefoon" staat al in de
-  kop (eerder ook "Hoe werkt het?" weggehaald). Op de telefoon staat er wel "Open de scanner".
+- Er staat **geen knop** in het bovenstuk (desktop én telefoon): "Op je telefoon" / "Scan"
+  staat al in de kop (eerder ook "Hoe werkt het?" weggehaald).
 - De footer staat altijd onderaan het scherm, ook bij een korte pagina (`flex-1` op `main`).
 - De **kop** blijft zoals hij is: logo, de menu-items Hoe het werkt, In actie,
   Glutengids en Vragen, en de groene knop "Op je telefoon". "Functies" is bewust

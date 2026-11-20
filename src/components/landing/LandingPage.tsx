@@ -130,13 +130,14 @@ function useReveal(path: string) {
   }, [path])
 }
 
-function Logo({ light = false }: { light?: boolean }) {
+/** `compact`: op de telefoon alleen het icoon (de kop is daar te vol), op de desktop met het woord. */
+function Logo({ light = false, compact = false }: { light?: boolean; compact?: boolean }) {
   return (
     <span className="flex items-center gap-2.5">
       <span className="flex h-9 w-9 rotate-[-6deg] items-center justify-center rounded-2xl bg-accent text-white shadow-lg shadow-accent/30 lg:h-10 lg:w-10">
         <ScanBarcode size={20} />
       </span>
-      <span className={`font-display text-[19px] font-bold tracking-tight lg:text-[21px] ${light ? 'text-white' : 'text-[#14130f]'}`}>
+      <span className={`font-display text-[19px] font-bold tracking-tight lg:text-[21px] ${compact ? 'hidden lg:inline' : ''} ${light ? 'text-white' : 'text-[#14130f]'}`}>
         glutenscanner
       </span>
     </span>
@@ -154,29 +155,6 @@ function QrCode({ size = 176 }: { size?: number }) {
   return <div ref={ref} className="rounded-3xl bg-white p-3 shadow-xl" style={{ width: size + 24, height: size + 24 }} />
 }
 
-const PRIMARY_CLS =
-  'group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-display text-[18px] font-semibold text-white shadow-xl shadow-accent/30 transition hover:-translate-y-0.5 hover:bg-[#1a9258] hover:shadow-2xl hover:shadow-accent/40'
-
-/** Grote groene knop. Desktop: naar de QR-code. Telefoon: meteen de scanner openen. */
-function PrimaryButton({ children, href = PHONE_HREF }: { children: ReactNode; href?: string }) {
-  const desktop = useDesktop()
-  const arrow = <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-  if (!desktop) {
-    return (
-      <button onClick={openScanner} className={PRIMARY_CLS}>
-        <ScanBarcode size={20} />
-        Open de scanner
-        {arrow}
-      </button>
-    )
-  }
-  return (
-    <Link href={href} className={PRIMARY_CLS}>
-      {children}
-      {arrow}
-    </Link>
-  )
-}
 
 function SectionTitle({ eyebrow, title, sub, light = false }: { eyebrow: string; title: ReactNode; sub?: string; light?: boolean }) {
   return (
@@ -430,10 +408,6 @@ function HomePage() {
             Scan een barcode, etiket of menukaart en zie binnen seconden of er gluten in zitten. Onbeperkt, zonder
             account, gewoon in je browser op <b className="text-white">{SITE_LABEL}</b>.
           </p>
-          {/* Desktop: geen knop, "Op je telefoon" staat al in de kop. Telefoon: "Open de scanner". */}
-          <div className="mt-9 flex items-center gap-4 lg:hidden">
-            <PrimaryButton>Open op je telefoon</PrimaryButton>
-          </div>
           <p className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px] text-white/55 lg:text-[15px]">
             {['Altijd gratis', 'Onbeperkt scannen', 'Geen account', 'Foto’s blijven op je toestel'].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
@@ -537,10 +511,7 @@ function HomePage() {
           </div>
         ) : (
           <div data-reveal className="mx-auto flex max-w-xl flex-col items-center rounded-[36px] bg-white px-6 py-12 text-center shadow-sm ring-1 ring-neutral-200">
-            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub="Je bent er al. Tik op de knop en de scanner start." />
-            <div className="mt-8">
-              <PrimaryButton>Open de scanner</PrimaryButton>
-            </div>
+            <SectionTitle eyebrow="Op je telefoon" title="Geen app nodig. Gewoon scannen." sub="Je bent er al. Tik bovenaan op Scan en de scanner start." />
             <ol className="mt-8 flex flex-col gap-3 text-left text-[16px]">
               {['Sta cameratoegang toe', 'Handig: tik op Deel en dan "Zet op beginscherm"'].map((t, i) => (
                 <li key={t} className="flex items-center gap-3">
@@ -650,12 +621,6 @@ function GuidePage() {
         sub="Typ een product en zie meteen of het mag."
       />
       <SiteGuide />
-      {/* Alleen op de telefoon: op de desktop staat "Op je telefoon" al in de kop. */}
-      <section className="bg-[#10140f] px-6 pb-24 lg:hidden">
-        <div className="flex justify-center">
-          <PrimaryButton>Neem de gids mee op je telefoon</PrimaryButton>
-        </div>
-      </section>
     </>
   )
 }
@@ -708,8 +673,8 @@ export function LandingPage() {
       {/* Navigatie: desktop alles in één balk; telefoon logo, scannerknop en menu rechts. */}
       <header className="fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-40 px-3 lg:top-4 lg:px-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 rounded-full border border-white/10 bg-[#14130f]/80 pl-4 pr-2 shadow-2xl backdrop-blur-xl lg:pl-5">
-          <Link href="/" className="rounded-2xl">
-            <Logo light />
+          <Link href="/" className="rounded-2xl" aria-label="Glutenscanner, naar de startpagina">
+            <Logo light compact />
           </Link>
           <nav className="hidden items-center gap-1 font-display text-[17px] font-bold tracking-tight text-white lg:flex">
             {PAGES.map(({ path: href, label }) => (
@@ -744,10 +709,6 @@ export function LandingPage() {
                 {label}
               </Link>
             ))}
-            <button onClick={openScanner} className="mt-1 flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3.5 text-[18px]">
-              <ScanBarcode size={20} />
-              Open de scanner
-            </button>
           </nav>
         )}
       </header>
