@@ -1,3 +1,5 @@
+import { parseIngredientList } from './ingredientList'
+import { unknownWords } from './knownWords'
 import { originalWords } from '../lib/fold'
 import type { AnalysisContext, GlutenAnalysis, GlutenMatch, MatchSource } from '../types/product'
 
@@ -134,9 +136,9 @@ const RESTAURANT_RISKS: Trigger[] = [
 
 const GENERAL_MENU_TIP = 'Zeg altijd tegen de bediening dat je geen gluten mag. Ook geen kruimels uit een pan of frituur.'
 
-/** Wegstrepen vóór het matchen: bevatten "tarwe"/"wheat"/"trigo" maar zijn glutenvrij (boekweit). */
+/** Wegstrepen vóór het matchen: bevatten "tarwe"/"wheat"/"trigo"/"brood" maar zijn glutenvrij (boekweit, johannesbroodpitmeel E410). */
 const EXCLUSIONS =
-  /(?:(?:harina|farina|farine|farinha) (?:de |di |d'|da )?)?(?:boekweit|buckwheat|buchweizen|ble noir|sarrasin|trigo sarraceno|grano saraceno|trigo mourisco|sarraceno|saraceno)\p{L}*(?: (?:flour|meel|bloem|mehl))?/gu
+  /(?:(?:harina|farina|farine|farinha) (?:de |di |d'|da )?)?(?:boekweit|buckwheat|buchweizen|ble noir|sarrasin|trigo sarraceno|grano saraceno|trigo mourisco|sarraceno|saraceno)\p{L}*(?: (?:flour|meel|bloem|mehl))?|johannesbrood\p{L}*|carob\p{L}*|caroube\p{L}*|johannisbrot\p{L}*/gu
 
 /**
  * Glucosestroop, dextrose en maltodextrine uit tarwe of gerst zijn zo gezuiverd dat ze in de EU
@@ -566,6 +568,18 @@ export function glutenGrainsIn(text: string): string[] {
   return [...new Set(findMatches(clean, GLUTEN_TRIGGERS, 'text').map((m) => m.label.toLowerCase()))]
 }
 
+/** Woorden uit de ingrediëntenlijst die de app niet kent én die de camera niet goed kon lezen. */
+function unreadWords(text: string, unsure: string[], skip: string[]): string[] {
+  const list = parseIngredientList(text)
+  if (!list) return []
+  const shaky = new Set(unsure.map(normalize))
+  const done = new Set(skip.map(normalize))
+  return unknownWords(list.items.flatMap((i) => [i.name, i.detail ?? ''])).filter((w) => {
+    const n = normalize(w)
+    return shaky.has(n) && !done.has(n)
+  })
+}
+
 export const NO_LIST_REASON = 'Ik zie geen ingrediënten op de foto. Maak een foto van het stukje met "Ingrediënten:".'
 
 /**
@@ -624,7 +638,11 @@ export function nearGlutenWords(text: string): { word: string; like: string }[] 
   return out
 }
 
-export function analyzeText(rawText: string, context: AnalysisContext = 'label'): GlutenAnalysis {
+/**
+ * `unsure`: woorden die de camera niet goed kon lezen (van de OCR). Is zo'n woord ook nog onbekend,
+ * dan kan het een verkeerd gelezen glutenwoord zijn: dan nooit groen.
+ */
+export function analyzeText(rawText: string, context: AnalysisContext = 'label', unsure?: string[]): GlutenAnalysis {
   const { text, hadRecipe } = context === 'label' ? stripRecipe(rawText) : { text: rawText, hadRecipe: false }
   const result = scan([{ text, source: 'text' }], context)
   // Met een recept op de zak gaat "brood" bijna altijd over het recept ("bananenbrood").
@@ -647,6 +665,9 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
   // Bijna-glutenwoorden (leesfout van de camera): oranje met eigen uitleg.
   const near = context === 'label' ? nearGlutenWords(text) : []
   for (const n of near) result.warnings.push({ label: `Lijkt op ${n.like}`, term: n.word, source: 'text' })
+  // Groen alleen als alles herkend is: onbekend én slecht gelezen woord in de lijst = twijfel.
+  const unread = context === 'label' && unsure?.length ? unreadWords(text, unsure, near.map((n) => n.word)) : []
+  for (const w of unread) result.warnings.push({ label: 'Slecht leesbaar', term: w, source: 'text' })
   const out = conclude(
     result,
     {
@@ -659,9 +680,15 @@ export function analyzeText(rawText: string, context: AnalysisContext = 'label')
     },
     context,
   )
-  if (out.status === 'warning' && near.length > 0 && out.warnings.every((w) => w.label.startsWith('Lijkt op'))) {
+  if (out.status === 'warning' && near.length > 0 && out.warnings.every((w) => w.label.startsWith('Lijkt op') || w.label === 'Slecht leesbaar')) {
     const n = near[0]
     out.reasons = [`De camera las "${n.word}". Dat lijkt op ${n.like}. Kijk even zelf op de verpakking.`]
+  } else if (out.status === 'warning' && unread.length > 0 && out.warnings.every((w) => w.label === 'Slecht leesbaar')) {
+    const list = unread.slice(0, 3).map((w) => `"${w}"`).join(', ')
+    out.reasons = [
+      `De camera kon ${unread.length === 1 ? 'één woord' : 'een paar woorden'} niet goed lezen: ${list}. Daar kan gluten achter zitten.`,
+      'Kijk zelf even op de verpakking, of maak nog een foto van dichterbij.',
+    ]
   }
   return out
 }

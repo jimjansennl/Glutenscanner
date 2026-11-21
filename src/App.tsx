@@ -117,11 +117,11 @@ function ScannerApp() {
   const pendingRef = useRef<{ result: ScanResult; at: number } | null>(null)
 
   const handleCode = useCallback(
-    (code: DecodedCode, labelText?: string) => {
+    (code: DecodedCode, labelText?: string, unsure?: string[]) => {
       pendingRef.current = null
       return run('Product opzoeken…', async (signal) => {
         const result = await analyzeCode(code, signal)
-        return labelText ? crossCheck(result, labelText) : result
+        return labelText ? crossCheck(result, labelText, unsure) : result
       })
     },
     [run],
@@ -210,12 +210,12 @@ function ScannerApp() {
           imageUrl={view.imageUrl}
           textOnly={view.textOnly}
           onCode={handleCode}
-          onText={(text, context) => {
+          onText={(text, context, unsure) => {
             // Komt de gebruiker van een barcode-uitslag ("Check ook het etiket")? Dan vergelijken.
             const pending = pendingRef.current
             pendingRef.current = null
             if (pending && context === 'label' && Date.now() - pending.at < PENDING_MS) {
-              showResult({ ...crossCheck(pending.result, text), imageUrl: view.imageUrl })
+              showResult({ ...crossCheck(pending.result, text, unsure), imageUrl: view.imageUrl })
               return
             }
             showResult({
@@ -223,7 +223,7 @@ function ScannerApp() {
               context,
               rawValue: text,
               imageUrl: view.imageUrl,
-              analysis: analyzeText(text, context),
+              analysis: analyzeText(text, context, unsure),
             })
           }}
           onCancel={() => go({ name: 'scanner' })}

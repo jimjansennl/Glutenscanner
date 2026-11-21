@@ -12,8 +12,8 @@ const RANK: Record<GlutenStatus, number> = { safe: 0, warning: 1, danger: 2 }
 /** Een foto-scan die bij een barcode-uitslag hoort, mag niet ouder zijn dan dit. */
 export const PENDING_MS = 3 * 60 * 1000
 
-export function crossCheck(db: ScanResult, labelText: string): ScanResult {
-  const label = analyzeText(labelText, 'label')
+export function crossCheck(db: ScanResult, labelText: string, unsure?: string[]): ScanResult {
+  const label = analyzeText(labelText, 'label', unsure)
   // Geen ingrediënten op de foto (alleen de barcode of de voorkant): niets om te vergelijken.
   if (label.reasons[0] === NO_LIST_REASON) return db
 

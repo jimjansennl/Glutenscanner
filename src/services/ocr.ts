@@ -12,6 +12,25 @@ export interface OcrResult {
   text: string
   /** 0–100 zoals Tesseract die levert. */
   confidence: number
+  /** Woorden die de camera niet goed kon lezen (lage zekerheid per woord), kleine letters. */
+  unsure?: string[]
+}
+
+/** Onder deze zekerheid (per woord) twijfelt de camera aan het woord. */
+const WORD_UNSURE = 75
+
+type Page = { blocks: { paragraphs: { lines: { words: { text: string; confidence: number }[] }[] }[] }[] | null }
+
+function unsureWords(data: Page): string[] {
+  const out = new Set<string>()
+  for (const b of data.blocks ?? [])
+    for (const p of b.paragraphs)
+      for (const l of p.lines)
+        for (const w of l.words) {
+          const t = w.text.replace(/[^\p{L}]/gu, '')
+          if (t.length >= 4 && w.confidence < WORD_UNSURE) out.add(t.toLowerCase())
+        }
+  return [...out]
 }
 
 export type OcrStage = 'loading' | 'recognizing'
@@ -108,8 +127,8 @@ export async function recognizeText(image: Blob, onProgress?: (p: OcrProgress) =
     const worker = await workerP
     if (!bitmap) {
       // Oude browser zonder createImageBitmap: origineel lezen.
-      const { data } = await worker.recognize(image)
-      return { text: data.text.trim(), confidence: data.confidence }
+      const { data } = await worker.recognize(image, {}, { text: true, blocks: true })
+      return { text: data.text.trim(), confidence: data.confidence, unsure: unsureWords(data) }
     }
     // Eerst de opgeknapte foto met kolom-indeling; is dat zwak, dan als één blok en daarna
     // de gewone foto. We nemen de uitkomst met de meeste goed gelezen tekst.
@@ -122,14 +141,14 @@ export async function recognizeText(image: Blob, onProgress?: (p: OcrProgress) =
     let best: OcrResult & { score: number } = { text: '', confidence: 0, score: -1 }
     for (const [img, mode] of attempts) {
       await worker.setParameters({ tessedit_pageseg_mode: mode })
-      const { data } = await worker.recognize(typeof img === 'function' ? img() : img)
+      const { data } = await worker.recognize(typeof img === 'function' ? img() : img, {}, { text: true, blocks: true })
       const text = data.text.trim()
       const s = score(text, data.confidence)
-      if (s > best.score) best = { text, confidence: data.confidence, score: s }
+      if (s > best.score) best = { text, confidence: data.confidence, unsure: unsureWords(data), score: s }
       if (best.confidence >= GOOD_CONFIDENCE && letters(best.text) >= ENOUGH_LETTERS) break
     }
     await worker.setParameters({ tessedit_pageseg_mode: psm.AUTO })
-    return { text: best.text, confidence: best.confidence }
+    return { text: best.text, confidence: best.confidence, unsure: best.unsure }
   } finally {
     bitmap?.close()
     reportProgress = null

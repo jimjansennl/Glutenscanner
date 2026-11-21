@@ -16,8 +16,9 @@ interface Props {
   /** Foto uit de stand etiket/menu: niet eerst naar een barcode zoeken. */
   textOnly?: boolean
   /** `labelText`: wat er verder op de foto stond, voor de dubbele check met de database. */
-  onCode: (code: DecodedCode, labelText?: string) => void
-  onText: (text: string, context: AnalysisContext) => void
+  onCode: (code: DecodedCode, labelText?: string, unsure?: string[]) => void
+  /** `unsure`: woorden die de camera niet goed kon lezen. */
+  onText: (text: string, context: AnalysisContext, unsure?: string[]) => void
   onCancel: () => void
 }
 
@@ -86,7 +87,8 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
             }
           })
           if (cancelled) return
-          onCode(code, result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE ? result.text : undefined)
+          const ok = result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE
+          onCode(code, ok ? result.text : undefined, ok ? result.unsure : undefined)
         } catch {
           if (!cancelled) onCode(code)
         }
@@ -114,7 +116,7 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
         // Keuze van dít moment: de gebruiker kan tijdens het lezen nog wisselen.
         const ctx = callbacks.current.chosen ? callbacks.current.context : guessContext(result.text)
         if (result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE) {
-          callbacks.current.onText(result.text, ctx)
+          callbacks.current.onText(result.text, ctx, result.unsure)
         } else {
           setContext(ctx)
           setText(result.text)
