@@ -17,6 +17,8 @@ export interface KnownProduct {
   status: GlutenStatus
   lastSeen: number
   starred: boolean
+  /** Door de ouders zelf op de verpakking gecontroleerd (vervalt als het recept verandert). */
+  checked?: { at: number; ingredients: string }
   /** Laatste uitslag, om hem vanuit de lijst te openen. */
   result: ScanResult
 }
@@ -71,6 +73,8 @@ export function rememberProduct(result: ScanResult, status: GlutenStatus): Recip
     status,
     lastSeen: Date.now(),
     starred: before?.starred ?? false,
+    // Ander recept: de eigen controle geldt niet meer.
+    checked: change ? undefined : before?.checked,
     result: { ...result, imageUrl: undefined, recipeChange: undefined },
   }
   save(data)
@@ -98,6 +102,24 @@ export function setStarred(result: ScanResult, status: GlutenStatus, starred: bo
         starred,
         result: { ...result, imageUrl: undefined, recipeChange: undefined },
       }
+  save(data)
+}
+
+/** Wanneer jullie dit product zelf controleerden, zolang het recept hetzelfde is. */
+export function checkedAt(result: ScanResult): number | null {
+  const p = result.product
+  if (!p?.barcode || !p.ingredientsText) return null
+  const c = load()[p.barcode]?.checked
+  return c && c.ingredients === p.ingredientsText ? c.at : null
+}
+
+/** "Wij hebben de verpakking gecontroleerd" aan of uit. Bewaart het product ook als vast product. */
+export function setChecked(result: ScanResult, status: GlutenStatus, on: boolean) {
+  const p = result.product
+  if (!p?.barcode || !p.ingredientsText) return
+  setStarred(result, status, isStarred(p.barcode)) // zorgt dat het product bewaard is, ster blijft zoals hij was
+  const data = load()
+  data[p.barcode] = { ...data[p.barcode], checked: on ? { at: Date.now(), ingredients: p.ingredientsText } : undefined }
   save(data)
 }
 

@@ -7,7 +7,7 @@ import { parseIngredientList } from '../services/ingredientList'
 import { NO_LIST_REASON } from '../services/glutenParser'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { GlutenMatch, GlutenStatus, RecipeChange, ScanResult } from '../types/product'
-import { isStarred, setStarred } from '../services/products'
+import { checkedAt, isStarred, setChecked, setStarred } from '../services/products'
 import { fetchGlutenFreeAlternatives, type OffProduct } from '../services/openFoodFacts'
 import { analyzeOffProduct } from '../services/glutenParser'
 import type { Product } from '../types/product'
@@ -152,6 +152,22 @@ function RecipeChanged({ change, status }: { change: RecipeChange; status: Glute
 }
 
 /** Ster: bewaar bij "Onze vaste producten". */
+/** "Wij hebben de verpakking zelf gecontroleerd": de sterkste zekerheid. Vervalt bij een nieuw recept. */
+function CheckedButton({ at, onToggle }: { at: number | null; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      aria-pressed={!!at}
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold transition-colors ${
+        at ? 'bg-safe/15 text-safe' : 'bg-white/10 text-white active:bg-white/20'
+      }`}
+    >
+      <ShieldCheck size={17} />
+      {at ? 'Door ons gecontroleerd' : 'Wij hebben het gecontroleerd'}
+    </button>
+  )
+}
+
 function StarButton({ result }: { result: ScanResult }) {
   const barcode = result.product?.barcode ?? ''
   const [on, setOn] = useState(() => isStarred(barcode))
@@ -274,7 +290,13 @@ interface Props {
 }
 
 export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props) {
-  const { product, analysis } = result
+  const { product } = result
+  // Zelf gecontroleerd (en recept niet veranderd)? Dan wordt twijfel groen: een mens heeft gekeken.
+  const [checked, setCheckedState] = useState(() => checkedAt(result))
+  const analysis =
+    checked && result.analysis.status === 'warning'
+      ? { ...result.analysis, status: 'safe' as const, reasons: ['Jullie hebben de verpakking zelf gecontroleerd.'] }
+      : result.analysis
   const meta = SOURCE_META[result.source]
   const isCodeScan = result.source !== 'photo'
   // Open Food Facts zet allergenen tussen liggende streepjes (_blé_): die laten we niet zien.
@@ -312,7 +334,19 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
             <h1 className="text-[22px] font-semibold leading-tight">{product.name}</h1>
             {product.brand && <p className="text-[15px] text-muted">{product.brand}</p>}
           </div>
-          <StarButton key={product.barcode} result={result} />
+          <div className="flex flex-wrap justify-center gap-2">
+            <StarButton key={product.barcode} result={result} />
+            {product.ingredientsText && result.analysis.status !== 'danger' && (
+              <CheckedButton
+                at={checked}
+                onToggle={() => {
+                  const on = !checked
+                  setChecked(result, result.analysis.status, on)
+                  setCheckedState(on ? Date.now() : null)
+                }}
+              />
+            )}
+          </div>
         </section>
       )}
 
@@ -326,12 +360,20 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
 
       {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
 
+      {checked && (
+        <CheckBanner
+          agree
+          safe
+          text={`Door jullie zelf gecontroleerd op ${new Date(checked).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}. Het recept is sindsdien niet veranderd.`}
+        />
+      )}
+
       {result.check && <CheckBanner agree={result.check.agree} safe={analysis.status === 'safe'} text={result.check.text} />}
 
       {result.recipeChange && <RecipeChanged change={result.recipeChange} status={analysis.status} />}
 
       {/* Wel productgegevens, nog geen dubbele check: het etiket erbij pakken maakt het zekerder. */}
-      {isCodeScan && product?.ingredientsText && !result.check && (
+      {isCodeScan && product?.ingredientsText && !result.check && !checked && (
         <button
           onClick={() => {
             saveScanMode('text')

@@ -190,6 +190,14 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - **Alleen de allergenenlijst van de database noemt gluten** (ingrediënten zelf schoon, bijv. honing met
   glutenvrij-logo): oranje "Alleen de database noemt gluten. Dat is waarschijnlijk een fout", nooit rood
   en nooit groen. "gluten vrij" (los geschreven) en de tag "no-gluten" tellen als glutenvrij, niet als gluten.
+- **Dubbele check** (`src/services/crossCheck.ts`): foto met barcode → app leest óók het etiket en
+  vergelijkt met de database; de strengste uitslag wint, "Dubbel gecheckt" als ze het eens zijn. Knop
+  "Dubbel checken met het etiket" bij barcode-uitslagen (volgende foto wordt vergeleken, max. 3 min).
+- **Groen alleen als alles goed gelezen is:** OCR geeft per woord een zekerheid (`unsure` in `ocr.ts`).
+  Onbekend woord (`knownWords.ts` + `src/data/foodWords.ts`, samenstellingen vanzelf) én slecht gelezen
+  → oranje "De camera kon … niet goed lezen". Woorden toevoegen in `foodWords.ts`.
+- **"Wij hebben het gecontroleerd"** (`checkedAt`/`setChecked` in `products.ts`): ouders bevestigen een
+  product; twijfel wordt dan groen met de datum. Vervalt vanzelf als het recept verandert. Niet bij rood.
 - Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
