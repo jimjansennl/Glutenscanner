@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { ensureSecureContext } from './services/secureContext'
+import { prefetchOfflineProducts } from './services/offlineProducts'
+import { isDesktop } from './services/siteNav'
 
 // Nieuwe versie live gezet? De offline-opslag laat dan eerst nog de oude zien. Neemt de
 // nieuwe versie het over vlak na het openen, dan laden we één keer opnieuw.
@@ -20,4 +22,6 @@ if (!ensureSecureContext()) {
       <App />
     </StrictMode>,
   )
+  // Op de telefoon: alvast de populaire producten bewaren voor scannen zonder internet.
+  if (!isDesktop()) prefetchOfflineProducts()
 }

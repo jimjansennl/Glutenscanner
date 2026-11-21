@@ -500,6 +500,12 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
         </section>
       )}
 
+      {result.offlineAt !== undefined && (
+        <p className="text-center text-[14px] leading-snug text-muted">
+          Geen internet: opgezocht in de bewaarde lijst van {new Date(result.offlineAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}.
+        </p>
+      )}
+
       {product?.updatedAt && <DataAge at={product.updatedAt} />}
 
       <Feedback result={result} status={analysis.status} />

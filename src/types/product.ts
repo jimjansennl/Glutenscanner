@@ -59,6 +59,8 @@ export interface ScanResult {
   recipeChange?: RecipeChange
   /** Dubbele check: database naast het etiket op de foto. */
   check?: { agree: boolean; text: string }
+  /** Zonder internet opgezocht in de bewaarde lijst (datum van die lijst, ms). */
+  offlineAt?: number
   /** Tekst van het etiket op de foto (bij een dubbele check). */
   labelText?: string
 }

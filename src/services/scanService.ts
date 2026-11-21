@@ -2,6 +2,7 @@ import type { ScanResult } from '../types/product'
 import type { DecodedCode } from '../hooks/useBarcodeScanner'
 import { analyzeOffProduct, analyzeText } from './glutenParser'
 import { fetchProduct, isProductBarcode, ProductNotFoundError, toProduct } from './openFoodFacts'
+import { offlineProduct } from './offlineProducts'
 
 /** Zoekt een barcode op in Open Food Facts en analyseert het product op gluten. */
 export async function analyzeBarcode(barcode: string, signal?: AbortSignal): Promise<ScanResult> {
@@ -16,6 +17,19 @@ export async function analyzeBarcode(barcode: string, signal?: AbortSignal): Pro
     }
   } catch (err) {
     if (signal?.aborted) throw err
+    // Geen internet (of de database reageert niet): kijk in de bewaarde lijst met populaire producten.
+    if (!(err instanceof ProductNotFoundError)) {
+      const saved = await offlineProduct(code)
+      if (saved) {
+        return {
+          source: 'barcode',
+          rawValue: code,
+          product: toProduct(code, saved.product),
+          analysis: analyzeOffProduct(saved.product),
+          offlineAt: saved.at,
+        }
+      }
+    }
     const reason =
       err instanceof ProductNotFoundError
         ? 'Product niet gevonden in Open Food Facts. Controleer het etiket of maak een foto van de ingrediënten.'

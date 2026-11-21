@@ -37,6 +37,12 @@ export default defineConfig({
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
+            // Populaire producten voor scannen zonder internet (zie scripts/fetch-popular.mjs).
+            urlPattern: ({ url }) => url.pathname.startsWith('/offline/'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'offline-producten', expiration: { maxEntries: 2 } },
+          },
+          {
             urlPattern: ({ url }) => url.pathname.startsWith('/tesseract/'),
             handler: 'CacheFirst',
             options: { cacheName: 'tekstherkenning', expiration: { maxEntries: 20 } },
