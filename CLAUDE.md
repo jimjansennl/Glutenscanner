@@ -150,12 +150,18 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   glutenvrij, oranje = twijfel, rood = bevat gluten.
 
 **Glutengids (tabblad Gids, `src/pages/GuidePage.tsx`)**
-- Opzet "Mag ik dit eten?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
+- Opzet "Kan dit?": één zoekbalk met een groot gekleurd antwoord (Nee / Let op /
   Mag), één zin waarom, een tip en "Neem liever". Daaronder drie
   kleurvakken, de thema's (Supermarkt, Sinterklaas, School & feestjes, Etiket lezen), dan "Per soort"
   (de acht groepen met een kleurbalkje: Tarwe, Gerst, Rogge, Haver, Gemaakt van graan,
   E-nummers, Via fabriek of keuken, Zit er stiekem in; geen woorden als "Derivaten"), plus de "Kaart voor de bediening" en daaronder "Feestelijk eten" (één pagina met Kerst &
   feestdagen, Snoep & snacks, Sauzen & bouillon en Bakker & desserts; die staan niet los bij Thema's) (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
+- **Geen alcohol als advies** (app is ook voor kinderen): nooit wijn/cider/bier bij "Neem liever". Wijn en
+  cider staan alleen in zoeken (`src/data/everyday.ts`), niet in de lijst Mag.
+- **Geen dubbelingen:** `cleanInstead` in `guideItems.ts` haalt "Neem liever" weg die de tip al zegt.
+  Dagelijkse dingen en drinken (thee, cola, ketchup…) staan in `everyday.ts`; andere woorden via
+  `ALIASES` (spaghetti → Pasta); tikfouten vinden het dichtstbijzijnde woord; een glutengraan in het
+  zoekwoord zelf ("tarwebrood") geeft direct Nee. Niet gevonden = "Dat ken ik nog niet".
 - **Niet doen:** dezelfde standaard-risicotekst bij elk ingrediënt, woorden als
   "Risiconiveau-informatie", "Hoog risico" of Engelse termen. De gebruiker liet een andere
   app zien die het zo doet; wij willen het mooier, slimmer en eenvoudiger. Neem nooit

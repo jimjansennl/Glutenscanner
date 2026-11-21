@@ -125,7 +125,7 @@ export const INGREDIENT_TABS: IngredientTab[] = [
         tip: 'Zit vaak in augurken, zilveruitjes, piccalilly en chips met azijnsmaak. Gewone natuurazijn is wel glutenvrij.',
         alternatives: [],
       },
-      { name: 'Bier & maltdranken', summary: 'Gebrouwen van gerstemout', risk: 'hoog', note: 'Ook alcoholvrij bier bevat gluten.', alternatives: ['Glutenvrij bier', 'Cider', 'Wijn'] },
+      { name: 'Bier & maltdranken', summary: 'Gebrouwen van gerstemout', risk: 'hoog', note: 'Ook alcoholvrij bier bevat gluten.', tip: 'Alleen bier met het glutenvrij-logo is goed.', alternatives: [] },
       { name: 'Gerstekoffie', summary: 'Koffievervanger van geroosterde gerst', risk: 'hoog', alternatives: ['Gewone koffie', 'Zuivere cichoreikoffie'] },
       {
         name: 'Gerstegras',

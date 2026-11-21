@@ -560,6 +560,12 @@ export function stripRecipe(text: string): { text: string; hadRecipe: boolean } 
 /** Het woord "Ingrediënten" (ook als de dubbele punt door de camera is weggevallen). */
 const DECLARATION_WORD = /(?:ingredi\p{L}{1,3}nten|ingredients?|zutaten|ingr\p{L}dients|ingredientes|ingredienti|ingredienser|sk\p{L}adniki)/iu
 
+/** Glutengranen in een los woord of zinnetje (voor de gids: "tarwebrood" → tarwe). */
+export function glutenGrainsIn(text: string): string[] {
+  const clean = normalize(text).replace(NEGATIONS, ' ')
+  return [...new Set(findMatches(clean, GLUTEN_TRIGGERS, 'text').map((m) => m.label.toLowerCase()))]
+}
+
 export const NO_LIST_REASON = 'Ik zie geen ingrediënten op de foto. Maak een foto van het stukje met "Ingrediënten:".'
 
 /**

@@ -352,7 +352,7 @@ export function ScreenGuide() {
       <StatusBar />
       <Title>Gids</Title>
       <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3 text-left">
-        <p className="text-center text-[14px] font-extrabold leading-tight">Mag ik dit eten?</p>
+        <p className="text-center text-[14px] font-extrabold leading-tight">Kan dit?</p>
         <div className="flex items-center justify-between rounded-full bg-white py-0.5 pl-2.5 pr-0.5 text-[9px] text-black">🔍 couscous<span className="rounded-full bg-accent px-2 py-0.5 text-[8px] font-semibold text-white">Zoek</span></div>
         <div className="rounded-2xl bg-danger/15 p-2.5 ring-1 ring-danger/40">
           <p className="text-[13px] font-extrabold leading-none text-danger">Nee</p>

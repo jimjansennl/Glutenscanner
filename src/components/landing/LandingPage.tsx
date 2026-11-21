@@ -586,7 +586,7 @@ function GuidePage() {
     <>
       <PageBand
         eyebrow="Glutengids"
-        title="Mag ik dit eten?"
+        title="Kan dit?"
         sub="Typ een product en zie meteen of het mag."
       />
       <SiteGuide />

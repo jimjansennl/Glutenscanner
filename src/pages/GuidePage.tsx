@@ -9,7 +9,7 @@ import { ALL_ITEMS, COLOR_ORDER, FEAST_IDS, GROUPS, THEME_ITEMS, countFood, sear
 import { normalize } from '../services/glutenParser'
 
 /**
- * Glutengids als "Mag ik dit eten?": één zoekbalk met een groot, gekleurd antwoord,
+ * Glutengids als "Kan dit?": één zoekbalk met een groot, gekleurd antwoord,
  * drie kleurvakken (Nee / Let op / Mag) en thema's. Geschreven voor een kind van 12:
  * één woord als antwoord, één zin waarom, en wat je in plaats daarvan kunt nemen.
  */
@@ -109,7 +109,7 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-6">
       <PageHeader title="Gids" className="-mx-4" />
 
-      <h2 className="pt-5 text-center text-[32px] font-extrabold leading-tight tracking-tight">Mag ik dit eten?</h2>
+      <h2 className="pt-5 text-center text-[32px] font-extrabold leading-tight tracking-tight">Kan dit?</h2>
       <label className="mt-4 flex items-center gap-2 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-black focus-within:ring-4 focus-within:ring-accent/40">
         <Search size={20} className="shrink-0 text-neutral-500" />
         <input
@@ -139,9 +139,9 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
         <section className="mt-4 flex flex-col gap-4">
           {results.length === 0 ? (
             <div className="rounded-[28px] bg-surface p-5 text-center">
-              <p className="text-[18px] font-bold">Niet gevonden</p>
+              <p className="text-[18px] font-bold">Dat ken ik nog niet</p>
               <p className="mt-1 text-[15px] leading-snug text-muted">
-                Probeer een ander woord. Of scan het etiket: de app leest dan zelf de ingrediënten.
+                Probeer een ander woord. Of scan het etiket: dan lees ik zelf de ingrediënten.
               </p>
             </div>
           ) : (

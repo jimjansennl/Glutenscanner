@@ -119,7 +119,7 @@ export function SiteGuide() {
           <div className="mx-auto mt-8 max-w-5xl">
             {results.length === 0 ? (
               <div className="mx-auto max-w-xl rounded-[28px] bg-white/[0.06] p-8 text-center">
-                <p className="text-[20px] font-bold">Niet gevonden</p>
+                <p className="text-[20px] font-bold">Dat ken ik nog niet</p>
                 <p className="mt-1 text-[16px] text-white/60">Probeer een ander woord, of scan het etiket met de app.</p>
               </div>
             ) : (
