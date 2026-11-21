@@ -279,7 +279,7 @@ const FAQ = [
   },
   {
     q: 'Werkt het zonder internet?',
-    a: 'Grotendeels wel. De glutengids, het lezen van etiketten en producten die je al eens gescand hebt, werken ook zonder internet. Een nieuwe barcode opzoeken lukt alleen met internet.',
+    a: 'Ja, grotendeels. De glutengids, het lezen van etiketten en je eerdere scans werken zonder internet. De app bewaart ook duizenden populaire Nederlandse producten, dus de meeste barcodes geven in de supermarkt meteen een uitslag. Alleen een heel nieuw of zeldzaam product heeft internet nodig.',
   },
   {
     q: 'Worden mijn foto’s geüpload?',
@@ -292,6 +292,14 @@ const FAQ = [
   {
     q: 'Wat als een product niet gevonden wordt?',
     a: 'Dan krijg je oranje, nooit groen. Tik op "Fotografeer de ingrediënten" en maak een foto van het etiket. Dan leest de scanner de ingrediënten zelf.',
+  },
+  {
+    q: 'Hoe zeker is de uitslag?',
+    a: 'De app geeft alleen groen als hij het zeker weet. Kon de camera een woord niet goed lezen, of zegt de database iets anders dan het etiket, dan wordt het oranje. Met "Dubbel checken met het etiket" vergelijk je de database met de verpakking. En heb je de verpakking zelf bekeken, tik dan op "Ik heb het gecontroleerd". Dan weet je het de volgende keer meteen.',
+  },
+  {
+    q: 'Kan ik mijn lijst delen met opa, oma of school?',
+    a: 'Ja. Zet een ster bij producten die je vaak koopt. Bij Geschiedenis staat dan de knop "Deel de lijst met opa, oma of school". Je stuurt één link. De ontvanger ziet een nette lijst met wat mag en wat niet, zonder app of account.',
   },
   {
     q: 'Kan ik er blind op vertrouwen?',
