@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, UtensilsCrossed } from 'lucide-react'
 import { InfoMenu, InfoPanel } from './components/landing/LandingPanels'
 import { LandingPage } from './components/landing/LandingPage'
 import type { PanelId } from './components/landing/panels'
@@ -11,6 +11,8 @@ import type { DecodedCode } from './hooks/useBarcodeScanner'
 import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { ResultPage } from './pages/ResultPage'
+import { DishPage } from './pages/DishPage'
+import { askDish, clearWaiting, loadWaiting, type DishAnswer } from './services/dish'
 import { DESKTOP_QUERY, openWebsite, showWebsite } from './services/siteNav'
 import { feel } from './lib/haptics'
 import { rememberProduct, starredProducts } from './services/products'
@@ -27,7 +29,8 @@ type Tab = Exclude<NavTab, 'scan'>
 
 type View =
   | { name: 'scanner' }
-  | { name: 'photo'; image: Blob; imageUrl: string; textOnly: boolean }
+  | { name: 'photo'; image: Blob; imageUrl: string; textOnly: boolean; noDish?: boolean }
+  | { name: 'dish'; image?: Blob; imageUrl: string; answer?: DishAnswer }
   | { name: 'loading'; label: string }
   | { name: 'result'; result: ScanResult; back: 'scan' | 'history' }
   | { name: 'travel'; back: 'guide' | 'settings' }
@@ -73,7 +76,7 @@ function ScannerApp() {
     (next: View) => {
       abortRef.current?.abort()
       // Alleen resultaat- en fotoschermen gebruiken de vastgelegde foto nog.
-      if (next.name !== 'result' && next.name !== 'photo' && next.name !== 'loading') releaseImage()
+      if (next.name !== 'result' && next.name !== 'photo' && next.name !== 'loading' && next.name !== 'dish') releaseImage()
       setView(next)
       // Elk nieuw scherm begint bovenaan, niet halverwege waar het vorige scherm was.
       window.scrollTo(0, 0)
@@ -82,6 +85,31 @@ function ScannerApp() {
   )
 
   useEffect(() => releaseImage, [releaseImage])
+
+  const viewName = useRef(view.name)
+  useEffect(() => {
+    viewName.current = view.name
+  }, [view.name])
+
+  /** Bord eten dat zonder internet is gefotografeerd: bekijken zodra er weer internet is. */
+  const [dishReady, setDishReady] = useState<{ answer: DishAnswer; imageUrl: string; at: number } | null>(null)
+  useEffect(() => {
+    const check = async () => {
+      const waiting = loadWaiting()
+      // Staat het bord nog open, dan bekijkt dat scherm de foto zelf.
+      if (!waiting || !navigator.onLine || viewName.current === 'dish') return
+      try {
+        const answer = await askDish(waiting.image)
+        clearWaiting()
+        if (answer.food) setDishReady({ answer, imageUrl: `data:image/jpeg;base64,${waiting.image}`, at: waiting.at })
+      } catch {
+        // Lukt het niet, dan proberen we het de volgende keer weer.
+      }
+    }
+    void check()
+    window.addEventListener('online', check)
+    return () => window.removeEventListener('online', check)
+  }, [])
 
   /** Toont een vers resultaat: trillen, bewaren in de geschiedenis en tonen. */
   const showResult = useCallback(
@@ -149,6 +177,20 @@ function ScannerApp() {
             onCode={info ? () => {} : handleCode}
             onPhoto={handlePhoto}
           />
+          {dishReady && !info && (
+            <button
+              onClick={() => {
+                setView({ name: 'dish', imageUrl: dishReady.imageUrl, answer: dishReady.answer })
+                setDishReady(null)
+              }}
+              className="fixed inset-x-4 top-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] z-50 flex items-center gap-3 rounded-[20px] bg-white p-3.5 text-left text-black shadow-2xl"
+            >
+              <UtensilsCrossed size={22} className="shrink-0 text-accent" />
+              <span className="text-[15px] font-semibold leading-snug">
+                Je bord van {new Date(dishReady.at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} is bekeken. Tik om de tips te zien.
+              </span>
+            </button>
+          )}
           {info === 'menu' && (
             <InfoMenu
               onSelect={(id) => {
@@ -213,6 +255,8 @@ function ScannerApp() {
           image={view.image}
           imageUrl={view.imageUrl}
           textOnly={view.textOnly}
+          noDish={view.noDish}
+          onDish={() => setView({ name: 'dish', image: view.image, imageUrl: view.imageUrl })}
           onCode={handleCode}
           onText={(text, context, unsure) => {
             // Komt de gebruiker van een barcode-uitslag ("Check ook het etiket")? Dan vergelijken.
@@ -231,6 +275,22 @@ function ScannerApp() {
             })
           }}
           onCancel={() => go({ name: 'scanner' })}
+        />
+      )
+    case 'dish':
+      return (
+        <DishPage
+          key={view.imageUrl}
+          image={view.image}
+          imageUrl={view.imageUrl}
+          answer={view.answer}
+          onClose={() => go({ name: 'scanner' })}
+          onReadText={() =>
+            view.image
+              ? setView({ name: 'photo', image: view.image, imageUrl: view.imageUrl, textOnly: true, noDish: true })
+              : go({ name: 'scanner' })
+          }
+          onTravelCard={() => go({ name: 'travel', back: 'guide' })}
         />
       )
     case 'loading':

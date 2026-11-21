@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, Circle, Loader2, ScanText, Sparkles, X } from 'lucide-react'
+import { CheckCircle2, Circle, Loader2, ScanText, Sparkles, UtensilsCrossed, X } from 'lucide-react'
 import type { AnalysisContext } from '../../types/product'
 import { decodeImage, type DecodedCode } from '../../hooks/useBarcodeScanner'
 import { isOcrAvailable, recognizeText, type OcrProgress } from '../../services/ocr'
 import { guessContext } from '../../services/textKind'
+import { looksLikeDish } from '../../services/dish'
 
 type StepState = 'pending' | 'active' | 'done' | 'skipped'
 
@@ -19,6 +20,10 @@ interface Props {
   onCode: (code: DecodedCode, labelText?: string, unsure?: string[]) => void
   /** `unsure`: woorden die de camera niet goed kon lezen. */
   onText: (text: string, context: AnalysisContext, unsure?: string[]) => void
+  /** Bijna geen tekst op de foto: waarschijnlijk een bord eten. */
+  onDish: () => void
+  /** Niet naar een gerecht doorsturen (de gebruiker wil de tekst lezen). */
+  noDish?: boolean
   onCancel: () => void
 }
 
@@ -48,7 +53,7 @@ function overallProgress(p: OcrProgress | null): number {
  * daarna leest OCR de tekst en gaat die direct naar de gluten-parser. Is de tekst
  * slecht leesbaar of faalt OCR, dan kan de gebruiker de tekst controleren of typen.
  */
-export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onText, onCancel }: Props) {
+export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onText, onDish, noDish = false, onCancel }: Props) {
   const [codeStep, setCodeStep] = useState<StepState>(textOnly ? 'skipped' : 'active')
   const [loadStep, setLoadStep] = useState<StepState>('pending')
   const [readStep, setReadStep] = useState<StepState>('pending')
@@ -58,10 +63,10 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
   const [context, setContext] = useState<AnalysisContext>('label')
   /** Pas als de gebruiker zelf kiest, gebruiken we zijn keuze in plaats van onze gok. */
   const [chosen, setChosen] = useState(false)
-  const callbacks = useRef({ onCode, onText, context, chosen })
+  const callbacks = useRef({ onCode, onText, onDish, context, chosen })
   useEffect(() => {
-    callbacks.current = { onCode, onText, context, chosen }
-  }, [onCode, onText, context, chosen])
+    callbacks.current = { onCode, onText, onDish, context, chosen }
+  }, [onCode, onText, onDish, context, chosen])
 
   useEffect(() => {
     const { onCode } = callbacks.current
@@ -115,6 +120,11 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
         setReadStep('done')
         // Keuze van dít moment: de gebruiker kan tijdens het lezen nog wisselen.
         const ctx = callbacks.current.chosen ? callbacks.current.context : guessContext(result.text)
+        // Bijna geen tekst (en niet zelf etiket/menukaart gekozen)? Dan is het een bord eten.
+        if (!noDish && !callbacks.current.chosen && looksLikeDish(result.text, result.confidence)) {
+          callbacks.current.onDish()
+          return
+        }
         if (result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE) {
           callbacks.current.onText(result.text, ctx, result.unsure)
         } else {
@@ -132,7 +142,7 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
     return () => {
       cancelled = true
     }
-  }, [image, imageUrl, textOnly])
+  }, [image, imageUrl, textOnly, noDish])
 
   const busy = manual === null
   const percent = Math.round(overallProgress(progress) * 100)
@@ -259,6 +269,16 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
             >
               Analyseer tekst
             </button>
+            {!noDish && (
+              <button
+                type="button"
+                onClick={onDish}
+                className="flex items-center justify-center gap-2 rounded-full bg-surface py-3 text-[16px] font-semibold"
+              >
+                <UtensilsCrossed size={18} />
+                Het is een bord eten
+              </button>
+            )}
           </form>
         )}
       </div>

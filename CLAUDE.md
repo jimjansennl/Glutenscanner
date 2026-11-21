@@ -84,7 +84,8 @@ Belangrijke bestanden:
 | `src/data/guideItems.ts`, `src/components/guide/*`, `src/data/travelCards.ts` | Gedeelde gidsinhoud en bouwstenen. De app (`GuidePage.tsx`) en de website (`SiteGuide.tsx`, pagina `/glutengids`) gebruiken dezelfde data: pas de gids op één plek aan. |
 | `src/components/landing/PhoneScreens.tsx` | Nagebouwde telefoonschermen voor de website, geen screenshots. Pas ze aan als de echte app verandert. |
 
-Privacy: foto's, geschiedenis en vaste producten blijven op de telefoon (localStorage).
+Privacy: foto's, geschiedenis en vaste producten blijven op de telefoon (localStorage). Uitzondering:
+een foto van een bord eten gaat verkleind naar de AI (niet bewaard); dat staat onder de uitslag.
 Naar Open Food Facts gaat alleen een barcode, en bij een rood product de soort product
 (bijv. "koekjes") om een glutenvrij alternatief te zoeken.
 
@@ -211,12 +212,30 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
 
+## Gerecht fotograferen
+
+- **Geen knop en geen derde stand in de scanner** (gebruiker: de scanner blijft ongewijzigd). Een
+  foto (sluiterknop of galerij) met bijna geen echte woorden = een bord eten (`looksLikeDish` in
+  `src/services/dish.ts`). Staat er "Ingrediënten", een glutenwoord of een leesfout daarvan, of ≥4
+  bekende woorden, dan **nooit** gerecht (een etiket met "TARWEMEEL" werd eerst als gerecht gezien).
+  In het tekst-invulscherm staat de knop "Het is een bord eten".
+- `api/gerecht.ts` (Vercel-functie): stuurt de verkleinde foto (±100 kB) naar Claude (`claude-haiku-5-5`,
+  `ANTHROPIC_API_KEY` in Vercel). De AI kiest **alleen uit vaste onderdelen** (`PARTS`, zelfde id's als
+  `src/data/dishParts.ts`); de tips schrijven wij. Nooit "glutenvrij" in de naam van het gerecht.
+  Grens per server: 30 foto's per uur per adres, `GERECHT_PER_DAG` (300) per dag. De echte grens is de
+  bestedingslimiet in de Anthropic Console. Alleen glutenscanner.nl, *.vercel.app en localhost.
+- `src/pages/DishPage.tsx` "Op je bord": **geen groen/oranje/rood**, alleen rustige tips in drie
+  groepjes (Hier zitten vaak gluten / Even navragen / Meestal goed), "Of is het rijst?" bij
+  lijkt-op-gevallen (orzo, gnocchi, groenteslierten, graankorrels), wegtikken, "Mist er iets? Tik het
+  aan", Vraag de bediening + kaart. Onderaan: "De foto is even bekeken door AI en niet bewaard."
+- Zonder internet: zelf aantikken, foto (klein) bewaard in localStorage (`glutenscanner.gerecht.wacht`,
+  max. 1 dag). Weer internet: het scherm bekijkt hem zelf, of de scanner toont "Je bord van 14:02 is
+  bekeken" (bovenaan, z-50: anders valt hij achter de camera).
+- Optie A (herkenning op de telefoon, ±63 MB) is half gebouwd en staat **buiten de repo** in
+  `/home/claude/optieA-backup` (model, scripts, oude DishView). Alleen afmaken als de gebruiker erom vraagt.
+
 ## Plannen (afgesproken, nog te bouwen)
 
-- **Gerecht fotograferen** (zalm met friet, spaghetti, salade): herkenning op de telefoon zelf
-  (gratis, foto blijft op de telefoon). **Geen groen/oranje/rood**, alleen rustige tips per
-  onderdeel ("Friet: vraag naar een aparte frituur") plus de vragen voor de bediening. Gluten kun
-  je niet zien, dus nooit "glutenvrij" zeggen. Verkeerd herkend → juiste gerecht aantikken.
 - **Restaurants beoordelen**, eerst alleen persoonlijk (op de telefoon, delen via link): vier
   vragen (glutenvrije kaart, kennis bediening, aparte frituur, glutenvrij brood/pasta) → sterren,
   plus eigen sterren en notities, gekoppeld aan de menukaart-scan. Gedeeld met iedereen pas later.
