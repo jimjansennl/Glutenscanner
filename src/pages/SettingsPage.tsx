@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { offlineInfo } from '../services/offlineProducts'
+import { offlineInfo, refreshOfflineProducts } from '../services/offlineProducts'
 import { ArrowUpRight, Check, Info, ScanBarcode, WifiOff, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -73,6 +73,16 @@ function Row({
 
 export function SettingsPage({ profile, onProfileChange }: Props) {
   const [offline, setOffline] = useState<{ count: number; at: number } | null>(null)
+  const [busy, setBusy] = useState<number | null>(null)
+  const [failed, setFailed] = useState(false)
+  const refresh = async () => {
+    setFailed(false)
+    setBusy(0)
+    const count = await refreshOfflineProducts((p) => setBusy(p)).catch(() => 0)
+    setBusy(null)
+    if (count === 0) setFailed(true)
+    setOffline(await offlineInfo())
+  }
   useEffect(() => {
     offlineInfo().then(setOffline)
   }, [])
@@ -93,10 +103,20 @@ export function SettingsPage({ profile, onProfileChange }: Props) {
             icon={<WifiOff size={22} />}
             label="Zonder internet"
             sub={
-              offline && offline.count > 0
-                ? `${offline.count.toLocaleString('nl-NL')} populaire producten bewaard (${new Date(offline.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })})`
-                : 'Nog geen producten bewaard. Open de app een keer met internet.'
+              busy !== null
+                ? `Bezig met ophalen… ${Math.round(busy * 100)}%`
+                : failed
+                  ? 'Ophalen lukte niet. Probeer het straks nog eens met internet.'
+                  : offline && offline.count > 0
+                    ? `${offline.count.toLocaleString('nl-NL')} populaire producten bewaard (${new Date(offline.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })})`
+                    : 'Nog geen producten bewaard.'
             }
+            trailing={
+              busy === null ? (
+                <span className="shrink-0 rounded-full bg-accent/15 px-3 py-1.5 text-[14px] font-semibold text-accent">Bijwerken</span>
+              ) : undefined
+            }
+            onClick={busy === null ? refresh : undefined}
           />
         </Group>
 

@@ -5,8 +5,8 @@ import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
 
 const OUT_DIR = 'public/offline'
 const OUT = `${OUT_DIR}/products-nl.json`
-const PAGES = 3
-const PAGE_SIZE = 1000
+const PAGES = 15
+const PAGE_SIZE = 200
 const FIELDS = [
   'code', 'product_name', 'product_name_nl', 'brands', 'ingredients_text', 'ingredients_text_nl',
   'ingredients_text_en', 'allergens', 'allergens_tags', 'traces', 'traces_tags', 'labels', 'labels_tags', 'last_modified_t',
@@ -33,7 +33,7 @@ for (let page = 1; page <= PAGES; page++) {
   try {
     const res = await fetch(`https://world.openfoodfacts.org/api/v2/search?${params}`, {
       headers: { 'User-Agent': 'Glutenscanner/1.0 (www.glutenscanner.nl)' },
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(30000),
     })
     if (!res.ok) throw new Error(`status ${res.status}`)
     const data = await res.json()

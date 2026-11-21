@@ -26,6 +26,8 @@ iedereen met coeliakie of glutengevoeligheid.
 - **Kort afsluiten:** zeg wat er veranderd is, wat de gebruiker moet testen en wat nog
   openstaat. Geen lange verslagen.
 
+Versie in Instellingen = `1.0.0 · datum · commitcode` (`appVersion()` in `vite.config.ts`), zo zie je of de nieuwste versie draait.
+
 ## Commando's
 
 ```bash
@@ -73,7 +75,7 @@ Belangrijke bestanden:
 | `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode (wereldwijde database, dus ook buitenlandse producten). `fetchGlutenFreeAlternatives`: bij rood zoekt hij in dezelfde soort met label `en:no-gluten` ("Probeer liever"); de app keurt elk alternatief zelf nog na. |
 | `src/services/products.ts` | Onthoudt per barcode de ingrediënten: anders dan de vorige keer → banner "Het recept is veranderd!" (`recipeChange`). Ster = "Mijn vaste producten", bovenaan Geschiedenis. |
 | `src/services/shareList.ts` | "Deel de lijst met opa, oma of school" (Geschiedenis): link `/lijst#…` met Mijn vaste producten in de link zelf (geen server, geen account). De website toont dan "Dit mag <naam> eten" (`ListPage` in `LandingPage.tsx`). |
-| `scripts/fetch-popular.mjs`, `src/services/offlineProducts.ts` | Zonder internet scannen: bij het bouwen op Vercel (alleen daar, `process.env.VERCEL`) haalt het script de ~3000 meest gescande NL-producten op naar `public/offline/products-nl.json` (niet in git). De telefoon haalt die één keer per week op; lukt de database niet, dan zoekt de app daarin ("Geen internet: opgezocht in de bewaarde lijst"). Mislukt het ophalen, dan gaat het bouwen gewoon door. |
+| `scripts/fetch-popular.mjs`, `src/services/offlineProducts.ts` | Zonder internet scannen: bij het bouwen op Vercel (alleen daar, `process.env.VERCEL`) haalt het script de ~3000 meest gescande NL-producten op naar `public/offline/products-nl.json` (niet in git). De telefoon haalt de lijst vooral zelf op bij Open Food Facts (6 × 500, pauze ertussen vanwege de limiet) en bewaart hem in Cache Storage (`eigen-productlijst`), elke 2 weken opnieuw; in Instellingen staat een knop Bijwerken. Lukt de database niet, dan zoekt de app daarin ("Geen internet: opgezocht in de bewaarde lijst"). Mislukt het ophalen, dan gaat het bouwen gewoon door. |
 | `src/lib/haptics.ts` | Uitslag voelen: groen 1, oranje 2, rood 3 tikjes. iPhone via een onzichtbaar `<input type=checkbox switch>` (iOS 18+). |
 | `src/data/menuQuestions.ts` | Menukaart: per risico één vraag voor de bediening, in 10 talen. Op reis (`zoneLang`) groot in de taal van het land, Nederlands klein eronder. Pas bij een wijziging alle talen aan. |
 | `src/services/translateIngredients.ts`, `src/data/ingredientWords.ts` | "Lees mee in het Nederlands" onder een buitenlandse ingrediëntenlijst. Ingebouwde woordenlijst per taal (10 talen, geen internet): raadt de taal, vertaalt vaste combinaties eerst ("farine de blé" → tarwebloem), gluten rood/oranje, onbekende woorden grijs. Knop alleen als de lijst niet Nederlands is en we ≥50% kennen. Woorden toevoegen: gewoon met accenten in `ingredientWords.ts`. |
