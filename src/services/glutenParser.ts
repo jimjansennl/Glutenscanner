@@ -147,7 +147,7 @@ const EXEMPT_DERIVATES =
 
 /** "glutenvrij" e.d. mag niet als "gluten" matchen. */
 const NEGATIONS =
-  /glutenvrij\w*|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu|glutenfri\w*|uten gluten|uden gluten|utan gluten/g
+  /glutenvrij\w*|gluten[- :]+vrij\w*|no[- ]gluten|free from gluten|gluten[- ]?free|sans gluten|zonder gluten|glutenfrei\w*|senza glutine|privo di glutine|sin gluten|libre de gluten|sem gluten|isento de gluten|bez glutenu|glutenfri\w*|uten gluten|uden gluten|utan gluten/g
 
 /** Glutenvrije haver: geen harde trigger, wel twijfel (avenine / certificering). */
 const GLUTEN_FREE_OATS = /(?:glutenvrije|gluten[- ]?free|glutenfreier?|glutenfri) ?(?:haver\w*|oat\w*|hafer\w*|havre\w*)/g
@@ -176,7 +176,7 @@ const GF_WHEAT_STARCH = new RegExp(
  * Werkt op genormaliseerde tekst én op OFF-labeltags ("en:gluten-free", "en:no-gluten").
  */
 const GLUTEN_FREE_CLAIM =
-  /(?<!(?:niet|not|nicht|non|no|ne) )(?:glutenvrij\w*|gluten[- ]?free|no[- ]gluten|sans[- ]gluten|glutenfrei\w*|senza[- ]glutine|privo di glutine|sin[- ]gluten|libre de gluten|sem[- ]gluten|isento de gluten|bez glutenu|glutenfri\w*|crossed[- ]grain)/
+  /(?<!(?:niet|not|nicht|non|no|ne) )(?:glutenvrij\w*|gluten[- :]+vrij\w*|free from gluten|gluten[- ]?free|no[- ]gluten|sans[- ]gluten|glutenfrei\w*|senza[- ]glutine|privo di glutine|sin[- ]gluten|libre de gluten|sem[- ]gluten|isento de gluten|bez glutenu|glutenfri\w*|crossed[- ]grain)/
 
 /** "Kan sporen bevatten van …" en varianten: alles tot het einde van de zin. */
 const TRACE_PHRASES = new RegExp(
@@ -500,7 +500,7 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
       : '',
   ].filter(Boolean)
 
-  return conclude(
+  const out = conclude(
     result,
     {
       hasData: ingredientTexts.length > 0 || (p.allergens_tags?.length ?? 0) > 0,
@@ -511,6 +511,26 @@ export function analyzeOffProduct(p: OffProductFields): GlutenAnalysis {
     },
     'label',
   )
+  // Alleen de allergenenlijst van de database noemt gluten, de ingrediënten zelf niet (bijv. honing
+  // met een glutenvrij-logo dat iemand als "gluten" heeft ingevoerd). Dat is bijna altijd een
+  // invoerfout: geen rood, maar oranje met uitleg. Twijfel blijft, dus nooit groen.
+  const evidence = [...out.matches, ...out.warnings]
+  const fromAllergensOnly =
+    evidence.length > 0 && ingredientTexts.length > 0 && evidence.every((m) => m.source === 'allergens')
+  if (fromAllergensOnly && (out.status === 'danger' || out.status === 'warning')) {
+    return {
+      ...out,
+      status: 'warning',
+      reasons: [
+        claimSources.length > 0
+          ? 'Er staat een glutenvrij-logo op en in de ingrediënten staat niets met gluten. Alleen de database noemt gluten. Dat is waarschijnlijk een fout.'
+          : 'In de ingrediënten staat niets met gluten. Alleen de database noemt gluten. Dat is waarschijnlijk een fout.',
+        'Kijk op de verpakking: staat gluten (of tarwe, gerst, rogge) vetgedrukt? Dan niet eten.',
+      ],
+      contradictory: false,
+    }
+  }
+  return out
 }
 
 /** Regel uit een recept: "200 g volkoren meel", "• 1 tl bakpoeder". */

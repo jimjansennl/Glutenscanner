@@ -181,6 +181,9 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   fotograferen. **Leesfouten** (`nearGlutenWords`): woorden die één letter verschillen van een glutenwoord
   mét bekend staartje ("tarvebloem", "gerstemout") → oranje "De camera las … Dat lijkt op tarwe". Getest
   tegen de woordenboeken nl/en/de/fr om valse meldingen te vermijden. Tests: `ocrbench/safety.ts`.
+- **Alleen de allergenenlijst van de database noemt gluten** (ingrediënten zelf schoon, bijv. honing met
+  glutenvrij-logo): oranje "Alleen de database noemt gluten. Dat is waarschijnlijk een fout", nooit rood
+  en nooit groen. "gluten vrij" (los geschreven) en de tag "no-gluten" tellen als glutenvrij, niet als gluten.
 - Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
