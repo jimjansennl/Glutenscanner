@@ -157,6 +157,7 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   (de acht groepen met een kleurbalkje: Tarwe, Gerst, Rogge, Haver, Gemaakt van graan,
   E-nummers, Via fabriek of keuken, Zit er stiekem in; geen woorden als "Derivaten"), plus de "Kaart voor de bediening" en daaronder "Feestelijk eten" (één pagina met Kerst &
   feestdagen, Snoep & snacks, Sauzen & bouillon en Bakker & desserts; die staan niet los bij Thema's) (vroeger Reiskaart; geen "ziek" in de tekst, wel "Ook een klein beetje is al te veel").
+- **Quiz "Weet jij het?"** (`src/components/guide/Quiz.tsx`) onder Feestelijk eten: 10 vragen uit de gids, de helft verrassende (boekweit, orzo, drop…). Zo leert de dochter zelf etiketten lezen.
 - **Geen alcohol als advies** (app is ook voor kinderen): nooit wijn/cider/bier bij "Neem liever". Wijn en
   cider staan alleen in zoeken (`src/data/everyday.ts`), niet in de lijst Mag.
 - **Geen dubbelingen:** `cleanInstead` in `guideItems.ts` haalt "Neem liever" weg die de tip al zegt.

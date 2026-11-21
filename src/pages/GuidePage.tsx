@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ChevronRight, Languages, PartyPopper, Search, X } from 'lucide-react'
+import { Brain, ChevronRight, Languages, PartyPopper, Search, X } from 'lucide-react'
+import { Quiz } from '../components/guide/Quiz'
 import { AnswerCard, ItemList, RiskBar } from '../components/guide/GuideBits'
 import { RISK_UI, THEME_ICONS } from '../components/guide/guideUi'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
@@ -14,7 +15,7 @@ import { normalize } from '../services/glutenParser'
  * één woord als antwoord, één zin waarom, en wat je in plaats daarvan kunt nemen.
  */
 
-type View = { kind: 'home' } | { kind: 'feast' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
+type View = { kind: 'home' } | { kind: 'feast' } | { kind: 'quiz' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
 
 function SubPage({ title, sub, onBack, children }: { title: string; sub?: string; onBack: () => void; children: ReactNode }) {
   return (
@@ -58,6 +59,14 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
         <div className="mt-2">
           <ItemList items={items} showGroup />
         </div>
+      </SubPage>
+    )
+  }
+
+  if (view.kind === 'quiz') {
+    return (
+      <SubPage title="Weet jij het?" sub="Tien vragen: mag het, let op, of niet? Zo leer je zelf etiketten lezen." onBack={() => setView({ kind: 'home' })}>
+        <Quiz />
       </SubPage>
     )
   }
@@ -238,6 +247,20 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-[17px] font-semibold leading-tight">Feestelijk eten</span>
               <span className="text-[14px] leading-snug text-muted">Kerst, borrel, snacks, sauzen en desserts</span>
+            </span>
+            <ChevronRight size={22} className="shrink-0 text-muted" />
+          </button>
+
+          <button
+            onClick={() => setView({ kind: 'quiz' })}
+            className="mt-2.5 flex items-center gap-4 rounded-[22px] bg-surface p-4 text-left active:bg-surface-raised"
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#8b5cf6]">
+              <Brain size={24} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[17px] font-semibold leading-tight">Weet jij het?</span>
+              <span className="text-[14px] leading-snug text-muted">Quiz: waar zitten gluten stiekem in?</span>
             </span>
             <ChevronRight size={22} className="shrink-0 text-muted" />
           </button>
