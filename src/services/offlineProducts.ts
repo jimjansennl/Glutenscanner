@@ -12,8 +12,10 @@ import type { OffProduct } from './openFoodFacts'
 const BUILD_URL = '/offline/products-nl.json'
 const CACHE = 'eigen-productlijst'
 const OWN_URL = '/offline/eigen-lijst.json'
-// Open Food Facts staat maximaal 10 zoekopdrachten per minuut toe: daarom 6 stukken met een pauze.
-const PAGES = 6
+// Open Food Facts staat maximaal 10 zoekopdrachten per minuut toe: daarom een pauze tussen de stukken.
+// Pagina's tot we ±3000 producten mét ingrediënten hebben (veel producten hebben er geen).
+const TARGET = 3000
+const MAX_PAGES = 20
 const PAGE_SIZE = 500
 const PAUSE_MS = 6500
 const MAX_AGE = 14 * 24 * 3600 * 1000
@@ -72,8 +74,12 @@ let running: Promise<number> | null = null
  */
 export function refreshOfflineProducts(onProgress?: (part: number) => void): Promise<number> {
   running ??= (async () => {
-    const products: Record<string, OffProduct> = {}
-    for (let page = 1; page <= PAGES; page++) {
+    // Begin met wat er al bewaard is: een mislukte poging maakt de lijst nooit kleiner.
+    const old = await readOwn().catch(() => null)
+    const products: Record<string, OffProduct> = { ...(old?.products ?? {}) }
+    const seen = new Set<string>()
+    let fails = 0
+    for (let page = 1; page <= MAX_PAGES && seen.size < TARGET; page++) {
       if (page > 1) await new Promise((r) => setTimeout(r, PAUSE_MS))
       const params = new URLSearchParams({
         countries_tags: 'en:netherlands',
@@ -84,31 +90,41 @@ export function refreshOfflineProducts(onProgress?: (part: number) => void): Pro
         // Herkenbaar voor de service worker: deze grote lijsten niet nog eens apart bewaren.
         app: 'offline',
       })
+      let got: (OffProduct & { code?: string })[]
       try {
         const res = await fetch(`https://world.openfoodfacts.org/api/v2/search?${params}`, { signal: AbortSignal.timeout(30000) })
         if (!res.ok) throw new Error(String(res.status))
-        const data = (await res.json()) as { products?: (OffProduct & { code?: string })[] }
-        for (const p of data.products ?? []) {
-          if (!p.code || !(p.ingredients_text || p.ingredients_text_nl || p.ingredients_text_en)) continue
-          const { code, ...rest } = p
-          products[code] = rest
-        }
+        got = ((await res.json()) as { products?: (OffProduct & { code?: string })[] }).products ?? []
+        fails = 0
       } catch {
-        break
+        // Te druk of even geen bereik: wacht wat langer en probeer dezelfde pagina nog eens.
+        if (++fails > 2) break
+        page--
+        await new Promise((r) => setTimeout(r, PAUSE_MS * 2))
+        continue
       }
-      onProgress?.(page / PAGES)
+      for (const p of got) {
+        if (!p.code || !(p.ingredients_text || p.ingredients_text_nl || p.ingredients_text_en)) continue
+        const { code, ...rest } = p
+        seen.add(code)
+        products[code] = rest
+      }
+      await save(products)
+      onProgress?.(Math.min(1, seen.size / TARGET))
+      if (got.length === 0) break
     }
-    const count = Object.keys(products).length
-    if (count > 0 && typeof caches !== 'undefined') {
-      const fresh: Pack = { at: Date.now(), products }
-      await (await caches.open(CACHE)).put(OWN_URL, new Response(JSON.stringify(fresh), { headers: { 'content-type': 'application/json' } }))
-      pack = Promise.resolve(fresh)
-    }
-    return count
+    return Object.keys(products).length
   })().finally(() => {
     running = null
   })
   return running
+}
+
+async function save(products: Record<string, OffProduct>) {
+  if (typeof caches === 'undefined' || Object.keys(products).length === 0) return
+  const next: Pack = { at: Date.now(), products }
+  await (await caches.open(CACHE)).put(OWN_URL, new Response(JSON.stringify(next), { headers: { 'content-type': 'application/json' } }))
+  pack = Promise.resolve(next)
 }
 
 /** Bij het openen: heeft de telefoon nog geen (verse) lijst, dan op de achtergrond ophalen. */
