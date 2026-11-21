@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Star } from 'lucide-react'
+import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, ShieldCheck, Star } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { IngredientChips } from '../components/result/IngredientChips'
@@ -108,6 +108,20 @@ const STATUS_WORD: Record<GlutenStatus, string> = { safe: 'groen', warning: 'ora
 const dateFormat = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
 
 /** Waarschuwing: de fabrikant heeft de ingrediënten veranderd sinds de vorige scan. */
+/** Uitkomst van de dubbele check: database en etiket naast elkaar. */
+function CheckBanner({ agree, safe, text }: { agree: boolean; safe: boolean; text: string }) {
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-[22px] p-4 text-[15px] leading-snug ${
+        !agree ? 'bg-warning/10 text-warning ring-1 ring-warning/30' : safe ? 'bg-safe/10 text-safe ring-1 ring-safe/25' : 'bg-surface text-white/80'
+      }`}
+    >
+      {agree ? <ShieldCheck size={22} className="mt-0.5 shrink-0" /> : <AlertTriangle size={22} className="mt-0.5 shrink-0" />}
+      <span className="font-medium">{text}</span>
+    </div>
+  )
+}
+
 function RecipeChanged({ change, status }: { change: RecipeChange; status: GlutenStatus }) {
   const worse = change.statusBefore === 'safe' && status !== 'safe'
   return (
@@ -264,11 +278,14 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
   const meta = SOURCE_META[result.source]
   const isCodeScan = result.source !== 'photo'
   // Open Food Facts zet allergenen tussen liggende streepjes (_blé_): die laten we niet zien.
-  const details = (product?.ingredientsText ?? (isCodeScan && result.source !== 'qr' ? undefined : result.rawValue))?.replace(/_/g, '')
+  // Dubbele check: zeiden database en etiket iets anders (of had de database niets), dan tonen we het etiket.
+  const fromLabel = !!result.labelText && (!result.check?.agree || !product?.ingredientsText)
+  const details = (fromLabel ? result.labelText : (product?.ingredientsText ?? (isCodeScan && result.source !== 'qr' ? undefined : result.rawValue)))?.replace(/_/g, '')
+  const fromDb = !fromLabel && !!product?.ingredientsText
   // Etiket of database: de ingrediënten als losse blokjes. Menukaarten blijven gewone tekst.
   const ingredientList = useMemo(
-    () => (details && result.context !== 'menu' ? parseIngredientList(details) : null),
-    [details, result.context],
+    () => (details && result.context !== 'menu' ? parseIngredientList(details, fromDb) : null),
+    [details, result.context, fromDb],
   )
   const headerLabel =
     result.source === 'photo' ? (result.context === 'menu' ? 'Menukaart' : 'Etiket') : meta.label
@@ -309,7 +326,23 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
 
       {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
 
+      {result.check && <CheckBanner agree={result.check.agree} safe={analysis.status === 'safe'} text={result.check.text} />}
+
       {result.recipeChange && <RecipeChanged change={result.recipeChange} status={analysis.status} />}
+
+      {/* Wel productgegevens, nog geen dubbele check: het etiket erbij pakken maakt het zekerder. */}
+      {isCodeScan && product?.ingredientsText && !result.check && (
+        <button
+          onClick={() => {
+            saveScanMode('text')
+            onPhotoScan()
+          }}
+          className="flex items-center justify-center gap-2.5 rounded-[22px] bg-surface p-3.5 text-[16px] font-semibold text-accent ring-1 ring-accent/30 active:opacity-70"
+        >
+          <ShieldCheck size={20} />
+          Dubbel checken met het etiket
+        </button>
+      )}
 
       {product && analysis.status === 'danger' && (product.categories?.length ?? 0) > 0 && (
         <Alternatives key={product.barcode} product={product} onOpen={onOpenBarcode} />

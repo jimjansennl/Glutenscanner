@@ -60,7 +60,7 @@ export function IngredientChips({
       ? { tone: 'text-danger', icon: <XCircle size={18} />, text: `${bad === 1 ? '1 ingrediënt' : `${bad} ingrediënten`} van de ${total} ${bad === 1 ? 'bevat' : 'bevatten'} gluten.` }
       : doubt > 0
         ? { tone: 'text-warning', icon: <AlertTriangle size={18} />, text: `Bij ${doubt} van de ${total} ingrediënten moet je opletten.` }
-        : { tone: 'text-safe', icon: <ShieldCheck size={18} />, text: `Alle ${total} ingrediënten bekeken. Geen gluten gevonden.` }
+        : { tone: 'text-safe', icon: <ShieldCheck size={18} />, text: total === 1 ? 'Ingrediënt bekeken. Geen gluten gevonden.' : `Alle ${total} ingrediënten bekeken. Geen gluten gevonden.` }
 
   return (
     <section className="flex flex-col gap-4 rounded-[22px] bg-surface p-4">

@@ -558,7 +558,7 @@ export function stripRecipe(text: string): { text: string; hadRecipe: boolean } 
 
 /** Vrije tekst analyseren: OCR van een etiket of menukaart, of QR-inhoud. */
 /** Het woord "Ingrediënten" (ook als de dubbele punt door de camera is weggevallen). */
-const DECLARATION_WORD = /(?:ingredi\p{L}{1,3}nten|ingredients?|zutaten|ingr\p{L}dients|ingredientes|ingredienti|ingredienser|sk\p{L}adniki)/iu
+const DECLARATION_WORD = /(?:ngredi\p{L}{1,3}nten|ingredients?|zutaten|ingr\p{L}dients|ingredientes|ingredienti|ingredienser|sk\p{L}adniki)/iu
 
 /** Glutengranen in een los woord of zinnetje (voor de gids: "tarwebrood" → tarwe). */
 export function glutenGrainsIn(text: string): string[] {

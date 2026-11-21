@@ -19,7 +19,7 @@ export interface IngredientList {
   mayContain?: string
 }
 
-const START = /(ingredi[eë]nten|ingredients?|ingr[eé]dients|zutaten|ingredientes|ingredienti|ingredienser|ingrediencie|sk[lł]adniki)\s*[:;]/i
+const START = /(?:[il1|\\]?)(ngredi[eë]nten|ingredients?|ingr[eé]dients|zutaten|ingredientes|ingredienti|ingredienser|ingrediencie|sk[lł]adniki)\s*[:;]/i
 
 /** Waar de lijst ophoudt: na de ingrediënten komt vaak dit soort tekst. */
 const STOP =
@@ -59,7 +59,8 @@ function tidy(s: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
 
-export function parseIngredientList(text: string): IngredientList | null {
+/** `fromDatabase`: tekst uit de productdatabase is altijd een lijst, ook met maar één ingrediënt. */
+export function parseIngredientList(text: string, fromDatabase = false): IngredientList | null {
   const clean = joinBreaks(text.replace(/_/g, ''))
   const start = clean.search(START)
   // Zonder het woord "Ingrediënten" alleen doorgaan als het echt op een lijst lijkt.
@@ -76,7 +77,7 @@ export function parseIngredientList(text: string): IngredientList | null {
     if (name.replace(/[^\p{L}]/gu, '').length < 2) continue
     items.push(detail ? { name, detail: detail.charAt(0).toLowerCase() + detail.slice(1) } : { name })
   }
-  if (items.length < 2 || (start < 0 && items.length < 4)) return null
+  if (items.length === 0 || (!fromDatabase && (items.length < 2 || (start < 0 && items.length < 4)))) return null
 
   const may = clean.match(MAY_CONTAIN)
   return { items, mayContain: may ? tidy(may[0]) : undefined }

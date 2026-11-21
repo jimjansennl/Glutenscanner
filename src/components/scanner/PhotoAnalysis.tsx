@@ -15,7 +15,8 @@ interface Props {
   image: Blob
   /** Foto uit de stand etiket/menu: niet eerst naar een barcode zoeken. */
   textOnly?: boolean
-  onCode: (code: DecodedCode) => void
+  /** `labelText`: wat er verder op de foto stond, voor de dubbele check met de database. */
+  onCode: (code: DecodedCode, labelText?: string) => void
   onText: (text: string, context: AnalysisContext) => void
   onCancel: () => void
 }
@@ -69,7 +70,26 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
       if (cancelled) return
       if (code) {
         setCodeStep('done')
-        onCode(code)
+        // Alles wat op de foto staat ook lezen: zo vergelijken we de database met het etiket.
+        const isProduct = /^\d{8,14}$/.test(code.text.trim())
+        if (!isProduct || !isOcrAvailable()) {
+          onCode(code)
+          return
+        }
+        setLoadStep('active')
+        try {
+          const result = await recognizeText(image, (p) => {
+            if (cancelled) return
+            if (p.stage === 'recognizing') {
+              setLoadStep('done')
+              setReadStep('active')
+            }
+          })
+          if (cancelled) return
+          onCode(code, result.text.length >= 3 && result.confidence >= MIN_CONFIDENCE ? result.text : undefined)
+        } catch {
+          if (!cancelled) onCode(code)
+        }
         return
       }
       setCodeStep('skipped')

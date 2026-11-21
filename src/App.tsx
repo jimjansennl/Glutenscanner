@@ -20,6 +20,7 @@ import { analyzeText } from './services/glutenParser'
 import { addToHistory, clearHistory, loadHistory, type HistoryItem } from './services/history'
 import { applyProfile, loadProfile, saveProfile, type SafetyProfile } from './services/profile'
 import { analyzeCode } from './services/scanService'
+import { crossCheck, PENDING_MS } from './services/crossCheck'
 import type { ScanResult } from './types/product'
 
 type Tab = Exclude<NavTab, 'scan'>
@@ -112,8 +113,17 @@ function ScannerApp() {
     [go, showResult],
   )
 
+  /** Barcode-uitslag waarvoor de gebruiker net het etiket gaat fotograferen (dubbele check). */
+  const pendingRef = useRef<{ result: ScanResult; at: number } | null>(null)
+
   const handleCode = useCallback(
-    (code: DecodedCode) => run('Product opzoeken…', (signal) => analyzeCode(code, signal)),
+    (code: DecodedCode, labelText?: string) => {
+      pendingRef.current = null
+      return run('Product opzoeken…', async (signal) => {
+        const result = await analyzeCode(code, signal)
+        return labelText ? crossCheck(result, labelText) : result
+      })
+    },
     [run],
   )
 
@@ -200,7 +210,14 @@ function ScannerApp() {
           imageUrl={view.imageUrl}
           textOnly={view.textOnly}
           onCode={handleCode}
-          onText={(text, context) =>
+          onText={(text, context) => {
+            // Komt de gebruiker van een barcode-uitslag ("Check ook het etiket")? Dan vergelijken.
+            const pending = pendingRef.current
+            pendingRef.current = null
+            if (pending && context === 'label' && Date.now() - pending.at < PENDING_MS) {
+              showResult({ ...crossCheck(pending.result, text), imageUrl: view.imageUrl })
+              return
+            }
             showResult({
               source: 'photo',
               context,
@@ -208,7 +225,7 @@ function ScannerApp() {
               imageUrl: view.imageUrl,
               analysis: analyzeText(text, context),
             })
-          }
+          }}
           onCancel={() => go({ name: 'scanner' })}
         />
       )
@@ -230,7 +247,11 @@ function ScannerApp() {
           <ResultPage
             result={{ ...view.result, analysis: profiled(view.result) }}
             onHome={() => navigate(view.back)}
-            onPhotoScan={() => go({ name: 'scanner' })}
+            onPhotoScan={() => {
+              // Bij een product: de volgende foto van het etiket wordt een dubbele check.
+              pendingRef.current = view.result.product ? { result: view.result, at: Date.now() } : null
+              go({ name: 'scanner' })
+            }}
             onOpenBarcode={(barcode) => handleCode({ text: barcode, format: 'barcode' })}
           />
         </WithNav>

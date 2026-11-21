@@ -55,6 +55,10 @@ export interface ScanResult {
   context?: AnalysisContext
   /** Het recept is veranderd sinds de vorige scan van deze barcode. */
   recipeChange?: RecipeChange
+  /** Dubbele check: database naast het etiket op de foto. */
+  check?: { agree: boolean; text: string }
+  /** Tekst van het etiket op de foto (bij een dubbele check). */
+  labelText?: string
 }
 
 export interface RecipeChange {
