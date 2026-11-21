@@ -13,6 +13,10 @@ import {
   Settings,
   Star,
   XCircle,
+  ShieldCheck,
+  Share2,
+  WifiOff,
+  Brain,
 } from 'lucide-react'
 import { MENU_QUESTIONS } from '../../data/menuQuestions'
 
@@ -409,6 +413,127 @@ export function ScreenTravel() {
               <p className="text-[7.5px] text-black/80">{t}</p>
             </div>
           ))}
+        </div>
+      </div>
+      <MiniNav active="guide" />
+    </>
+  )
+}
+
+/** Barcode en etiket vergeleken: twee bronnen zijn het eens. */
+export function ScreenDoubleCheck() {
+  return (
+    <ResultShell product="Bloemenhoning">
+      <div className="flex flex-col items-center gap-2 rounded-3xl bg-neutral-900 px-3 py-4 text-center">
+        <Circle tone="safe">
+          <CheckCircle2 size={40} />
+        </Circle>
+        <span className="text-[20px] font-bold text-safe">Glutenvrij</span>
+      </div>
+      <div className="flex flex-col gap-1 rounded-2xl bg-safe/15 p-2.5 text-left ring-1 ring-safe/60">
+        <p className="flex items-center gap-1 text-[11px] font-extrabold text-safe">
+          <ShieldCheck size={12} />
+          Dubbel gecheckt
+        </p>
+        <p className="text-[8.5px] leading-snug text-white/85">De database en het etiket zeggen allebei: geen gluten.</p>
+      </div>
+      <div className="flex gap-1.5 text-[8px]">
+        <span className="flex-1 rounded-xl bg-neutral-900 py-1.5 text-center">
+          <Barcode size={11} className="mx-auto mb-0.5" />
+          Barcode
+        </span>
+        <span className="flex-1 rounded-xl bg-neutral-900 py-1.5 text-center">
+          <FileText size={11} className="mx-auto mb-0.5" />
+          Etiket
+        </span>
+      </div>
+    </ResultShell>
+  )
+}
+
+/** Mijn vaste producten delen met opa, oma of school. */
+export function ScreenShare() {
+  return (
+    <>
+      <StatusBar />
+      <Title>Geschiedenis</Title>
+      <div className="flex flex-1 flex-col gap-1.5 overflow-hidden px-3 text-left">
+        <p className="text-[9px] font-semibold uppercase tracking-wide text-white/50">Mijn vaste producten</p>
+        {[
+          ['Rijstwafels', 'safe', true],
+          ['Hagelslag puur', 'safe', true],
+          ['Chocoladepasta', 'danger', false],
+          ['Paprikachips', 'safe', false],
+        ].map(([name, tone, checked]) => (
+          <div key={name as string} className="flex items-center gap-2 rounded-xl bg-neutral-900 px-2.5 py-1.5">
+            <span className={`h-2 w-2 rounded-full ${tone === 'safe' ? 'bg-safe' : 'bg-danger'}`} />
+            <span className="flex-1 text-[9.5px] font-semibold">{name}</span>
+            {checked ? <ShieldCheck size={11} className="text-safe" /> : <Star size={10} className="text-warning" fill="currentColor" />}
+          </div>
+        ))}
+        <div className="mt-1 flex flex-col gap-1.5 rounded-2xl bg-accent/15 p-2.5 ring-1 ring-accent/50">
+          <p className="text-[10px] font-extrabold">Deel de lijst met opa, oma of school</p>
+          <span className="rounded-full bg-white px-2 py-1 text-[8.5px] text-black/60">Voor wie? Sanne</span>
+          <span className="flex items-center justify-center gap-1 rounded-full bg-accent py-1 text-[9px] font-semibold">
+            <Share2 size={10} />
+            Deel de lijst
+          </span>
+        </div>
+      </div>
+      <MiniNav active="history" />
+    </>
+  )
+}
+
+/** Zonder internet toch een uitslag. */
+export function ScreenOffline() {
+  return (
+    <ResultShell product="Paprikachips">
+      <div className="flex flex-col items-center gap-2 rounded-3xl bg-neutral-900 px-3 py-5 text-center">
+        <Circle tone="safe">
+          <CheckCircle2 size={44} />
+        </Circle>
+        <span className="text-[22px] font-bold text-safe">Glutenvrij</span>
+        <span className="text-[9px] text-white/60">Geen gluten gevonden in de ingrediënten.</span>
+      </div>
+      <div className="flex items-start gap-2 rounded-2xl bg-neutral-900 p-2.5 text-[8.5px] leading-snug text-white/80">
+        <WifiOff size={14} className="shrink-0 text-white/60" />
+        Geen internet: opgezocht in de bewaarde lijst met 3.000 producten.
+      </div>
+    </ResultShell>
+  )
+}
+
+/** Quiz in de gids: zelf leren etiketten lezen (zelfde opzet als Quiz.tsx). */
+export function ScreenQuiz() {
+  return (
+    <>
+      <StatusBar />
+      <Title>
+        <span className="inline-flex items-center gap-1">
+          <Brain size={11} />
+          Weet jij het?
+        </span>
+      </Title>
+      <div className="flex flex-1 flex-col gap-2 overflow-hidden px-3 text-left">
+        <div className="flex gap-0.5">
+          {Array.from({ length: 10 }, (_, i) => (
+            <span key={i} className={`h-1 flex-1 rounded-full ${i < 3 ? 'bg-accent' : i === 3 ? 'bg-white/60' : 'bg-white/15'}`} />
+          ))}
+        </div>
+        <div className="rounded-2xl bg-neutral-900 p-3 text-center">
+          <p className="text-[8.5px] text-white/50">Vraag 4 van 10</p>
+          <p className="text-[17px] font-extrabold leading-tight">Boekweit</p>
+          <p className="text-[9px] text-white/80">Kan dit?</p>
+        </div>
+        <div className="grid grid-cols-3 gap-1">
+          <span className="rounded-xl bg-neutral-900 py-2 text-center text-[10px] font-bold text-white/30">Nee</span>
+          <span className="rounded-xl bg-neutral-900 py-2 text-center text-[10px] font-bold text-white/30">Let op</span>
+          <span className="rounded-xl bg-safe py-2 text-center text-[10px] font-bold text-black">Mag</span>
+        </div>
+        <div className="rounded-2xl bg-safe/15 p-2.5 ring-1 ring-safe/40">
+          <p className="text-[11px] font-bold text-safe">Goed zo!</p>
+          <p className="text-[8.5px] leading-snug text-white/85">Boekweit is geen graan en heeft geen gluten. Koop wel puur boekweitmeel.</p>
         </div>
       </div>
       <MiniNav active="guide" />

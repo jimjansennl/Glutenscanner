@@ -38,6 +38,10 @@ import {
   ScreenAlternative,
   ScreenRecipe,
   ScreenTravel,
+  ScreenDoubleCheck,
+  ScreenShare,
+  ScreenOffline,
+  ScreenQuiz,
 } from './PhoneScreens'
 import { ScanDemo } from './ScanDemo'
 import { readSharedList } from '../../services/shareList'
@@ -200,6 +204,10 @@ const CAROUSEL: { word: string; line: string; accent: string; bg: string; screen
   { word: 'Vraag', line: 'het restaurant', accent: 'text-[#14130f]', bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
   { word: 'Leer', line: 'waar gluten schuilen', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenGuide /> },
   { word: 'Reis', line: 'met een kaart in 10 talen', accent: 'text-white', bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
+  { word: 'Check', line: 'dubbel: barcode én etiket', accent: 'text-[#14130f]', bg: 'bg-[#7ee2a8]', screen: <ScreenDoubleCheck /> },
+  { word: 'Deel', line: 'je lijst met opa en oma', accent: 'text-[#ffd75e]', bg: 'bg-[#1d4d35]', screen: <ScreenShare /> },
+  { word: 'Scan', line: 'ook zonder internet', accent: 'text-[#ffd75e]', bg: 'bg-[#14130f]', screen: <ScreenOffline /> },
+  { word: 'Oefen', line: 'met de quiz', accent: 'text-[#14130f]', bg: 'bg-[#ffd75e]', screen: <ScreenQuiz /> },
 ]
 
 /** Elke manier van scannen een eigen kleur, in de stijl van de rest van de site. */
@@ -316,7 +324,7 @@ function Carousel() {
       <div ref={track} className="mx-auto flex max-w-[1128px] snap-x snap-mandatory scroll-px-6 gap-6 overflow-x-auto px-6 pb-6 [scrollbar-width:none] lg:scroll-px-0 lg:px-0">
         {CAROUSEL.map(({ word, line, accent, bg, screen }) => (
           <article
-            key={word}
+            key={word + line}
             className={`flex w-[264px] shrink-0 snap-start flex-col items-center overflow-hidden rounded-[36px] pt-8 text-center shadow-xl ${bg}`}
           >
             <p className={`font-display text-[46px] font-extrabold uppercase leading-none ${bg.includes('#7ee2a8') || bg.includes('#ffd75e') ? 'text-[#14130f]' : 'text-white'}`}>

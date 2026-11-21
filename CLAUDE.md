@@ -131,8 +131,9 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - De **footer** is plat, één regel: logo, disclaimer met Open Food Facts en
   "© jaar · Nederland" (geen hartje), dun (py-3). Herhaal er niets uit de kop.
 - De carrousel "Bekijk het zelf" (pagina In actie) laat precies 4 kaarten zien en niets half buiten beeld.
-  Kaarten (10): Scan, Spot, Weet, Zie, Kies (alternatief), Merk (recept veranderd), Lees
-  (lees mee), Vraag (vraag de bediening), Leer, Reis. Komt er iets nieuws in de app, voeg dan
+  Kaarten (14): Scan, Spot, Weet, Zie, Kies (alternatief), Merk (recept veranderd), Lees
+  (lees mee), Vraag (vraag de bediening), Leer, Reis, Check (dubbel gecheckt), Deel (lijst met opa
+  en oma), Scan ook zonder internet, Oefen (quiz). Komt er iets nieuws in de app, voeg dan
   een kaart toe of pas het telefoonscherm aan (`PhoneScreens.tsx`).
 
 **Scanner (telefoon)**
@@ -209,6 +210,16 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").
 - Wat je wél mag staat in `NATURALLY_GLUTEN_FREE` (`ingredientGuide.ts`). De lijsten
   Nee / Let op / Mag tonen alleen eten; Etiket lezen en School & feestjes alleen via zoeken en thema.
+
+## Plannen (afgesproken, nog te bouwen)
+
+- **Gerecht fotograferen** (zalm met friet, spaghetti, salade): herkenning op de telefoon zelf
+  (gratis, foto blijft op de telefoon). **Geen groen/oranje/rood**, alleen rustige tips per
+  onderdeel ("Friet: vraag naar een aparte frituur") plus de vragen voor de bediening. Gluten kun
+  je niet zien, dus nooit "glutenvrij" zeggen. Verkeerd herkend → juiste gerecht aantikken.
+- **Restaurants beoordelen**, eerst alleen persoonlijk (op de telefoon, delen via link): vier
+  vragen (glutenvrije kaart, kennis bediening, aparte frituur, glutenvrij brood/pasta) → sterren,
+  plus eigen sterren en notities, gekoppeld aan de menukaart-scan. Gedeeld met iedereen pas later.
 
 ## Scanner testen zonder telefoon
 

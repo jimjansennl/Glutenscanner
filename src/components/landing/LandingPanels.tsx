@@ -20,7 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { PANELS, type PanelId } from './panels'
-import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, ScreenScanner, ScreenTravel } from './PhoneScreens'
+import { Phone, ScreenDanger, ScreenGuide, ScreenMenu, ScreenPhoto, ScreenSafe, ScreenScanner, ScreenTravel, ScreenDoubleCheck, ScreenShare, ScreenOffline, ScreenQuiz } from './PhoneScreens'
 
 const WAYS: [LucideIcon, string, string][] = [
   [ScanBarcode, 'Barcode', 'Kies onderin het barcode-icoontje en richt de camera op de streepjescode. Hij leest hem vanzelf, je hoeft niet te tikken.'],
@@ -49,6 +49,10 @@ const CAROUSEL: { word: string; line: string; dark: boolean; bg: string; screen:
   { word: 'Vraag', line: 'het restaurant', dark: true, bg: 'bg-[#ffd75e]', screen: <ScreenMenu /> },
   { word: 'Leer', line: 'waar gluten schuilen', dark: false, bg: 'bg-[#1d4d35]', screen: <ScreenGuide /> },
   { word: 'Reis', line: 'met een kaart in 10 talen', dark: false, bg: 'bg-[#3b6fd8]', screen: <ScreenTravel /> },
+  { word: 'Check', line: 'dubbel: barcode én etiket', dark: true, bg: 'bg-[#7ee2a8]', screen: <ScreenDoubleCheck /> },
+  { word: 'Deel', line: 'je lijst met opa en oma', dark: false, bg: 'bg-[#1d4d35]', screen: <ScreenShare /> },
+  { word: 'Scan', line: 'ook zonder internet', dark: false, bg: 'bg-[#14130f] ring-1 ring-white/10', screen: <ScreenOffline /> },
+  { word: 'Oefen', line: 'met de quiz', dark: true, bg: 'bg-[#ffd75e]', screen: <ScreenQuiz /> },
 ]
 
 const FAQ = [
@@ -124,7 +128,7 @@ function Carousel() {
     <div>
       <div ref={track} className="flex snap-x snap-mandatory gap-6 overflow-x-auto [scrollbar-width:none]">
         {CAROUSEL.map(({ word, line, dark, bg, screen }) => (
-          <article key={word} className={`flex h-[440px] w-[264px] shrink-0 snap-start flex-col items-center overflow-hidden rounded-[36px] pt-7 text-center ${bg}`}>
+          <article key={word + line} className={`flex h-[440px] w-[264px] shrink-0 snap-start flex-col items-center overflow-hidden rounded-[36px] pt-7 text-center ${bg}`}>
             <p className={`font-display text-[42px] font-extrabold uppercase leading-none ${dark ? 'text-[#14130f]' : 'text-white'}`}>{word}</p>
             <p className={`mt-1 px-4 font-display text-[17px] font-bold uppercase leading-tight ${dark ? 'text-[#14130f]/80' : 'text-[#ffd75e]'}`}>{line}</p>
             <div className="mt-5">
