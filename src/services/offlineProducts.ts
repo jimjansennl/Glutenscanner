@@ -28,6 +28,12 @@ export async function offlineProduct(barcode: string): Promise<{ product: OffPro
   return product ? { product, at: p.at } : null
 }
 
+/** Hoeveel producten er bewaard zijn en van wanneer (voor Instellingen). */
+export async function offlineInfo(): Promise<{ count: number; at: number } | null> {
+  const p = await load()
+  return p ? { count: Object.keys(p.products).length, at: p.at } : null
+}
+
 /** Eén keer per week de lijst alvast ophalen (de service worker bewaart hem). */
 export function prefetchOfflineProducts() {
   if (typeof navigator === 'undefined' || !navigator.onLine) return

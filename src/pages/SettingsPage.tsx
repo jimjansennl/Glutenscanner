@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
-import { ArrowUpRight, Check, Info, ScanBarcode, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { offlineInfo } from '../services/offlineProducts'
+import { ArrowUpRight, Check, Info, ScanBarcode, WifiOff, ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { PageHeader } from '../components/ui/PageHeader'
 import { PROFILES, type SafetyProfile } from '../services/profile'
@@ -71,6 +72,10 @@ function Row({
 }
 
 export function SettingsPage({ profile, onProfileChange }: Props) {
+  const [offline, setOffline] = useState<{ count: number; at: number } | null>(null)
+  useEffect(() => {
+    offlineInfo().then(setOffline)
+  }, [])
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
       <PageHeader title="Instellingen" />
@@ -83,6 +88,15 @@ export function SettingsPage({ profile, onProfileChange }: Props) {
             label="Productgegevens van Open Food Facts (ODbL)"
             href="https://world.openfoodfacts.org"
             trailing={<ArrowUpRight size={20} className="text-muted" />}
+          />
+          <Row
+            icon={<WifiOff size={22} />}
+            label="Zonder internet"
+            sub={
+              offline && offline.count > 0
+                ? `${offline.count.toLocaleString('nl-NL')} populaire producten bewaard (${new Date(offline.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })})`
+                : 'Nog geen producten bewaard. Open de app een keer met internet.'
+            }
           />
         </Group>
 
