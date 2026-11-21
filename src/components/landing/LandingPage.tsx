@@ -1,5 +1,5 @@
 import '@fontsource-variable/bricolage-grotesque'
-import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from 'react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import {
   AlertTriangle,
@@ -40,6 +40,8 @@ import {
   ScreenTravel,
 } from './PhoneScreens'
 import { ScanDemo } from './ScanDemo'
+import { readSharedList } from '../../services/shareList'
+import type { GlutenStatus } from '../../types/product'
 import { Features } from './Features'
 
 /**
@@ -605,7 +607,65 @@ function QuestionsPage() {
   )
 }
 
+/** Gedeelde lijst "Mijn vaste producten" (alles staat in de link, na het #-teken). */
+function ListPage() {
+  const list = useMemo(() => readSharedList(window.location.hash), [])
+  const groups: [GlutenStatus, string, string][] = [
+    ['safe', 'Dit mag', 'text-safe'],
+    ['warning', 'Eerst even kijken', 'text-warning'],
+    ['danger', 'Liever niet', 'text-danger'],
+  ]
+  return (
+    <>
+      <PageBand
+        eyebrow="Gedeelde lijst"
+        title={list?.who ? `Dit mag ${list.who} eten` : 'Glutenvrije boodschappen'}
+        sub={list ? `Producten die thuis vaak gekocht worden. Gemaakt op ${new Date(list.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : undefined}
+      />
+      <section className="mx-auto w-full max-w-2xl px-5 py-10 lg:py-14">
+        {!list || list.items.length === 0 ? (
+          <p className="text-center text-[17px] text-neutral-600">Deze link werkt niet (meer). Vraag of iemand hem opnieuw stuurt.</p>
+        ) : (
+          <div className="flex flex-col gap-8">
+            {groups.map(([status, label, color]) => {
+              const items = list.items.filter((i) => i.status === status)
+              if (items.length === 0) return null
+              return (
+                <div key={status}>
+                  <h2 className={`mb-3 font-display text-[22px] font-bold ${color}`}>{label}</h2>
+                  <ul className="divide-y divide-neutral-200 overflow-hidden rounded-[24px] bg-white ring-1 ring-neutral-200">
+                    {items.map((i, n) => (
+                      <li key={n} className="flex items-center gap-3 px-5 py-3.5">
+                        <span className={`h-3 w-3 shrink-0 rounded-full ${status === 'safe' ? 'bg-safe' : status === 'warning' ? 'bg-warning' : 'bg-danger'}`} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[17px] font-semibold text-[#14130f]">{i.name}</span>
+                          {i.brand && <span className="block text-[14px] text-neutral-500">{i.brand}</span>}
+                        </span>
+                        {i.checked && (
+                          <span className="flex shrink-0 items-center gap-1 text-[13px] font-semibold text-safe">
+                            <ShieldCheck size={15} /> Zelf gecontroleerd
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+            <p className="text-center text-[15px] leading-relaxed text-neutral-600">
+              Recepten kunnen veranderen. Kijk daarom altijd nog even op de verpakking.
+              <br />
+              Zelf iets scannen? Ga op je telefoon naar <b className="text-[#14130f]">glutenscanner.nl</b>.
+            </p>
+          </div>
+        )}
+      </section>
+    </>
+  )
+}
+
 const PAGE_VIEWS: Record<string, () => ReactNode> = {
+  '/lijst': ListPage,
   '/hoe-het-werkt': HowPage,
   // Functies is opgegaan in Hoe het werkt; oude links komen daar terecht.
   '/functies': HowPage,

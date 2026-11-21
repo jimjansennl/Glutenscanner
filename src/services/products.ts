@@ -5,7 +5,7 @@ import type { GlutenStatus, RecipeChange, ScanResult } from '../types/product'
 /**
  * Producten die je met een barcode scande, per barcode onthouden (alleen op dit toestel).
  * - Zo zien we het als het recept verandert: fabrikanten passen soms stilletjes iets aan.
- * - "Onze vaste producten": producten die je met een ster bewaart.
+ * - "Mijn vaste producten": producten die je met een ster bewaart.
  */
 const KEY = 'glutenscanner.products.v1'
 const MAX = 300
@@ -123,7 +123,7 @@ export function setChecked(result: ScanResult, status: GlutenStatus, on: boolean
   save(data)
 }
 
-/** Onze vaste producten, op naam. */
+/** Mijn vaste producten, op naam. */
 export function starredProducts(): KnownProduct[] {
   return Object.values(load())
     .filter((p) => p.starred)

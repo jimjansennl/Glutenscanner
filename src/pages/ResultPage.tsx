@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, ShieldCheck, Star } from 'lucide-react'
+import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Share2, ShieldCheck, Star } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { IngredientChips } from '../components/result/IngredientChips'
@@ -151,8 +151,75 @@ function RecipeChanged({ change, status }: { change: RecipeChange; status: Glute
   )
 }
 
-/** Ster: bewaar bij "Onze vaste producten". */
+/** Ster: bewaar bij "Mijn vaste producten". */
 /** "Wij hebben de verpakking zelf gecontroleerd": de sterkste zekerheid. Vervalt bij een nieuw recept. */
+/** Hoe oud de productgegevens zijn. Ouder dan twee jaar: extra opletten. */
+function DataAge({ at }: { at: number }) {
+  const [now] = useState(() => Date.now())
+  const old = now - at > 2 * 365 * 24 * 3600 * 1000
+  const when = new Date(at).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })
+  return (
+    <p className={`text-center text-[14px] leading-snug ${old ? 'text-warning' : 'text-muted'}`}>
+      Productgegevens bijgewerkt in {when}.
+      {old && ' Dat is al lang geleden: het recept kan veranderd zijn. Kijk zelf goed op de verpakking.'}
+    </p>
+  )
+}
+
+const RESULT_WORD: Record<GlutenStatus, string> = { safe: 'Glutenvrij', warning: 'Twijfel', danger: 'Bevat gluten' }
+
+/** "Klopt dit niet?": de fout in de database verbeteren, of de uitslag doorsturen. */
+function Feedback({ result, status }: { result: ScanResult; status: GlutenStatus }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const product = result.product
+  const share = async () => {
+    const what = product ? `${product.name}${product.brand ? ` (${product.brand})` : ''}, barcode ${product.barcode}` : 'een foto van een etiket'
+    const text = `Glutenscanner gaf "${RESULT_WORD[status]}" voor ${what}. Volgens mij klopt dat niet.\n${result.analysis.reasons[0] ?? ''}`
+    try {
+      if (navigator.share) await navigator.share({ title: 'Klopt dit niet?', text })
+      else {
+        await navigator.clipboard.writeText(text)
+        setCopied(true)
+      }
+    } catch {
+      // Delen afgebroken: niets aan de hand.
+    }
+  }
+  return (
+    <section className="flex flex-col items-center gap-2">
+      <button onClick={() => setOpen((v) => !v)} className="text-[15px] font-medium text-muted underline underline-offset-4 active:opacity-60" aria-expanded={open}>
+        Klopt dit niet?
+      </button>
+      {open && (
+        <div className="flex w-full flex-col gap-2">
+          {product && (
+            <a
+              href={`https://world.openfoodfacts.org/cgi/product.pl?type=edit&code=${encodeURIComponent(product.barcode)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between gap-3 rounded-[18px] bg-surface p-4 active:bg-surface-raised"
+            >
+              <span>
+                <span className="block text-[16px] font-semibold">Verbeter de database</span>
+                <span className="block text-[14px] text-muted">Pas de ingrediënten aan bij Open Food Facts. Dan klopt het voor iedereen.</span>
+              </span>
+              <ExternalLink size={18} className="shrink-0 text-accent" />
+            </a>
+          )}
+          <button onClick={share} className="flex items-center justify-between gap-3 rounded-[18px] bg-surface p-4 text-left active:bg-surface-raised">
+            <span>
+              <span className="block text-[16px] font-semibold">Stuur de uitslag door</span>
+              <span className="block text-[14px] text-muted">{copied ? 'Gekopieerd! Plak het in een bericht.' : 'Bijvoorbeeld naar de maker van de app.'}</span>
+            </span>
+            <Share2 size={18} className="shrink-0 text-accent" />
+          </button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 function CheckedButton({ at, onToggle }: { at: number | null; onToggle: () => void }) {
   return (
     <button
@@ -163,7 +230,7 @@ function CheckedButton({ at, onToggle }: { at: number | null; onToggle: () => vo
       }`}
     >
       <ShieldCheck size={17} />
-      {at ? 'Door ons gecontroleerd' : 'Wij hebben het gecontroleerd'}
+      {at ? 'Zelf gecontroleerd' : 'Ik heb het gecontroleerd'}
     </button>
   )
 }
@@ -183,7 +250,7 @@ function StarButton({ result }: { result: ScanResult }) {
       }`}
     >
       <Star size={17} fill={on ? 'currentColor' : 'none'} />
-      {on ? 'Bij onze vaste producten' : 'Bewaar als vast product'}
+      {on ? 'Bij mijn vaste producten' : 'Bewaar als vast product'}
     </button>
   )
 }
@@ -295,7 +362,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
   const [checked, setCheckedState] = useState(() => checkedAt(result))
   const analysis =
     checked && result.analysis.status === 'warning'
-      ? { ...result.analysis, status: 'safe' as const, reasons: ['Jullie hebben de verpakking zelf gecontroleerd.'] }
+      ? { ...result.analysis, status: 'safe' as const, reasons: ['Je hebt de verpakking zelf gecontroleerd.'] }
       : result.analysis
   const meta = SOURCE_META[result.source]
   const isCodeScan = result.source !== 'photo'
@@ -364,7 +431,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
         <CheckBanner
           agree
           safe
-          text={`Door jullie zelf gecontroleerd op ${new Date(checked).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}. Het recept is sindsdien niet veranderd.`}
+          text={`Zelf gecontroleerd op ${new Date(checked).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}. Het recept is sindsdien niet veranderd.`}
         />
       )}
 
@@ -433,17 +500,9 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
         </section>
       )}
 
-      {product && (
-        <a
-          href={`https://world.openfoodfacts.org/product/${encodeURIComponent(product.barcode)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center gap-1.5 text-[15px] text-accent active:opacity-60"
-        >
-          Bekijk of verbeter op Open Food Facts
-          <ExternalLink size={14} />
-        </a>
-      )}
+      {product?.updatedAt && <DataAge at={product.updatedAt} />}
+
+      <Feedback result={result} status={analysis.status} />
 
       <p className="flex flex-col items-center gap-1 px-4 text-center text-xs leading-relaxed text-muted/80">
         <Info size={14} aria-hidden />

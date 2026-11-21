@@ -71,7 +71,8 @@ Belangrijke bestanden:
 | `src/services/glutenParser.ts` | Glutenanalyse van de tekst in 11 talen tegelijk (taal kiezen hoeft niet), met restaurantrisico's voor menukaarten. Een recept op de verpakking ("200 g speltmeel") wordt eruit gehaald (`stripRecipe`); staat er alleen een recept op de foto, dan vraagt hij om het stukje "Ingrediënten:". "Kan glutenbevattende granen bevatten" telt als sporen. Testfoto van een echte zak: `ocrbench/zon_achter.jpg` (buiten de repo). |
 | `src/services/ingredientList.ts`, `src/components/result/IngredientChips.tsx` | Uitslag: de ingrediënten als losse blokjes in plaats van een lap tekst (gebruiker vond dat droog). Pakt alleen het stuk na "Ingrediënten:" tot allergenen/voedingswaarde/bewaaradvies. Bovenaan één samenvattingszin; gluten rood, twijfel oranje, bloem zonder gluten (rijstebloem) groen met vinkje; "Kan … bevatten" apart; hele fototekst achter "Toon alle tekst van de foto". Menukaarten blijven gewone tekst. |
 | `src/services/openFoodFacts.ts` | Zoekt productgegevens op bij een barcode (wereldwijde database, dus ook buitenlandse producten). `fetchGlutenFreeAlternatives`: bij rood zoekt hij in dezelfde soort met label `en:no-gluten` ("Probeer liever"); de app keurt elk alternatief zelf nog na. |
-| `src/services/products.ts` | Onthoudt per barcode de ingrediënten: anders dan de vorige keer → banner "Het recept is veranderd!" (`recipeChange`). Ster = "Onze vaste producten", bovenaan Geschiedenis. |
+| `src/services/products.ts` | Onthoudt per barcode de ingrediënten: anders dan de vorige keer → banner "Het recept is veranderd!" (`recipeChange`). Ster = "Mijn vaste producten", bovenaan Geschiedenis. |
+| `src/services/shareList.ts` | "Deel de lijst met opa, oma of school" (Geschiedenis): link `/lijst#…` met Mijn vaste producten in de link zelf (geen server, geen account). De website toont dan "Dit mag <naam> eten" (`ListPage` in `LandingPage.tsx`). |
 | `src/lib/haptics.ts` | Uitslag voelen: groen 1, oranje 2, rood 3 tikjes. iPhone via een onzichtbaar `<input type=checkbox switch>` (iOS 18+). |
 | `src/data/menuQuestions.ts` | Menukaart: per risico één vraag voor de bediening, in 10 talen. Op reis (`zoneLang`) groot in de taal van het land, Nederlands klein eronder. Pas bij een wijziging alle talen aan. |
 | `src/services/translateIngredients.ts`, `src/data/ingredientWords.ts` | "Lees mee in het Nederlands" onder een buitenlandse ingrediëntenlijst. Ingebouwde woordenlijst per taal (10 talen, geen internet): raadt de taal, vertaalt vaste combinaties eerst ("farine de blé" → tarwebloem), gluten rood/oranje, onbekende woorden grijs. Knop alleen als de lijst niet Nederlands is en we ≥50% kennen. Woorden toevoegen: gewoon met accenten in `ingredientWords.ts`. |
@@ -196,7 +197,9 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - **Groen alleen als alles goed gelezen is:** OCR geeft per woord een zekerheid (`unsure` in `ocr.ts`).
   Onbekend woord (`knownWords.ts` + `src/data/foodWords.ts`, samenstellingen vanzelf) én slecht gelezen
   → oranje "De camera kon … niet goed lezen". Woorden toevoegen in `foodWords.ts`.
-- **"Wij hebben het gecontroleerd"** (`checkedAt`/`setChecked` in `products.ts`): ouders bevestigen een
+- **"Klopt dit niet?"** onder elke uitslag: "Verbeter de database" (bewerkpagina Open Food Facts) en "Stuur de uitslag door" (deelmenu). Ook staat er hoe oud de productgegevens zijn (ouder dan 2 jaar = oranje zin).
+- Het heet **"Mijn vaste producten"** (niet "Onze"); gecontroleerde producten hebben een schildje in de lijst.
+- **"Ik heb het gecontroleerd"** (`checkedAt`/`setChecked` in `products.ts`): ouders bevestigen een
   product; twijfel wordt dan groen met de datum. Vervalt vanzelf als het recept verandert. Niet bij rood.
 - Glutenvrij-keurmerk wint van sporen, maar níet van een glutengraan in de ingrediënten
   (glutenvrij + speltmeel = oranje "Kijk goed op de verpakking").

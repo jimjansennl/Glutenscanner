@@ -324,7 +324,7 @@ export function ScreenRecipe() {
     <ResultShell product="Chocoladepasta">
       <span className="mx-auto flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[8px] font-semibold text-warning">
         <Star size={9} fill="currentColor" />
-        Bij onze vaste producten
+        Bij mijn vaste producten
       </span>
       <div className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 py-2.5">
         <XCircle size={20} className="text-danger" />

@@ -176,7 +176,11 @@ function ScannerApp() {
             items={history}
             statusOf={(item) => profiled(item.result).status}
             onOpen={(item) => setView({ name: 'result', result: item.result, back: 'history' })}
-            starred={starredProducts().map((p) => ({ ...p, status: profiled(p.result).status }))}
+            starred={starredProducts().map((p) => {
+              const checked = !!p.checked && p.checked.ingredients === p.ingredients
+              const status = profiled(p.result).status
+              return { ...p, checked, status: checked && status === 'warning' ? 'safe' : status }
+            })}
             onOpenResult={(result) => setView({ name: 'result', result, back: 'history' })}
             onClear={() => {
               clearHistory()

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { History, Star } from 'lucide-react'
+import { shareUrl } from '../services/shareList'
+import { History, Star, ShieldCheck, Share2 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import type { HistoryItem } from '../services/history'
 import type { GlutenStatus, ScanResult } from '../types/product'
@@ -27,9 +28,62 @@ interface Props {
   statusOf: (item: HistoryItem) => GlutenStatus
   onOpen: (item: HistoryItem) => void
   onClear: () => void
-  /** Onze vaste producten (met ster), met status volgens het profiel. */
-  starred: { barcode: string; name: string; status: GlutenStatus; result: ScanResult }[]
+  /** Mijn vaste producten (met ster), met status volgens het profiel. */
+  starred: { barcode: string; name: string; status: GlutenStatus; result: ScanResult; checked?: boolean }[]
   onOpenResult: (result: ScanResult) => void
+}
+
+/** De lijst delen met opa en oma, school of een vriendinnetje: één link, geen account. */
+function ShareList({ starred }: { starred: Props['starred'] }) {
+  const [open, setOpen] = useState(false)
+  const [who, setWho] = useState('')
+  const [copied, setCopied] = useState(false)
+  const share = async () => {
+    const url = shareUrl({
+      who: who.trim() || undefined,
+      at: Date.now(),
+      items: starred.map((p) => ({ name: p.name, brand: p.result.product?.brand, status: p.status, checked: p.checked })),
+    })
+    const text = who.trim() ? `Dit mag ${who.trim()} eten:` : 'Onze glutenvrije boodschappen:'
+    try {
+      if (navigator.share) await navigator.share({ title: 'Mijn vaste producten', text, url })
+      else {
+        await navigator.clipboard.writeText(`${text} ${url}`)
+        setCopied(true)
+      }
+    } catch {
+      // Delen afgebroken.
+    }
+  }
+  if (!open)
+    return (
+      <div className="mb-3 flex justify-center">
+        <button onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold active:bg-white/20">
+          <Share2 size={16} />
+          Deel de lijst met opa, oma of school
+        </button>
+      </div>
+    )
+  return (
+    <div className="mb-3 flex flex-col gap-2 rounded-[22px] bg-surface p-4">
+      <label className="text-[14px] text-muted" htmlFor="share-who">
+        Voor wie is de lijst? (mag leeg)
+      </label>
+      <input
+        id="share-who"
+        value={who}
+        onChange={(e) => setWho(e.target.value)}
+        placeholder="Bijvoorbeeld je voornaam"
+        maxLength={30}
+        className="rounded-xl bg-surface-raised px-4 py-3 text-[17px] outline-none ring-accent focus:ring-2"
+      />
+      <button onClick={share} className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-accent py-3 text-[17px] font-bold text-black active:opacity-80">
+        <Share2 size={18} />
+        {copied ? 'Link gekopieerd!' : 'Deel de link'}
+      </button>
+      <p className="text-center text-[13px] text-muted">De ontvanger ziet een nette lijst. Er is geen app of account nodig.</p>
+    </div>
+  )
 }
 
 export function HistoryPage({ items, statusOf, onOpen, onClear, starred, onOpenResult }: Props) {
@@ -41,13 +95,14 @@ export function HistoryPage({ items, statusOf, onOpen, onClear, starred, onOpenR
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pb-6">
       <PageHeader title="Geschiedenis" className="-mx-4" />
 
-      {/* Onze vaste producten: wat jullie vaak kopen, in één oogopslag. */}
+      {/* Mijn vaste producten: wat je vaak koopt, in één oogopslag. */}
       {starred.length > 0 ? (
         <section>
           <h2 className="mb-2 flex items-center justify-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-warning">
             <Star size={14} fill="currentColor" />
-            Onze vaste producten
+            Mijn vaste producten
           </h2>
+          <ShareList starred={starred} />
           <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
             {starred.map((p) => (
               <li key={p.barcode}>
@@ -57,6 +112,7 @@ export function HistoryPage({ items, statusOf, onOpen, onClear, starred, onOpenR
                 >
                   <span className={`h-3 w-3 shrink-0 rounded-full ${STATUS_LABEL[p.status].dot}`} />
                   <span className="min-w-0 flex-1 truncate text-[17px]">{p.name}</span>
+                  {p.checked && <ShieldCheck size={16} className="shrink-0 text-safe" aria-label="Zelf gecontroleerd" />}
                   <span className="shrink-0 text-[13px] text-muted">{STATUS_LABEL[p.status].label}</span>
                 </button>
               </li>

@@ -16,6 +16,7 @@ const FIELDS = [
   'labels_tags',
   'labels',
   'categories_tags',
+  'last_modified_t',
 ].join(',')
 
 export interface OffProduct extends OffProductFields {
@@ -26,6 +27,8 @@ export interface OffProduct extends OffProductFields {
   /** Van algemeen naar specifiek, bijv. ["en:snacks", "en:biscuits", "en:shortbread"]. */
   categories_tags?: string[]
   code?: string
+  /** Laatst bijgewerkt (seconden sinds 1970). */
+  last_modified_t?: number
 }
 
 export class ProductNotFoundError extends Error {
@@ -56,6 +59,7 @@ export function toProduct(barcode: string, off: OffProduct): Product {
     imageUrl: off.image_front_small_url,
     ingredientsText: off.ingredients_text_nl || off.ingredients_text || off.ingredients_text_en,
     categories: off.categories_tags,
+    updatedAt: off.last_modified_t ? off.last_modified_t * 1000 : undefined,
   }
 }
 

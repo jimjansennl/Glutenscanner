@@ -40,6 +40,8 @@ export interface Product {
   ingredientsText?: string
   /** Soort product volgens Open Food Facts, voor glutenvrije alternatieven. */
   categories?: string[]
+  /** Wanneer de productgegevens in de database voor het laatst zijn bijgewerkt (ms). */
+  updatedAt?: number
 }
 
 export type ScanSource = 'barcode' | 'qr' | 'photo' | 'manual'
