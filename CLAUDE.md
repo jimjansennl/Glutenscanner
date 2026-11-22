@@ -232,6 +232,11 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - Zonder internet: zelf aantikken, foto (klein) bewaard in localStorage (`glutenscanner.gerecht.wacht`,
   max. 1 dag). Weer internet: het scherm bekijkt hem zelf, of de scanner toont "Je gerecht van 14:02 is
   bekeken" (bovenaan, z-50: anders valt hij achter de camera).
+- **Testpagina** `/test-gerecht` (`src/pages/DishTestPage.tsx`, in geen menu): veel foto's tegelijk door de
+  echte AI, per foto gerecht + onderdelen. Zo meten we de herkenning. De AI zelf kun je niet trainen;
+  wij verbeteren `PARTS` (uitleg aan de AI) en de tips. Valkuilen uit de testfoto's van de gebruiker:
+  orzo/rijst, cavatelli/gnocchi, tarwekorrels, courgetti, gevuld vlees (vulling), gebakken vis (bloemlaagje),
+  macaroni met mix (kruidenmix), bladerdeeg, tempeh lijkt gepaneerd, tomatensaus ≠ dikke saus.
 - Optie A (herkenning op de telefoon, ±63 MB) is half gebouwd en staat **buiten de repo** in
   `/home/claude/optieA-backup` (model, scripts, oude DishView). Alleen afmaken als de gebruiker erom vraagt.
 

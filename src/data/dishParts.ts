@@ -19,7 +19,7 @@ export interface DishPart {
 }
 
 export const DISH_PARTS: Record<string, DishPart> = {
-  pasta: { label: 'Pasta', emoji: '🍝', group: 'let', tip: 'Gewone pasta is van tarwe. Alleen goed als het glutenvrije pasta is.', ask: 'Is de pasta glutenvrij, en gekookt in schoon water?' },
+  pasta: { label: 'Pasta', emoji: '🍝', group: 'let', tip: 'Gewone en volkoren pasta zijn van tarwe. Alleen goed als het glutenvrije pasta is.', ask: 'Is de pasta glutenvrij, en gekookt in schoon water?' },
   orzo: { label: 'Orzo', emoji: '🍚', group: 'let', tip: 'Orzo lijkt op rijst, maar het is pasta van tarwe.', ask: 'Is dit rijst of orzo?' },
   gnocchi: { label: 'Gnocchi', emoji: '🥟', group: 'let', tip: 'Gnocchi zijn van aardappel, maar bijna altijd met tarwebloem erin.', ask: 'Zit er bloem in de gnocchi?' },
   couscous: { label: 'Couscous of bulgur', emoji: '🥣', group: 'let', tip: 'Couscous en bulgur zijn gemaakt van tarwe.', ask: 'Is dit couscous, of quinoa of rijst?' },
@@ -28,9 +28,12 @@ export const DISH_PARTS: Record<string, DishPart> = {
   brood: { label: 'Brood', emoji: '🍞', group: 'let', tip: 'Gewoon brood is van tarwe. Let ook op kruimels.', ask: 'Hebben jullie glutenvrij brood?' },
   wrap: { label: 'Wrap, pannenkoek of crêpe', emoji: '🌯', group: 'let', tip: 'Het deeg of beslag is meestal van tarwebloem. Puur boekweit is wel goed.', ask: 'Waar is het beslag van gemaakt?' },
   pizza: { label: 'Pizza of hartige taart', emoji: '🍕', group: 'let', tip: 'De bodem is bijna altijd van tarwebloem.', ask: 'Hebben jullie een glutenvrije bodem, apart gebakken?' },
+  bladerdeeg: { label: 'Bladerdeeg', emoji: '🥐', group: 'let', tip: 'Bladerdeeg is van tarwebloem. Denk aan Wellington, pasteitjes en saucijzenbroodjes.', ask: 'Hebben jullie dit zonder bladerdeeg?' },
+  vulling: { label: 'Vulling', emoji: '🍗', group: 'let', tip: 'In gevuld vlees of groente zit vaak brood of paneermeel.', ask: 'Waar is de vulling van gemaakt?' },
   gepaneerd: { label: 'Gepaneerd', emoji: '🍗', group: 'let', tip: 'Een krokant laagje is meestal paneermeel of bloem: tarwe. Denk aan schnitzel, kroket en kibbeling.', ask: 'Waar is het krokante laagje van?' },
   beslag: { label: 'Gefrituurd in beslag', emoji: '🍤', group: 'let', tip: 'Beslag, zoals bij tempura, is meestal van tarwebloem.', ask: 'Waar is het beslag van gemaakt?' },
-  gehaktballen: { label: 'Gehaktballen', emoji: '🧆', group: 'let', plural: true, tip: 'In gehakt zit vaak paneermeel of oud brood.', ask: 'Zit er paneermeel in het gehakt?' },
+  gehaktballen: { label: 'Gehakt', emoji: '🧆', group: 'let', tip: 'In gehaktballen en burgers zit vaak paneermeel of oud brood.', ask: 'Zit er paneermeel in het gehakt?' },
+  kruidenmix: { label: 'Kruidenmix', emoji: '🧂', group: 'let', tip: 'Kant-en-klare mixen, zoals voor macaroni, nasi of taco\'s, bevatten vaak tarwebloem.', ask: 'Gebruiken jullie een kant-en-klare kruidenmix?' },
   worst: { label: 'Worst', emoji: '🌭', group: 'let', tip: 'Worst bevat vaak bloem, paneermeel of beschuit.', ask: 'Zit er bloem of paneermeel in de worst?' },
   saus: { label: 'Dikke of romige saus', emoji: '🥫', group: 'let', tip: 'Dikke sauzen en jus zijn vaak gebonden met bloem.', ask: 'Is de saus gebonden met bloem?' },
   taart: { label: 'Taart, gebak of koek', emoji: '🍰', group: 'let', tip: 'Bijna altijd gemaakt met tarwebloem.', ask: 'Is dit glutenvrij gebakken?' },
@@ -40,15 +43,18 @@ export const DISH_PARTS: Record<string, DishPart> = {
   friet: { label: 'Friet', emoji: '🍟', group: 'vraag', tip: 'Friet zelf is meestal goed. Maar niet als hij in dezelfde frituur gaat als kroketten of snacks.', ask: 'Hebben jullie een aparte frituur voor friet?' },
   soep: { label: 'Soep', emoji: '🍲', group: 'vraag', tip: 'Soep is vaak gebonden met bloem, of gemaakt met bouillon waar gluten in zitten.', ask: 'Zit er bloem of gewone bouillon in de soep?' },
   risotto: { label: 'Risotto', emoji: '🍚', group: 'vraag', tip: 'Rijst is goed. Maar de bouillon kan gluten bevatten.', ask: 'Welke bouillon zit in de risotto?' },
+  bloemlaagje: { label: 'Gebakken vis of vlees', emoji: '🍳', group: 'vraag', tip: 'Gebakken vis of vlees wordt vaak eerst door de bloem gehaald. Je ziet dat bijna niet.', ask: 'Is het eerst door de bloem gehaald?' },
+  vleeswaren: { label: 'Ham, spek of worstjes', emoji: '🥓', group: 'vraag', tip: 'Ham en spek zijn meestal goed. In sommige vleeswaren zit wel tarwe.', ask: 'Zit er gluten in de vleeswaren?' },
   dressing: { label: 'Dressing', emoji: '🥗', group: 'vraag', tip: 'In dressing zit soms sojasaus, mosterd met bloem of moutazijn.', ask: 'Wat zit er in de dressing?' },
   marinade: { label: 'Gemarineerd vlees of vis', emoji: '🍖', group: 'vraag', tip: 'Marinades en kruidenmixen bevatten soms sojasaus of bloem.', ask: 'Wat zit er in de marinade?' },
   gratin: { label: 'Korstje uit de oven', emoji: '🧀', group: 'vraag', tip: 'Een gratinkorstje is vaak kaas, maar soms zit er paneermeel in.', ask: 'Zit er paneermeel in het korstje?' },
   toetje: { label: 'Toetje', emoji: '🍮', group: 'vraag', tip: 'Vla, yoghurt en pudding zijn meestal goed. Let op koekjes of kruimels erop.', ask: 'Zit er koek in het toetje?' },
+  tomatensaus: { label: 'Tomatensaus', emoji: '🍅', group: 'goed', tip: 'Tomatensaus is meestal glutenvrij. Een kant-en-klare saus soms niet.' },
   rijst: { label: 'Rijst', emoji: '🍚', group: 'goed', tip: 'Rijst is glutenvrij.' },
   groentenoedels: { label: 'Groenteslierten', emoji: '🥒', group: 'goed', plural: true, tip: 'Dit is groente, geen pasta. Let wel op de saus.' },
   aardappel: { label: 'Aardappel', emoji: '🥔', group: 'goed', tip: 'Aardappels zijn glutenvrij. Rösti en kroketjes soms niet: daar zit vaak bloem in.' },
   quinoa: { label: 'Quinoa, polenta of boekweit', emoji: '🌽', group: 'goed', tip: 'Van zichzelf glutenvrij.' },
-  vlees: { label: 'Vlees, vis of kip', emoji: '🐟', group: 'goed', tip: 'Puur vlees, vis en kip zijn glutenvrij. Zit er een korstje of marinade op, kijk dan bij die tip.' },
+  vlees: { label: 'Vlees, vis of kip', emoji: '🐟', group: 'goed', tip: 'Puur vlees, vis, kip, tofu en tempeh zijn glutenvrij. Zit er een korstje of marinade op, kijk dan bij die tip.' },
   groente: { label: 'Groente', emoji: '🥦', group: 'goed', tip: 'Groente is glutenvrij.' },
   salade: { label: 'Sla en rauwkost', emoji: '🥬', group: 'goed', tip: 'Sla en rauwkost zijn glutenvrij. Let op de dressing.' },
   peulvruchten: { label: 'Bonen, linzen of erwten', emoji: '🫘', group: 'goed', plural: true, tip: 'Peulvruchten zijn glutenvrij.' },
@@ -61,9 +67,9 @@ export const DISH_PARTS: Record<string, DishPart> = {
 /** Volgorde in de lijst om zelf aan te tikken: eerst wat je het vaakst ziet. */
 export const PICK_ORDER = [
   'pasta', 'rijst', 'aardappel', 'friet', 'vlees', 'groente', 'salade', 'saus',
-  'gepaneerd', 'gehaktballen', 'worst', 'brood', 'wrap', 'pizza', 'noedels', 'soep',
+  'gepaneerd', 'gehaktballen', 'worst', 'vleeswaren', 'brood', 'wrap', 'pizza', 'bladerdeeg', 'noedels', 'soep', 'tomatensaus',
   'risotto', 'orzo', 'gnocchi', 'couscous', 'graankorrels', 'groentenoedels', 'quinoa', 'peulvruchten',
-  'sojasaus', 'dressing', 'marinade', 'beslag', 'gratin', 'croutons', 'kruimels', 'taart',
+  'sojasaus', 'dressing', 'marinade', 'kruidenmix', 'bloemlaagje', 'vulling', 'beslag', 'gratin', 'croutons', 'kruimels', 'taart',
   'toetje', 'ei', 'kaas', 'fruit', 'noten',
 ]
 

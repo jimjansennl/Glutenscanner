@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { DishTestPage } from './pages/DishTestPage'
 import { ensureSecureContext } from './services/secureContext'
 import { prefetchOfflineProducts } from './services/offlineProducts'
 import { isDesktop } from './services/siteNav'
@@ -19,7 +20,8 @@ if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
 if (!ensureSecureContext()) {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <App />
+      {/* Testpagina voor de herkenning van gerechten (staat in geen enkel menu). */}
+      {window.location.pathname === '/test-gerecht' ? <DishTestPage /> : <App />}
     </StrictMode>,
   )
   // Op de telefoon: alvast de populaire producten bewaren voor scannen zonder internet.

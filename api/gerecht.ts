@@ -16,10 +16,13 @@ const PARTS: Record<string, string> = {
   noedels: 'noodles (mie, udon, ramen, rice noodles)',
   brood: 'bread, toast, sandwich, bun, garlic bread',
   wrap: 'wrap, tortilla, pancake, crêpe, pita, naan',
-  pizza: 'pizza, quiche, savoury pie, pastry crust',
+  pizza: 'pizza, quiche, savoury pie or tart with a dough crust',
+  bladerdeeg: 'puff pastry (Wellington, vol-au-vent, sausage roll)',
+  vulling: 'stuffing inside meat, poultry or vegetables (rolled roast, stuffed chicken, stuffed peppers)',
   gepaneerd: 'breaded or crumb-coated food (schnitzel, croquette, nuggets, fish fingers, breaded fish)',
   beslag: 'deep fried in batter (tempura, battered fish, onion rings)',
-  gehaktballen: 'meatballs, minced meat patties, burgers',
+  gehaktballen: 'minced meat: meatballs, patties, burgers, or loose fried mince',
+  kruidenmix: 'dish typically made with a ready-made seasoning mix (Dutch macaroni with mince, nasi, bami, taco/chili mince)',
   worst: 'sausages',
   saus: 'thick, creamy or brown sauce or gravy',
   taart: 'cake, pie, pastry, cookies, biscuits, brownies',
@@ -29,15 +32,18 @@ const PARTS: Record<string, string> = {
   friet: 'french fries / chips, potato wedges',
   soep: 'soup',
   risotto: 'risotto',
+  bloemlaagje: 'pan-fried fish or meat without visible crumbs (often dusted with flour)',
+  vleeswaren: 'ham, bacon, lardons, cured or sliced meats',
   dressing: 'salad dressing, mayonnaise-like sauce on salad',
   marinade: 'visibly marinated, glazed or spice-rubbed meat or fish',
   gratin: 'oven-baked crust or gratin topping',
   toetje: 'dessert in a glass or bowl (yoghurt, custard, pudding, mousse, ice cream)',
+  tomatensaus: 'tomato sauce, bolognese-style or chunky vegetable tomato sauce (not thick creamy sauce)',
   rijst: 'plain rice',
   groentenoedels: 'vegetable noodles (courgetti / zucchini spirals), looks like pasta',
   aardappel: 'potatoes (boiled, roasted, mashed, rösti)',
   quinoa: 'quinoa, polenta, buckwheat, millet',
-  vlees: 'plain meat, fish, chicken, shrimp, tofu',
+  vlees: 'plain meat, fish, chicken, shrimp, tofu, tempeh',
   groente: 'vegetables (cooked or roasted)',
   salade: 'lettuce, leafy salad, coleslaw, raw vegetables',
   peulvruchten: 'beans, lentils, chickpeas, peas',
@@ -54,9 +60,12 @@ ${Object.entries(PARTS)
   .join('\n')}
 
 Rules:
-- Pick every component that is visible, at most 8, most important first.
+- Pick every component that is visible, at most 8. Put components that often hide gluten first.
+- Pasta is always pasta, also wholewheat or in a cold pasta salad. A pasta salad usually also has dressing.
+- Pan-fried fish or meat: add bloemlaagje. Rolled or stuffed meat: add vulling. Dutch macaroni or nasi: add kruidenmix.
 - If a component could easily be a look-alike, give the most likely id and put the other in "alt".
-  Examples: orzo vs rijst, gnocchi vs pasta, groentenoedels vs pasta, graankorrels vs peulvruchten.
+  Examples: orzo vs rijst, gnocchi vs pasta, groentenoedels vs pasta, graankorrels vs peulvruchten,
+  gepaneerd vs vlees (tempeh, roasted tofu or crispy skin can look breaded), saus vs tomatensaus.
 - "dish": a short Dutch name for the dish as it looks (max 6 words), simple words a child understands.
   Never write "glutenvrij" or anything about gluten in the name.
 - If the photo shows no food or drink (a label, a menu, a person, a room), set food to false.
@@ -88,7 +97,7 @@ const TOOL = {
 }
 
 const MAX_BYTES = 1_500_000
-const PER_IP_HOUR = 30
+const PER_IP_HOUR = 60
 const ipHits = new Map<string, number[]>()
 let day = ''
 let dayCount = 0
