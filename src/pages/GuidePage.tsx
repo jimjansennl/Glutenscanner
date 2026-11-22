@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Brain, ChevronRight, Languages, PartyPopper, Search, X } from 'lucide-react'
+import { Brain, ChevronRight, Languages, PartyPopper, Search, Store, X } from 'lucide-react'
+import { MyRestaurants } from '../components/restaurant/MyRestaurants'
 import { Quiz } from '../components/guide/Quiz'
 import { AnswerCard, ItemList, RiskBar } from '../components/guide/GuideBits'
 import { RISK_UI, THEME_ICONS } from '../components/guide/guideUi'
@@ -15,7 +16,7 @@ import { normalize } from '../services/glutenParser'
  * één woord als antwoord, één zin waarom, en wat je in plaats daarvan kunt nemen.
  */
 
-type View = { kind: 'home' } | { kind: 'feast' } | { kind: 'quiz' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
+type View = { kind: 'home' } | { kind: 'feast' } | { kind: 'quiz' } | { kind: 'restaurants' } | { kind: 'color'; risk: RiskLevel } | { kind: 'theme'; id: string } | { kind: 'group'; id: string }
 
 function SubPage({ title, sub, onBack, children }: { title: string; sub?: string; onBack: () => void; children: ReactNode }) {
   return (
@@ -58,6 +59,16 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
       >
         <div className="mt-2">
           <ItemList items={items} showGroup />
+        </div>
+      </SubPage>
+    )
+  }
+
+  if (view.kind === 'restaurants') {
+    return (
+      <SubPage title="Mijn restaurants" sub="Waar kun je goed glutenvrij eten? De sterren komen uit vier vragen." onBack={() => setView({ kind: 'home' })}>
+        <div className="mt-4">
+          <MyRestaurants />
         </div>
       </SubPage>
     )
@@ -224,8 +235,22 @@ export function GuidePage({ onTravelCard }: { onTravelCard: () => void }) {
           </div>
 
           <button
-            onClick={onTravelCard}
+            onClick={() => setView({ kind: 'restaurants' })}
             className="mt-6 flex items-center gap-4 rounded-[22px] bg-surface p-4 text-left active:bg-surface-raised"
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-safe text-black">
+              <Store size={24} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[17px] font-semibold leading-tight">Mijn restaurants</span>
+              <span className="text-[14px] leading-snug text-muted">Waar kon je goed eten? Bewaar en deel je favorieten</span>
+            </span>
+            <ChevronRight size={22} className="shrink-0 text-muted" />
+          </button>
+
+          <button
+            onClick={onTravelCard}
+            className="mt-2.5 flex items-center gap-4 rounded-[22px] bg-surface p-4 text-left active:bg-surface-raised"
           >
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#3b6fd8]">
               <Languages size={24} />

@@ -59,19 +59,23 @@ export function removeRestaurant(id: string) {
 /**
  * 1 tot 5 sterren uit de vier vragen. "Weet niet" telt niet mee. Nog niets beantwoord: null.
  * Weet de bediening niet wat coeliakie is, dan nooit meer dan 3 sterren: dan is het niet veilig.
+ * Weinig antwoorden = weinig zekerheid: met 1 antwoord max. 3 sterren, met 2 max. 4.
  */
 export function stars(answers: Restaurant['answers']): number | null {
   let got = 0
   let total = 0
+  let count = 0
   for (const q of QUESTIONS) {
     const a = answers[q.id]
     if (a === 'ja' || a === 'nee') {
       total += q.weight
+      count++
       if (a === 'ja') got += q.weight
     }
   }
   if (total === 0) return null
-  const s = 1 + Math.round((got / total) * 4)
+  let s = 1 + Math.round((got / total) * 4)
+  if (count <= 2) s = Math.min(s, count + 2)
   return answers.staff === 'nee' ? Math.min(s, 3) : s
 }
 
@@ -106,18 +110,14 @@ export function where(): Promise<{ lat: number; lon: number } | null> {
   })
 }
 
-/**
- * Restaurants, cafés en snackbars binnen 250 meter, via OpenStreetMap (gratis, geen account).
- * Alleen je plek (afgerond) gaat daarheen, verder niets.
- */
-export async function nearby(at: { lat: number; lon: number }): Promise<Nearby[]> {
-  const lat = at.lat.toFixed(4)
-  const lon = at.lon.toFixed(4)
-  const query = `[out:json][timeout:15];nwr(around:250,${lat},${lon})[amenity~"^(restaurant|cafe|fast_food|ice_cream|pub|bar|food_court|biergarten)$"][name];out center 40;`
+const AMENITY = '[amenity~"^(restaurant|cafe|fast_food|ice_cream|pub|bar|food_court|biergarten)$"]'
+
+async function overpass(at: { lat: number; lon: number }, filter: string, limit: number): Promise<Nearby[]> {
+  const query = `[out:json][timeout:20];nwr${filter}${AMENITY}[name];out center ${limit};`
   const res = await fetch('https://overpass-api.de/api/interpreter', {
     method: 'POST',
     body: new URLSearchParams({ data: query }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(20000),
   })
   if (!res.ok) throw new Error(String(res.status))
   const data = (await res.json()) as {
@@ -134,7 +134,29 @@ export async function nearby(at: { lat: number; lon: number }): Promise<Nearby[]
     })
     .filter((x): x is Nearby => x !== null)
     .sort((a, b) => a.meters - b.meters)
-    .slice(0, 15)
+}
+
+const round = (at: { lat: number; lon: number }) => `${at.lat.toFixed(3)},${at.lon.toFixed(3)}`
+
+/**
+ * Restaurants, cafés en snackbars om je heen (500 m), via OpenStreetMap (gratis, geen account).
+ * Alleen je plek (afgerond op ±100 m) gaat daarheen, verder niets.
+ */
+export async function nearby(at: { lat: number; lon: number }): Promise<Nearby[]> {
+  return (await overpass(at, `(around:500,${round(at)})`, 60)).slice(0, 15)
+}
+
+/** Zoeken op naam binnen 15 km: voor een restaurant waar je niet nu bent (je zit al thuis). */
+export async function searchNear(at: { lat: number; lon: number }, name: string): Promise<Nearby[]> {
+  // Alleen letters, cijfers en spaties: geen gekke tekens in de zoekopdracht.
+  const q = name.replace(/[^\p{L}\p{N} ]/gu, '').trim()
+  if (q.length < 2) return []
+  return (await overpass(at, `(around:15000,${round(at)})[name~"${q}",i]`, 40)).slice(0, 12)
+}
+
+/** "80 m" of "8,2 km". */
+export function far(meters: number): string {
+  return meters < 1000 ? `${meters} m` : `${(meters / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} km`
 }
 
 /* ---- Delen via een link (alles zit in de link, net als de lijst voor opa en oma) ---- */

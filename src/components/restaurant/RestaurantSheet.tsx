@@ -4,9 +4,11 @@ import {
   QUESTIONS,
   distance,
   loadRestaurants,
+  far,
   nearby,
   removeRestaurant,
   saveRestaurant,
+  searchNear,
   stars,
   where,
   type Answer,
@@ -63,12 +65,13 @@ export function RestaurantSheet({ initial, onClose }: Props) {
   )
 }
 
-/** Stap 1: restaurant kiezen. Eerst in de buurt, anders zelf typen. */
+/** Stap 1: restaurant kiezen. Om je heen (500 m), of zoeken op naam (15 km), of zelf typen. */
 function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
   const [state, setState] = useState<'zoeken' | 'klaar' | 'geen-plek' | 'mislukt'>('zoeken')
   const [list, setList] = useState<Nearby[]>([])
   const [here, setHere] = useState<{ lat: number; lon: number } | null>(null)
   const [typed, setTyped] = useState('')
+  const [found, setFound] = useState<{ q: string; list: Nearby[] } | null>(null)
   const saved = useMemo(() => loadRestaurants(), [])
 
   useEffect(() => {
@@ -79,9 +82,9 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
       if (!at) return setState('geen-plek')
       setHere(at)
       try {
-        const found = await nearby(at)
+        const near = await nearby(at)
         if (stop) return
-        setList(found)
+        setList(near)
         setState('klaar')
       } catch {
         if (!stop) setState('mislukt')
@@ -92,86 +95,154 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
     }
   }, [])
 
-  // Al bewaarde restaurants vlakbij (binnen 300 m) komen bovenaan.
-  const savedNear = here ? saved.filter((r) => r.lat !== undefined && r.lon !== undefined && distance(here, { lat: r.lat, lon: r.lon }) < 300) : []
+  // Zoeken op naam, even wachten tot je klaar bent met typen.
+  const q = typed.trim()
+  useEffect(() => {
+    if (!here || q.length < 2) return
+    let stop = false
+    const timer = setTimeout(async () => {
+      const res = await searchNear(here, q).catch(() => [])
+      if (!stop) setFound({ q, list: res })
+    }, 600)
+    return () => {
+      stop = true
+      clearTimeout(timer)
+    }
+  }, [here, q])
+
+  const searching = !!here && q.length >= 2
+  const results = searching && found?.q === q ? found.list : null
+  const savedMatch = q.length >= 2 ? saved.filter((r) => r.name.toLowerCase().includes(q.toLowerCase())) : []
+
+  // Al bewaarde restaurants vlakbij (binnen 500 m) komen bovenaan.
+  const savedNear = here ? saved.filter((r) => r.lat !== undefined && r.lon !== undefined && distance(here, { lat: r.lat, lon: r.lon }) < 500) : []
   const fresh = list.filter((n) => !saved.some((r) => r.id === n.id))
 
-  const pickNearby = (n: Nearby) => onPick({ id: n.id, name: n.name, place: n.place, lat: n.lat, lon: n.lon, answers: {}, at: 0 })
+  const fromOsm = (n: Nearby): Restaurant => saved.find((r) => r.id === n.id) ?? { id: n.id, name: n.name, place: n.place, lat: n.lat, lon: n.lon, answers: {}, at: 0 }
   const pickTyped = () => {
-    const name = typed.trim()
-    if (!name) return
-    const same = saved.find((r) => r.name.toLowerCase() === name.toLowerCase())
-    onPick(same ?? { id: `eigen-${crypto.randomUUID()}`, name, lat: here?.lat, lon: here?.lon, answers: {}, at: 0 })
+    if (!q) return
+    const same = saved.find((r) => r.name.toLowerCase() === q.toLowerCase())
+    onPick(same ?? { id: `eigen-${crypto.randomUUID()}`, name: q, answers: {}, at: 0 })
+  }
+
+  const Row = ({ n }: { n: Nearby }) => {
+    const known = saved.find((r) => r.id === n.id)
+    return (
+      <li>
+        <button onClick={() => onPick(fromOsm(n))} className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-raised">
+          {known ? <Store size={20} className="shrink-0 text-safe" /> : <MapPin size={20} className="shrink-0 text-white/50" />}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[17px] font-semibold">{n.name}</span>
+            <span className="block truncate text-[13px] text-muted">{known ? 'Al bewaard' : n.place}</span>
+          </span>
+          <span className="shrink-0 text-[13px] text-muted">{far(n.meters)}</span>
+        </button>
+      </li>
+    )
   }
 
   return (
     <>
-      {state === 'zoeken' && (
-        <p className="flex items-center justify-center gap-2 py-6 text-[16px] text-white/70">
-          <Loader2 size={18} className="animate-spin" />
-          Ik zoek restaurants in de buurt…
-        </p>
-      )}
-      {state === 'geen-plek' && <p className="text-center text-[16px] text-white/70">Ik weet niet waar je bent. Typ hieronder de naam van het restaurant.</p>}
-      {state === 'mislukt' && <p className="text-center text-[16px] text-white/70">Zoeken in de buurt lukte niet. Typ hieronder de naam.</p>}
-
-      {(savedNear.length > 0 || fresh.length > 0) && (
-        <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
-          {savedNear.map((r) => (
-            <li key={r.id}>
-              <button onClick={() => onPick(r)} className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-raised">
-                <Store size={20} className="shrink-0 text-safe" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[17px] font-semibold">{r.name}</span>
-                  <span className="text-[13px] text-muted">Al bewaard</span>
-                </span>
-                <Stars value={stars(r.answers)} size={14} />
-              </button>
-            </li>
-          ))}
-          {fresh.map((n) => (
-            <li key={n.id}>
-              <button onClick={() => pickNearby(n)} className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-raised">
-                <MapPin size={20} className="shrink-0 text-white/50" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[17px] font-semibold">{n.name}</span>
-                  {n.place && <span className="block truncate text-[13px] text-muted">{n.place}</span>}
-                </span>
-                <span className="shrink-0 text-[13px] text-muted">{n.meters} m</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {state === 'klaar' && fresh.length === 0 && savedNear.length === 0 && (
-        <p className="text-center text-[16px] text-white/70">Ik vind hier geen restaurants. Typ hieronder de naam.</p>
-      )}
-
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          pickTyped()
+          if (results?.length === 1) onPick(fromOsm(results[0]))
         }}
         className="flex flex-col gap-2"
       >
         <label htmlFor="rest-name" className="px-1 text-[14px] text-muted">
-          {state === 'klaar' ? 'Staat hij er niet bij? Typ de naam.' : 'Naam van het restaurant'}
+          {here ? 'Zoek op naam (tot 15 km), of kies hieronder' : 'Naam van het restaurant'}
         </label>
-        <div className="flex gap-2">
+        <div className="relative">
+          <Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-black/40" />
           <input
             id="rest-name"
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
             maxLength={80}
-            placeholder="Bijvoorbeeld Pizzeria Roma"
-            className="min-w-0 flex-1 rounded-full bg-surface px-4 py-3 text-[17px] outline-none ring-accent focus:ring-2"
+            autoComplete="off"
+            placeholder="Bijvoorbeeld Roma"
+            className="w-full rounded-full bg-white py-3 pl-11 pr-4 text-[17px] text-black outline-none ring-accent focus:ring-2"
           />
-          <button type="submit" disabled={!typed.trim()} className="rounded-full bg-safe px-4 text-black disabled:opacity-40" aria-label="Verder">
-            <Search size={20} />
-          </button>
         </div>
       </form>
-      {state !== 'geen-plek' && <p className="text-center text-[13px] text-muted">Je plek wordt alleen gebruikt om restaurants in de buurt te vinden.</p>}
+
+      {q.length >= 2 ? (
+        <>
+          {savedMatch.length > 0 && (
+            <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
+              {savedMatch.map((r) => (
+                <li key={r.id}>
+                  <button onClick={() => onPick(r)} className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-raised">
+                    <Store size={20} className="shrink-0 text-safe" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[17px] font-semibold">{r.name}</span>
+                      <span className="text-[13px] text-muted">Al bewaard</span>
+                    </span>
+                    <Stars value={stars(r.answers)} size={14} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {searching && !results && (
+            <p className="flex items-center justify-center gap-2 py-2 text-[15px] text-white/70">
+              <Loader2 size={16} className="animate-spin" />
+              Ik zoek "{q}"…
+            </p>
+          )}
+          {results && results.filter((n) => !savedMatch.some((r) => r.id === n.id)).length > 0 && (
+            <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
+              {results
+                .filter((n) => !savedMatch.some((r) => r.id === n.id))
+                .map((n) => (
+                  <Row key={n.id} n={n} />
+                ))}
+            </ul>
+          )}
+          {results && results.length === 0 && savedMatch.length === 0 && <p className="text-center text-[15px] text-white/70">Niets gevonden in de buurt.</p>}
+          <button onClick={pickTyped} className="rounded-full bg-surface py-3 text-[16px] font-semibold active:bg-surface-raised">
+            "{q}" bewaren zonder adres
+          </button>
+        </>
+      ) : (
+        <>
+          {state === 'zoeken' && (
+            <p className="flex items-center justify-center gap-2 py-4 text-[16px] text-white/70">
+              <Loader2 size={18} className="animate-spin" />
+              Ik zoek restaurants om je heen…
+            </p>
+          )}
+          {state === 'geen-plek' && <p className="text-center text-[16px] text-white/70">Ik weet niet waar je bent. Typ de naam van het restaurant.</p>}
+          {state === 'mislukt' && <p className="text-center text-[16px] text-white/70">Zoeken om je heen lukte niet. Typ de naam.</p>}
+          {(savedNear.length > 0 || fresh.length > 0) && (
+            <>
+              <h2 className="px-1 text-[15px] font-semibold text-muted">Om je heen</h2>
+              <ul className="divide-y divide-surface-line overflow-hidden rounded-[22px] bg-surface">
+                {savedNear.map((r) => (
+                  <li key={r.id}>
+                    <button onClick={() => onPick(r)} className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-raised">
+                      <Store size={20} className="shrink-0 text-safe" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[17px] font-semibold">{r.name}</span>
+                        <span className="text-[13px] text-muted">Al bewaard</span>
+                      </span>
+                      <Stars value={stars(r.answers)} size={14} />
+                    </button>
+                  </li>
+                ))}
+                {fresh.map((n) => (
+                  <Row key={n.id} n={n} />
+                ))}
+              </ul>
+            </>
+          )}
+          {state === 'klaar' && fresh.length === 0 && savedNear.length === 0 && (
+            <p className="text-center text-[16px] text-white/70">Geen restaurants om je heen. Zoek hierboven op naam.</p>
+          )}
+        </>
+      )}
+      {state !== 'geen-plek' && <p className="text-center text-[13px] text-muted">Je plek wordt alleen gebruikt om restaurants te vinden.</p>}
     </>
   )
 }

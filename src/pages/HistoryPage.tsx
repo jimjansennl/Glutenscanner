@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { shareUrl } from '../services/shareList'
 import { History, Star, ShieldCheck, Share2 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
-import { MyRestaurants } from '../components/restaurant/MyRestaurants'
 import type { HistoryItem } from '../services/history'
 import type { GlutenStatus, ScanResult } from '../types/product'
 
@@ -128,8 +127,6 @@ export function HistoryPage({ items, statusOf, onOpen, onClear, starred, onOpenR
           </p>
         )
       )}
-
-      <MyRestaurants />
 
       <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 bg-black/80 px-4 py-2 backdrop-blur-xl">
         <div className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1" role="tablist" aria-label="Filter op status">

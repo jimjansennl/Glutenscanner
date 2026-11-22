@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Heart, Plus, Share2, Store } from 'lucide-react'
+import { Heart, Plus, Share2 } from 'lucide-react'
 import { loadRestaurants, restaurantsUrl, stars, type Restaurant } from '../../services/restaurants'
 import { RestaurantSheet, Stars } from './RestaurantSheet'
 
@@ -41,10 +41,6 @@ export function MyRestaurants() {
 
   return (
     <section>
-      <h2 className="mb-2 flex items-center justify-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-safe">
-        <Store size={14} />
-        Mijn restaurants
-      </h2>
       {list.length === 0 ? (
         <button
           onClick={() => setOpen('nieuw')}
