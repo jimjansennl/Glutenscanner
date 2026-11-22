@@ -686,8 +686,6 @@ function ListPage() {
 function RestaurantsPage() {
   const shared = useMemo(() => readSharedRestaurants(window.location.hash), [])
   const list = shared ? [...shared.list].sort((a, b) => (stars(b.answers) ?? 0) - (stars(a.answers) ?? 0)) : []
-  const yes: Record<string, string> = { menu: 'Glutenvrije gerechten', staff: 'Bediening weet het', fryer: 'Aparte frituur', bread: 'Glutenvrij brood of pasta' }
-  const no: Record<string, string> = { menu: 'Geen glutenvrije gerechten', staff: 'Bediening wist het niet', fryer: 'Geen aparte frituur', bread: 'Geen glutenvrij brood of pasta' }
   return (
     <>
       <PageBand
@@ -721,14 +719,16 @@ function RestaurantsPage() {
                     )}
                   </div>
                   <ul className="mt-3 flex flex-wrap gap-1.5">
-                    {QUESTIONS.filter((q) => r.answers[q.id] === 'ja' || r.answers[q.id] === 'nee').map((q) => (
-                      <li
-                        key={q.id}
-                        className={`rounded-full px-3 py-1 text-[13px] font-semibold ${r.answers[q.id] === 'ja' ? 'bg-[#e6f6ec] text-[#1d6b3c]' : 'bg-neutral-100 text-neutral-500'}`}
-                      >
-                        {r.answers[q.id] === 'ja' ? yes[q.id] : no[q.id]}
-                      </li>
-                    ))}
+                    {QUESTIONS.map((q) => {
+                      const a = r.answers[q.id]
+                      if (a !== 'ja' && a !== 'half' && a !== 'nee') return null
+                      const tone = a === 'ja' ? 'bg-[#e6f6ec] text-[#1d6b3c]' : a === 'half' ? 'bg-[#fff4d6] text-[#8a6100]' : 'bg-neutral-100 text-neutral-500'
+                      return (
+                        <li key={q.id} className={`rounded-full px-3 py-1 text-[13px] font-semibold ${tone}`}>
+                          {q.said[a]}
+                        </li>
+                      )
+                    })}
                   </ul>
                   {r.note && <p className="mt-3 text-[15px] italic text-neutral-600">"{r.note}"</p>}
                 </article>

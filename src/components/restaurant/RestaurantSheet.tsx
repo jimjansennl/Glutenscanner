@@ -8,10 +8,9 @@ import {
   nearby,
   removeRestaurant,
   saveRestaurant,
-  searchNear,
+  searchByName,
   stars,
   where,
-  type Answer,
   type Nearby,
   type Restaurant,
 } from '../../services/restaurants'
@@ -27,12 +26,6 @@ export function Stars({ value, size = 18 }: { value: number | null; size?: numbe
     </span>
   )
 }
-
-const ANSWERS: [Answer, string][] = [
-  ['ja', 'Ja'],
-  ['nee', 'Nee'],
-  ['?', 'Weet niet'],
-]
 
 interface Props {
   /** Bestaand restaurant bewerken; leeg = eerst een restaurant kiezen. */
@@ -59,7 +52,11 @@ export function RestaurantSheet({ initial, onClose }: Props) {
         </button>
       </header>
       <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {chosen ? <Rate restaurant={chosen} isNew={!initial && !loadRestaurants().some((r) => r.id === chosen.id)} onDone={onClose} /> : <Pick onPick={setChosen} />}
+        {chosen ? (
+          <Rate restaurant={chosen} isNew={!initial && !loadRestaurants().some((r) => r.id === chosen.id)} onDone={onClose} />
+        ) : (
+          <Pick onPick={setChosen} />
+        )}
       </div>
     </div>
   )
@@ -98,19 +95,20 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
   // Zoeken op naam, even wachten tot je klaar bent met typen.
   const q = typed.trim()
   useEffect(() => {
-    if (!here || q.length < 2) return
+    // Wachten tot we weten of we je plek hebben; daarna zoeken, met of zonder plek.
+    if (state === 'zoeken' || q.length < 2) return
     let stop = false
     const timer = setTimeout(async () => {
-      const res = await searchNear(here, q).catch(() => [])
+      const res = await searchByName(q, here).catch(() => [])
       if (!stop) setFound({ q, list: res })
-    }, 600)
+    }, 500)
     return () => {
       stop = true
       clearTimeout(timer)
     }
-  }, [here, q])
+  }, [here, q, state])
 
-  const searching = !!here && q.length >= 2
+  const searching = state !== 'zoeken' && q.length >= 2
   const results = searching && found?.q === q ? found.list : null
   const savedMatch = q.length >= 2 ? saved.filter((r) => r.name.toLowerCase().includes(q.toLowerCase())) : []
 
@@ -118,11 +116,27 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
   const savedNear = here ? saved.filter((r) => r.lat !== undefined && r.lon !== undefined && distance(here, { lat: r.lat, lon: r.lon }) < 500) : []
   const fresh = list.filter((n) => !saved.some((r) => r.id === n.id))
 
-  const fromOsm = (n: Nearby): Restaurant => saved.find((r) => r.id === n.id) ?? { id: n.id, name: n.name, place: n.place, lat: n.lat, lon: n.lon, answers: {}, at: 0 }
+  const fromOsm = (n: Nearby): Restaurant =>
+    saved.find((r) => r.id === n.id) ?? {
+      id: n.id,
+      name: n.name,
+      place: n.place,
+      lat: n.lat,
+      lon: n.lon,
+      answers: {},
+      at: 0,
+    }
   const pickTyped = () => {
     if (!q) return
     const same = saved.find((r) => r.name.toLowerCase() === q.toLowerCase())
-    onPick(same ?? { id: `eigen-${crypto.randomUUID()}`, name: q, answers: {}, at: 0 })
+    onPick(
+      same ?? {
+        id: `eigen-${crypto.randomUUID()}`,
+        name: q,
+        answers: {},
+        at: 0,
+      },
+    )
   }
 
   const Row = ({ n }: { n: Nearby }) => {
@@ -135,7 +149,7 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
             <span className="block truncate text-[17px] font-semibold">{n.name}</span>
             <span className="block truncate text-[13px] text-muted">{known ? 'Al bewaard' : n.place}</span>
           </span>
-          <span className="shrink-0 text-[13px] text-muted">{far(n.meters)}</span>
+          {n.meters !== undefined && <span className="shrink-0 text-[13px] text-muted">{far(n.meters)}</span>}
         </button>
       </li>
     )
@@ -151,7 +165,7 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
         className="flex flex-col gap-2"
       >
         <label htmlFor="rest-name" className="px-1 text-[14px] text-muted">
-          {here ? 'Zoek op naam (tot 15 km), of kies hieronder' : 'Naam van het restaurant'}
+          {here ? 'Zoek op naam, of kies hieronder' : 'Zoek op naam'}
         </label>
         <div className="relative">
           <Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-black/40" />
@@ -200,7 +214,9 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
                 ))}
             </ul>
           )}
-          {results && results.length === 0 && savedMatch.length === 0 && <p className="text-center text-[15px] text-white/70">Niets gevonden in de buurt.</p>}
+          {results && results.length === 0 && savedMatch.length === 0 && (
+            <p className="text-center text-[15px] text-white/70">Niets gevonden. Probeer een deel van de naam, of bewaar hem zonder adres.</p>
+          )}
           <button onClick={pickTyped} className="rounded-full bg-surface py-3 text-[16px] font-semibold active:bg-surface-raised">
             "{q}" bewaren zonder adres
           </button>
@@ -213,7 +229,13 @@ function Pick({ onPick }: { onPick: (r: Restaurant) => void }) {
               Ik zoek restaurants om je heen…
             </p>
           )}
-          {state === 'geen-plek' && <p className="text-center text-[16px] text-white/70">Ik weet niet waar je bent. Typ de naam van het restaurant.</p>}
+          {state === 'geen-plek' && (
+            <p className="text-center text-[15px] leading-snug text-white/70">
+              Ik weet niet waar je bent, dus ik zoek in heel Nederland. Typ de naam van het restaurant.
+              <br />
+              <span className="text-muted">Restaurants om je heen zien? Zet locatie aan voor je browser in de instellingen van je telefoon.</span>
+            </p>
+          )}
           {state === 'mislukt' && <p className="text-center text-[16px] text-white/70">Zoeken om je heen lukte niet. Typ de naam.</p>}
           {(savedNear.length > 0 || fresh.length > 0) && (
             <>
@@ -255,7 +277,12 @@ function Rate({ restaurant, isNew, onDone }: { restaurant: Restaurant; isNew: bo
   const score = stars(answers)
 
   const save = () => {
-    saveRestaurant({ ...restaurant, answers, tasty, note: note.trim() || undefined })
+    saveRestaurant({
+      ...restaurant,
+      answers,
+      tasty,
+      note: note.trim() || undefined,
+    })
     onDone()
   }
 
@@ -270,16 +297,18 @@ function Rate({ restaurant, isNew, onDone }: { restaurant: Restaurant; isNew: bo
       </div>
 
       <div className="flex flex-col gap-3">
+        <p className="px-1 text-center text-[14px] text-muted">Weet je iets niet? Sla die vraag gewoon over.</p>
         {QUESTIONS.map((q) => (
           <div key={q.id} className="rounded-[20px] bg-surface p-4">
             <p className="text-[17px] font-semibold leading-snug">{q.text}</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {ANSWERS.map(([a, label]) => {
+            <div className={`mt-3 grid gap-2 ${q.options.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {q.options.map(([a, label]) => {
                 const on = answers[q.id] === a
                 return (
                   <button
                     key={a}
-                    onClick={() => setAnswers((x) => ({ ...x, [q.id]: a }))}
+                    // Nog een keer tikken = weer leeg (overgeslagen).
+                    onClick={() => setAnswers((x) => ({ ...x, [q.id]: on ? '?' : a }))}
                     aria-pressed={on}
                     className={`rounded-full py-2.5 text-[15px] font-semibold ${on ? 'bg-white text-black' : 'bg-white/10 active:bg-white/20'}`}
                   >

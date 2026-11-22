@@ -249,11 +249,14 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   "Bewaar dit restaurant" onder een menukaart-uitslag en een gerecht (`SaveRestaurantButton`); lijst
   "Mijn restaurants" in de **Gids** (kaart boven "Kaart voor de bediening", gebruiker wilde dit; niet in
   Geschiedenis), beste eerst.
-- Kiezen: "Om je heen" = OpenStreetMap/Overpass binnen 500 m; **zoeken op naam binnen 15 km** (gebruiker
-  woont 8 km van zijn vaste restaurant; een vaste straal van 10 km gaf honderden restaurants, dus zoeken op
-  naam). Al bewaarde eerst; anders "… bewaren zonder adres". Alleen de afgeronde plek (±100 m) gaat naar OSM.
-- **Sterren komen vanzelf uit 4 vragen** (glutenvrije gerechten, bediening weet het, aparte frituur,
-  glutenvrij brood/pasta; ja/nee/weet niet). Bediening weet het niet = max. 3 sterren; 1 antwoord max. 3, 2 antwoorden max. 4. Geen tweede rij
+- Kiezen: "Om je heen" = OpenStreetMap/Overpass binnen 500 m; **zoeken op naam** (`searchByName`: Photon,
+  anders Nominatim; snapt halve namen en tikfouten) met plek tot 25 km, dichtbij eerst, **zonder plek in heel
+  Nederland** (Chrome op de iPhone gaf geen plek, toen vond hij "Rodeo" en "De Woerd" niet). Al bewaarde
+  eerst; anders "… bewaren zonder adres". Alleen de afgeronde plek gaat naar OSM.
+- **Sterren komen vanzelf uit 4 vragen** (glutenvrije gerechten: Veel keus / Een paar / Nee; bediening:
+  Ja, goed / Een beetje / Nee; aparte frituur en glutenvrij brood/pasta: Ja / Nee). "Een paar" en "Een beetje"
+  tellen half. **Geen knop "Weet niet"** (gebruiker snapte het niet): niet aantikken = overslaan, nog eens
+  tikken = weer leeg. Bediening weet het niet = max. 3 sterren; 1 antwoord max. 3, 2 antwoorden max. 4. Geen tweede rij
   sterren (verwarrend): wel één hartje **"Lekker!"** en een notitie.
 - Delen: link `/restaurants#…` (alles in de link), websitepagina `RestaurantsPage` in `LandingPage.tsx`.
 
