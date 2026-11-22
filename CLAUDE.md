@@ -84,8 +84,9 @@ Belangrijke bestanden:
 | `src/data/guideItems.ts`, `src/components/guide/*`, `src/data/travelCards.ts` | Gedeelde gidsinhoud en bouwstenen. De app (`GuidePage.tsx`) en de website (`SiteGuide.tsx`, pagina `/glutengids`) gebruiken dezelfde data: pas de gids op één plek aan. |
 | `src/components/landing/PhoneScreens.tsx` | Nagebouwde telefoonschermen voor de website, geen screenshots. Pas ze aan als de echte app verandert. |
 
-Privacy: foto's, geschiedenis en vaste producten blijven op de telefoon (localStorage). Uitzondering:
-een foto van een bord eten gaat verkleind naar de AI (niet bewaard); dat staat onder de uitslag.
+Privacy: foto's, geschiedenis, vaste producten en restaurants blijven op de telefoon (localStorage). Uitzondering:
+een foto van een bord eten gaat verkleind naar de AI (niet bewaard); dat staat onder de uitslag. Bij
+"Bewaar dit restaurant" gaat je (afgeronde) plek naar OpenStreetMap om restaurants in de buurt te vinden.
 Naar Open Food Facts gaat alleen een barcode, en bij een rood product de soort product
 (bijv. "koekjes") om een glutenvrij alternatief te zoeken.
 
@@ -242,11 +243,17 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
 - Optie A (herkenning op de telefoon, ±63 MB) is half gebouwd en staat **buiten de repo** in
   `/home/claude/optieA-backup` (model, scripts, oude DishView). Alleen afmaken als de gebruiker erom vraagt.
 
-## Plannen (afgesproken, nog te bouwen)
+## Mijn restaurants
 
-- **Restaurants beoordelen**, eerst alleen persoonlijk (op de telefoon, delen via link): vier
-  vragen (glutenvrije kaart, kennis bediening, aparte frituur, glutenvrij brood/pasta) → sterren,
-  plus eigen sterren en notities, gekoppeld aan de menukaart-scan. Gedeeld met iedereen pas later.
+- Alleen op de telefoon (`src/services/restaurants.ts`, localStorage `glutenscanner.restaurants.v1`). Knop
+  "Bewaar dit restaurant" onder een menukaart-uitslag en een gerecht (`SaveRestaurantButton`); lijst
+  "Mijn restaurants" in **Geschiedenis** (geen eigen tabblad), beste eerst.
+- Kiezen: restaurants in de buurt (gebruiker koos dit): plek één keer vragen, OpenStreetMap/Overpass binnen
+  250 m (alleen de afgeronde plek gaat daarheen), al bewaarde vlakbij bovenaan; anders zelf typen.
+- **Sterren komen vanzelf uit 4 vragen** (glutenvrije gerechten, bediening weet het, aparte frituur,
+  glutenvrij brood/pasta; ja/nee/weet niet). Bediening weet het niet = max. 3 sterren. Geen tweede rij
+  sterren (verwarrend): wel één hartje **"Lekker!"** en een notitie.
+- Delen: link `/restaurants#…` (alles in de link), websitepagina `RestaurantsPage` in `LandingPage.tsx`.
 
 ## Scanner testen zonder telefoon
 

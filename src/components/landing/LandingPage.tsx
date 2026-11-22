@@ -10,6 +10,7 @@ import {
   Check,
   CheckCircle2,
   Heart,
+  Star,
   FileText,
   Infinity as InfinityIcon,
   Menu,
@@ -45,6 +46,7 @@ import {
 } from './PhoneScreens'
 import { ScanDemo } from './ScanDemo'
 import { readSharedList } from '../../services/shareList'
+import { QUESTIONS, readSharedRestaurants, stars } from '../../services/restaurants'
 import type { GlutenStatus } from '../../types/product'
 import { Features } from './Features'
 
@@ -680,8 +682,73 @@ function ListPage() {
   )
 }
 
+/** Gedeelde lijst "Mijn restaurants" (alles staat in de link). */
+function RestaurantsPage() {
+  const shared = useMemo(() => readSharedRestaurants(window.location.hash), [])
+  const list = shared ? [...shared.list].sort((a, b) => (stars(b.answers) ?? 0) - (stars(a.answers) ?? 0)) : []
+  const yes: Record<string, string> = { menu: 'Glutenvrije gerechten', staff: 'Bediening weet het', fryer: 'Aparte frituur', bread: 'Glutenvrij brood of pasta' }
+  const no: Record<string, string> = { menu: 'Geen glutenvrije gerechten', staff: 'Bediening wist het niet', fryer: 'Geen aparte frituur', bread: 'Geen glutenvrij brood of pasta' }
+  return (
+    <>
+      <PageBand
+        eyebrow="Gedeelde lijst"
+        title="Hier kun je goed glutenvrij eten"
+        sub={shared ? `Restaurants waar we zelf hebben gegeten. Gedeeld op ${new Date(shared.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : undefined}
+      />
+      <section className="mx-auto w-full max-w-2xl px-5 py-10 lg:py-14">
+        {list.length === 0 ? (
+          <p className="text-center text-[17px] text-neutral-600">Deze link werkt niet (meer). Vraag of iemand hem opnieuw stuurt.</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {list.map((r) => {
+              const s = stars(r.answers)
+              return (
+                <article key={r.id} className="rounded-[24px] bg-white p-5 ring-1 ring-neutral-200">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="flex items-center gap-2 font-display text-[20px] font-bold text-[#14130f]">
+                        {r.name}
+                        {r.tasty && <Heart size={16} className="shrink-0 text-[#ff6b81]" fill="currentColor" aria-label="Lekker" />}
+                      </h2>
+                      {r.place && <p className="text-[14px] text-neutral-500">{r.place}</p>}
+                    </div>
+                    {s !== null && (
+                      <span className="flex shrink-0 gap-0.5" aria-label={`${s} van de 5 sterren`}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star key={n} size={17} className={n <= s ? 'text-[#f2b705]' : 'text-neutral-200'} fill="currentColor" strokeWidth={0} />
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="mt-3 flex flex-wrap gap-1.5">
+                    {QUESTIONS.filter((q) => r.answers[q.id] === 'ja' || r.answers[q.id] === 'nee').map((q) => (
+                      <li
+                        key={q.id}
+                        className={`rounded-full px-3 py-1 text-[13px] font-semibold ${r.answers[q.id] === 'ja' ? 'bg-[#e6f6ec] text-[#1d6b3c]' : 'bg-neutral-100 text-neutral-500'}`}
+                      >
+                        {r.answers[q.id] === 'ja' ? yes[q.id] : no[q.id]}
+                      </li>
+                    ))}
+                  </ul>
+                  {r.note && <p className="mt-3 text-[15px] italic text-neutral-600">"{r.note}"</p>}
+                </article>
+              )
+            })}
+            <p className="text-center text-[15px] leading-relaxed text-neutral-600">
+              Menu en keuken kunnen veranderen. Zeg altijd even dat je coeliakie hebt.
+              <br />
+              Zelf een menukaart scannen? Ga op je telefoon naar <b className="text-[#14130f]">glutenscanner.nl</b>.
+            </p>
+          </div>
+        )}
+      </section>
+    </>
+  )
+}
+
 const PAGE_VIEWS: Record<string, () => ReactNode> = {
   '/lijst': ListPage,
+  '/restaurants': RestaurantsPage,
   '/hoe-het-werkt': HowPage,
   // Functies is opgegaan in Hoe het werkt; oude links komen daar terecht.
   '/functies': HowPage,

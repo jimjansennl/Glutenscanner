@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Loader2, MessageCircleQuestion, Plus, RefreshCw, UtensilsCrossed, WifiOff, X } from 'lucide-react'
 import { DISH_PARTS, GROUP_TITLE, PICK_ORDER, type DishGroup } from '../data/dishParts'
+import { SaveRestaurantButton } from '../components/restaurant/SaveRestaurantButton'
 import { askDish, clearWaiting, saveWaiting, shrink, type DishAnswer, type DishError, type DishPick } from '../services/dish'
 
 interface Props {
@@ -228,6 +229,8 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
             </button>
           </section>
         )}
+
+        {state !== 'kijken' && <SaveRestaurantButton />}
 
         {byAi && <p className="text-center text-[13px] text-muted">De foto is even bekeken door AI en niet bewaard.</p>}
       </div>

@@ -12,6 +12,7 @@ import { fetchGlutenFreeAlternatives, type OffProduct } from '../services/openFo
 import { analyzeOffProduct } from '../services/glutenParser'
 import type { Product } from '../types/product'
 import { MENU_QUESTIONS } from '../data/menuQuestions'
+import { SaveRestaurantButton } from '../components/restaurant/SaveRestaurantButton'
 import { CARDS, zoneLang } from '../data/travelCards'
 import { saveScanMode } from '../services/scanMode'
 import { fold, findSpans } from '../lib/fold'
@@ -426,6 +427,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
       <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} hideMatches={!!ingredientList} />
 
       {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
+      {result.context === 'menu' && <SaveRestaurantButton />}
 
       {checked && (
         <CheckBanner
