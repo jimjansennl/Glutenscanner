@@ -276,7 +276,7 @@ export function PhotoAnalysis({ imageUrl, image, textOnly = false, onCode, onTex
                 className="flex items-center justify-center gap-2 rounded-full bg-surface py-3 text-[16px] font-semibold"
               >
                 <UtensilsCrossed size={18} />
-                Het is een bord eten
+                Het is een gerecht
               </button>
             )}
           </form>

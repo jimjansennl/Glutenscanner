@@ -187,7 +187,7 @@ function ScannerApp() {
             >
               <UtensilsCrossed size={22} className="shrink-0 text-accent" />
               <span className="text-[15px] font-semibold leading-snug">
-                Je bord van {new Date(dishReady.at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} is bekeken. Tik om de tips te zien.
+                Je gerecht van {new Date(dishReady.at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} is bekeken. Tik om de tips te zien.
               </span>
             </button>
           )}

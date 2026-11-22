@@ -218,18 +218,19 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   foto (sluiterknop of galerij) met bijna geen echte woorden = een bord eten (`looksLikeDish` in
   `src/services/dish.ts`). Staat er "Ingrediënten", een glutenwoord of een leesfout daarvan, of ≥4
   bekende woorden, dan **nooit** gerecht (een etiket met "TARWEMEEL" werd eerst als gerecht gezien).
-  In het tekst-invulscherm staat de knop "Het is een bord eten".
+  In het tekst-invulscherm staat de knop "Het is een gerecht".
+- **Nergens "Op je bord"** (of "bord") in de app: de gebruiker wil dat niet. Gebruik "gerecht".
 - `api/gerecht.ts` (Vercel-functie): stuurt de verkleinde foto (±100 kB) naar Claude (`claude-haiku-5-5`,
   `ANTHROPIC_API_KEY` in Vercel). De AI kiest **alleen uit vaste onderdelen** (`PARTS`, zelfde id's als
   `src/data/dishParts.ts`); de tips schrijven wij. Nooit "glutenvrij" in de naam van het gerecht.
   Grens per server: 30 foto's per uur per adres, `GERECHT_PER_DAG` (300) per dag. De echte grens is de
   bestedingslimiet in de Anthropic Console. Alleen glutenscanner.nl, *.vercel.app en localhost.
-- `src/pages/DishPage.tsx` "Op je bord": **geen groen/oranje/rood**, alleen rustige tips in drie
+- `src/pages/DishPage.tsx` (kop "Gerecht"): **geen groen/oranje/rood**, alleen rustige tips in drie
   groepjes (Hier zitten vaak gluten / Even navragen / Meestal goed), "Of is het rijst?" bij
   lijkt-op-gevallen (orzo, gnocchi, groenteslierten, graankorrels), wegtikken, "Mist er iets? Tik het
   aan", Vraag de bediening + kaart. Onderaan: "De foto is even bekeken door AI en niet bewaard."
 - Zonder internet: zelf aantikken, foto (klein) bewaard in localStorage (`glutenscanner.gerecht.wacht`,
-  max. 1 dag). Weer internet: het scherm bekijkt hem zelf, of de scanner toont "Je bord van 14:02 is
+  max. 1 dag). Weer internet: het scherm bekijkt hem zelf, of de scanner toont "Je gerecht van 14:02 is
   bekeken" (bovenaan, z-50: anders valt hij achter de camera).
 - Optie A (herkenning op de telefoon, ±63 MB) is half gebouwd en staat **buiten de repo** in
   `/home/claude/optieA-backup` (model, scripts, oude DishView). Alleen afmaken als de gebruiker erom vraagt.

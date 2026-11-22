@@ -95,7 +95,7 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
       <header className="relative flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <h1 className="flex items-center gap-2 text-[17px] font-semibold">
           <UtensilsCrossed size={19} className="text-safe" />
-          Op je bord
+          Gerecht
         </h1>
         <button onClick={onClose} className="absolute right-4 rounded-full bg-white/10 p-2.5 active:bg-white/20" aria-label="Sluiten">
           <X size={22} />
@@ -110,7 +110,7 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
               <span className="absolute inset-x-0 h-1 animate-scanline bg-safe shadow-[0_0_24px_6px] shadow-safe/70" />
               <span className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-black/70 px-4 py-2 text-[15px] font-semibold backdrop-blur-xl">
                 <Loader2 size={16} className="animate-spin" />
-                Ik bekijk je bord…
+                Ik bekijk je gerecht…
               </span>
             </>
           )}
@@ -120,19 +120,18 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
           <div className="text-center">
             {dish && <p className="text-[26px] font-extrabold leading-tight">{dish}</p>}
             <p className="mt-1 text-[16px] leading-snug text-white/75">Gluten zie je niet op een foto. Hier let je op.</p>
-            {several && <p className="mt-2 text-[15px] text-muted">Ik zie meer gerechten. Maak liever een foto per bord.</p>}
+            {several && <p className="mt-2 text-[15px] text-muted">Ik zie meer gerechten. Maak liever één foto per gerecht.</p>}
           </div>
         )}
 
         {state === 'offline' && (
           <Note icon={<WifiOff size={20} />}>
-            Geen internet. Ik bekijk de foto zodra je weer internet hebt. Tik intussen aan wat er op je bord ligt.
+            Geen internet. Ik bekijk de foto zodra je weer internet hebt. Tik intussen aan wat erin zit.
           </Note>
         )}
         {(state === 'mislukt' || state === 'limiet') && (
           <Note icon={<RefreshCw size={20} />}>
-            {state === 'limiet' ? 'Het is nu even te druk.' : 'Het lukte niet om de foto te bekijken.'} Tik zelf aan wat er op je bord
-            ligt, of{' '}
+            {state === 'limiet' ? 'Het is nu even te druk.' : 'Het lukte niet om de foto te bekijken.'} Tik zelf aan wat erin zit, of{' '}
             <button
               onClick={() => {
                 setState('kijken')
@@ -162,7 +161,7 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
                         <p className="mt-0.5 text-[15px] leading-snug text-white/80">{d.tip}</p>
                         {p.alt && (
                           <button onClick={() => swap(p.id)} className="mt-2 rounded-full bg-white/10 px-3 py-1.5 text-[14px] font-semibold">
-                            Of is het {DISH_PARTS[p.alt].label.toLowerCase()}?
+                            Of {DISH_PARTS[p.alt].plural ? 'zijn' : 'is'} het {DISH_PARTS[p.alt].label.toLowerCase()}?
                           </button>
                         )}
                       </div>
@@ -185,7 +184,7 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
               </button>
             ) : (
               <>
-                <h2 className="px-1 text-[15px] font-semibold text-muted">Wat ligt er op je bord?</h2>
+                <h2 className="px-1 text-[15px] font-semibold text-muted">Wat zit erin?</h2>
                 <div className="flex flex-wrap gap-2">
                   {PICK_ORDER.map((id) => {
                     const on = parts.some((p) => p.id === id)
