@@ -14,13 +14,13 @@ const PARTS: Record<string, string> = {
   couscous: 'couscous or bulgur',
   graankorrels: 'whole grain kernels like wheat berries, spelt, farro, barley, freekeh',
   noedels: 'noodles (mie, udon, ramen, rice noodles)',
-  brood: 'bread, toast, sandwich, bun, garlic bread',
-  wrap: 'wrap, tortilla, pancake, crêpe, pita, naan',
+  brood: 'bread, toast, sandwich, bun, slider, garlic bread, crostini, pan con tomate, crackers, breadsticks',
+  wrap: 'flour wrap, tortilla wrap, pancake, crêpe, pita, naan, flatbread',
   pizza: 'pizza, quiche, savoury pie or tart with a dough crust',
-  bladerdeeg: 'puff pastry (Wellington, vol-au-vent, sausage roll)',
+  bladerdeeg: 'puff pastry or filled pastry pockets (Wellington, vol-au-vent, sausage roll, empanadas)',
   vulling: 'stuffing inside meat, poultry or vegetables (rolled roast, stuffed chicken, stuffed peppers)',
-  gepaneerd: 'breaded or crumb-coated food (schnitzel, croquette, nuggets, fish fingers, breaded fish)',
-  beslag: 'deep fried in batter (tempura, battered fish, onion rings)',
+  gepaneerd: 'breaded or crumb-coated food (schnitzel, croquette, bitterbal, croquetas, nuggets, fish fingers, breaded fish)',
+  beslag: 'deep fried in batter (tempura, battered fish, calamari rings, onion rings, kibbeling)',
   gehaktballen: 'minced meat: meatballs, patties, burgers, or loose fried mince',
   kruidenmix: 'dish typically made with a ready-made seasoning mix (Dutch macaroni with mince, nasi, bami, taco/chili mince)',
   worst: 'sausages',
@@ -29,14 +29,17 @@ const PARTS: Record<string, string> = {
   kruimels: 'crumbs or crumble topping (cookie crumbs, crumble)',
   croutons: 'croutons',
   sojasaus: 'Asian-style sauce (soy, teriyaki, satay, hoisin)',
-  friet: 'french fries / chips, potato wedges',
+  friet: 'french fries / chips, potato wedges, deep-fried potato cubes (patatas bravas)',
   soep: 'soup',
   risotto: 'risotto',
   bloemlaagje: 'pan-fried fish or meat without visible crumbs (often dusted with flour)',
   vleeswaren: 'ham, bacon, lardons, cured or sliced meats',
   dressing: 'salad dressing, mayonnaise-like sauce on salad',
   marinade: 'visibly marinated, glazed or spice-rubbed meat or fish',
-  gratin: 'oven-baked crust or gratin topping',
+  gratin: 'oven dish with a baked cheese crust or gratin (often with white sauce underneath)',
+  bier: 'glasses or bottles of beer visible on the table',
+  stamppot: 'Dutch stamppot, hutspot or mashed potatoes',
+  dip: 'dips in small bowls: hummus, guacamole, aioli, salsa, tzatziki',
   toetje: 'dessert in a glass or bowl (yoghurt, custard, pudding, mousse, ice cream)',
   tomatensaus: 'tomato sauce, bolognese-style or chunky vegetable tomato sauce (not thick creamy sauce)',
   rijst: 'plain rice',
@@ -60,7 +63,7 @@ ${Object.entries(PARTS)
   .join('\n')}
 
 Rules:
-- Pick every component that is visible, at most 8. Put components that often hide gluten first.
+- Pick every component that is visible, at most 10. Put components that often hide gluten first.
 - Pasta is always pasta, also wholewheat or in a cold pasta salad. A pasta salad usually also has dressing.
 - Pan-fried fish or meat: add bloemlaagje. Rolled or stuffed meat: add vulling. Dutch macaroni or nasi: add kruidenmix.
 - If a component could easily be a look-alike, give the most likely id and put the other in "alt".
@@ -69,7 +72,10 @@ Rules:
 - "dish": a short Dutch name for the dish as it looks (max 6 words), simple words a child understands.
   Never write "glutenvrij" or anything about gluten in the name.
 - If the photo shows no food or drink (a label, a menu, a person, a room), set food to false.
-- If the photo shows several separate dishes (a collage), set several to true and describe the biggest one.`
+- A table or board with many small dishes (tapas, borrel, buffet, mezze): set several to true, give it a short
+  name like "Tapas" or "Borrelplank", and list the components across ALL dishes (at most 10).
+- A collage of separate photos: set several to true and describe the biggest dish.
+- Ignore people, hands, cutlery and text on the photo.`
 
 const TOOL = {
   name: 'gerecht',
@@ -155,7 +161,7 @@ export async function POST(request: Request): Promise<Response> {
     headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
       model: process.env.GERECHT_MODEL ?? 'claude-haiku-5-5',
-      max_tokens: 400,
+      max_tokens: 600,
       system: SYSTEM,
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'gerecht' },
@@ -183,7 +189,7 @@ export async function POST(request: Request): Promise<Response> {
   const seen = new Set<string>()
   const parts = (input.parts ?? [])
     .filter((p) => p.id && p.id in PARTS && !seen.has(p.id) && seen.add(p.id))
-    .slice(0, 8)
+    .slice(0, 10)
     .map((p) => ({ id: p.id as string, ...(p.alt && p.alt in PARTS && p.alt !== p.id ? { alt: p.alt } : {}) }))
   const dish = String(input.dish ?? '')
     .replace(/gluten\s*-?\s*vrij\w*|gluten\w*/gi, '')

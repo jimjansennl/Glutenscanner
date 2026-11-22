@@ -237,6 +237,8 @@ pagina één keer opnieuw als de update binnen 15 s na openen binnenkomt (`main.
   wij verbeteren `PARTS` (uitleg aan de AI) en de tips. Valkuilen uit de testfoto's van de gebruiker:
   orzo/rijst, cavatelli/gnocchi, tarwekorrels, courgetti, gevuld vlees (vulling), gebakken vis (bloemlaagje),
   macaroni met mix (kruidenmix), bladerdeeg, tempeh lijkt gepaneerd, tomatensaus ≠ dikke saus.
+  Tafel vol hapjes (tapas, borrel): `several` + onderdelen van de hele tafel (max. 10) en de tip over
+  kruimels in gedeelde schalen (geen "maak één foto per gerecht"). Bier op tafel = waarschuwing (gerst), nooit advies.
 - Optie A (herkenning op de telefoon, ±63 MB) is half gebouwd en staat **buiten de repo** in
   `/home/claude/optieA-backup` (model, scripts, oude DishView). Alleen afmaken als de gebruiker erom vraagt.
 

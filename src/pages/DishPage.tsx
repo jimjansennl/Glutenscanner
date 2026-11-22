@@ -120,7 +120,13 @@ export function DishPage({ imageUrl, image, answer, onClose, onReadText, onTrave
           <div className="text-center">
             {dish && <p className="text-[26px] font-extrabold leading-tight">{dish}</p>}
             <p className="mt-1 text-[16px] leading-snug text-white/75">Gluten zie je niet op een foto. Hier let je op.</p>
-            {several && <p className="mt-2 text-[15px] text-muted">Ik zie meer gerechten. Maak liever één foto per gerecht.</p>}
+            {several && (
+              <p className="mt-2 text-[15px] leading-snug text-muted">
+                {parts.some((p) => p.id === 'brood' || p.id === 'wrap')
+                  ? 'Gedeelde schalen? Kruimels van brood komen dan makkelijk overal in. Neem als eerste, of vraag een eigen schaaltje.'
+                  : 'Ik zie meer gerechten. Kijk bij elk gerecht even naar de tips.'}
+              </p>
+            )}
           </div>
         )}
 
