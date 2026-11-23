@@ -476,7 +476,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
       )}
 
       {/* Menukaart: de vragen hieronder vervangen de losse tips. */}
-      <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} hideMatches={!!ingredientList} />
+      <ResultCard analysis={result.context === 'menu' ? { ...analysis, tips: [] } : analysis} hideMatches={!!ingredientList || (!!details && !product)} />
 
       {result.context === 'menu' && <MenuQuestions warnings={analysis.warnings} />}
       {result.context === 'menu' && <SaveRestaurantButton />}

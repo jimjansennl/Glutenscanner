@@ -132,16 +132,11 @@ export function ResultCard({ analysis, hideMatches = false }: { analysis: Gluten
       </header>
 
       <ul className="flex flex-col items-center gap-1 text-center">
-        {/* Bij gluten staat de bron al onder de titel: de standaardzin vervangen we door een korte duiding.
-            Eigen uitleg (zoals bij moutazijn) blijft wel staan. Tegenstrijdig heeft een eigen blok. */}
+        {/* Bij gluten zeggen de titel en "Gevonden: …" al alles: de standaardzin laten we weg (gebruiker vond
+            "Niet geschikt bij coeliakie" dubbel). Eigen uitleg (zoals bij moutazijn) blijft wel staan.
+            Tegenstrijdig heeft een eigen blok. */}
         {(analysis.status === 'danger'
-          ? [
-              ...new Set(
-                analysis.reasons
-                  .filter((r) => !r.startsWith('Tegenstrijdige'))
-                  .map((r) => (r.startsWith('Bevat glutenbevattende granen') ? 'Niet geschikt bij coeliakie of glutenintolerantie.' : r)),
-              ),
-            ]
+          ? [...new Set(analysis.reasons.filter((r) => !r.startsWith('Tegenstrijdige') && !r.startsWith('Bevat glutenbevattende granen')))]
           : analysis.reasons
         ).map((r) => (
           <li key={r} className="text-[15px] leading-snug text-muted">
