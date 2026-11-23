@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { AlertTriangle, Barcode, Camera, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Share2, ShieldCheck, Star } from 'lucide-react'
+import { AlertTriangle, Barcode, Camera, ChevronDown, ExternalLink, Eye, EyeOff, FileText, Info, MessageCircleQuestion, QrCode, Share2, ShieldCheck, Star } from 'lucide-react'
 import { ResultCard } from '../components/result/ResultCard'
 import { DISCLAIMER_SHORT } from '../components/ui/DisclaimerModal'
 import { IngredientChips } from '../components/result/IngredientChips'
@@ -26,6 +26,58 @@ const SOURCE_META = {
 }
 
 /** Markeert gevonden termen in de ingrediëntentekst (rood = gluten, oranje = twijfel), ook met accenten. */
+/** Na deze woorden komt geen ingrediënt meer: voedingswaarde, houdbaarheid, adres. */
+const NOT_INGREDIENTS = /(gemiddelde voedingswaarde|voedingswaarde|ten ?minste houdbaar|na deze datum|consumentenservice|bewaaradvies|\bper ?100 ?g|nutrition|nährwert)/i
+
+/**
+ * Tekst zonder herkenbare ingrediëntenlijst. Geen lap tekst: alleen de zinnen waar iets in opvalt
+ * (gekleurd), of anders een kort begin. De hele tekst kan nog worden uitgeklapt.
+ */
+function LooseText({ text, danger, warning }: { text: string; danger: GlutenMatch[]; warning: GlutenMatch[] }) {
+  const [all, setAll] = useState(false)
+  const terms = [...danger, ...warning].map((m) => fold(m.term))
+  const clean = text.replace(/\s+/g, ' ').trim()
+  const cut = clean.search(NOT_INGREDIENTS)
+  const useful = cut > 40 ? clean.slice(0, cut).trim() : clean
+  const hits = terms.length > 0 ? useful.split(/(?<=[.!?;])\s+/).filter((s) => terms.some((t) => fold(s).includes(t))).slice(0, 3) : []
+  const short = useful.length > 180 ? `${useful.slice(0, 180).replace(/\s+\S*$/, '')} …` : useful
+  const needsMore = hits.length > 0 || short !== clean
+
+  return (
+    <>
+      {hits.length > 0 ? (
+        <div className="flex flex-col gap-2 text-left">
+          <p className="text-[14px] text-muted">Hier zit het in:</p>
+          {hits.map((s, i) => (
+            <p key={i} className="rounded-[14px] bg-black/30 px-3 py-2 text-[15px] leading-relaxed text-white/85">
+              <Highlighted text={s} danger={danger} warning={warning} />
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[15px] leading-relaxed text-white/85">
+          <Highlighted text={short} danger={danger} warning={warning} />
+        </p>
+      )}
+      {needsMore && (
+        <button
+          onClick={() => setAll((a) => !a)}
+          className="mt-3 inline-flex items-center gap-1 text-[14px] font-medium text-accent active:opacity-60"
+          aria-expanded={all}
+        >
+          {all ? 'Verberg de hele tekst' : 'Toon alle tekst van de foto'}
+          <ChevronDown size={16} className={`transition-transform ${all ? 'rotate-180' : ''}`} />
+        </button>
+      )}
+      {all && (
+        <p className="mt-3 text-left text-[14px] leading-relaxed text-white/70">
+          <Highlighted text={clean} danger={danger} warning={warning} />
+        </p>
+      )}
+    </>
+  )
+}
+
 function Highlighted({ text, danger, warning }: { text: string; danger: GlutenMatch[]; warning: GlutenMatch[] }) {
   const kinds = new Map<string, 'danger' | 'warning'>()
   for (const m of warning) kinds.set(fold(m.term), 'warning')
@@ -495,9 +547,7 @@ export function ResultPage({ result, onHome, onPhotoScan, onOpenBarcode }: Props
           <h3 className="mb-2 text-[13px] font-medium uppercase tracking-wide text-muted">
             {product ? 'Ingrediënten' : 'Dit las de scanner'}
           </h3>
-          <p className="text-[15px] leading-relaxed text-white/85">
-            <Highlighted text={details} danger={analysis.matches} warning={analysis.warnings} />
-          </p>
+          <LooseText text={details} danger={analysis.matches} warning={analysis.warnings} />
           <ReadAlong text={details} danger={analysis.matches} warning={analysis.warnings} />
         </section>
       )}

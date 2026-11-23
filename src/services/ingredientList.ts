@@ -68,6 +68,10 @@ export function parseIngredientList(text: string, fromDatabase = false): Ingredi
   const stop = body.search(STOP)
   if (stop > 0) body = body.slice(0, stop)
 
+  // Zonder "Ingrediënten" staat er vaak eerst een zin over het product ("Gekruide mix van pinda's. PINDA 35%").
+  // Die zin hoort niet bij het eerste ingrediënt.
+  if (start < 0) body = body.replace(/^[^,]*[.!?]\s+(?=\p{Lu})/u, '')
+
   const items: IngredientItem[] = []
   for (const raw of splitTop(body)) {
     const m = raw.match(/^([^([]*)[([](.*)[)\]]?\s*$/s)
